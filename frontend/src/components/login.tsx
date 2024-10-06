@@ -40,13 +40,14 @@ const Login: React.FC = () => {
             }
 
             const data = await response.json();
-            const { token, name, firstName } = data;
+            const { token, firstName, userId } = data;
 
-            console.log(`${name} ${token}`);
+            console.log(`${firstName} ${userId} ${token}`);
 
             // Save the JWT and firstName to localStorage
             localStorage.setItem("jwt", token);
-            localStorage.setItem("firstName", firstName); // Save the firstName directly
+            localStorage.setItem("firstName", firstName);
+            localStorage.setItem("userId", userId);
 
             setForm({ identifier: "", password: "" });
             navigate("/dashboard");

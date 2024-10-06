@@ -98,8 +98,10 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
 
         // Send response with the token and user details
         res.status(200).json({
+            userId: user._id,
             message: "Authentication successful",
             token,
+            firstName: user.firstName,
             username: user.username,
             accountNumber: user.accountNumber
         });

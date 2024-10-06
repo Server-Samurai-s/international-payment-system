@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/transaction", transactionRoutes); // Handle all routes for posts
+app.use("/transactions", transactionRoutes); // Handle all routes for posts
 app.use("/user", userRoutes);  // Handle all routes for users
 
 // Create HTTPS server
