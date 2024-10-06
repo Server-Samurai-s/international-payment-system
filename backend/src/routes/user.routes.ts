@@ -14,10 +14,11 @@ const bruteforce = new ExpressBrute(store);
 // Signup Route
 router.post("/signup", async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, password } = req.body;
+        const { firstName, lastName, emailAddress, username, password, accountNumber, idNumber } = req.body;
 
-        if (!name || !password) {
-            res.status(400).json({ message: "Name and password are required" });
+        // Validate that all required fields are provided
+        if (!firstName || !lastName || !emailAddress || !username || !password || !accountNumber || !idNumber) {
+            res.status(400).json({ message: "All fields are required" });
             return;
         }
 
@@ -26,8 +27,13 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
 
         // Create new user document
         const newDocument = {
-            name,
+            firstName,
+            lastName,
+            emailAddress,
+            username,
             password: hashedPassword,
+            accountNumber,
+            idNumber,
         };
 
         // Access the users collection and insert the new user document
@@ -45,11 +51,11 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
 
 // Login Route
 router.post("/login", bruteforce.prevent, async (req: Request, res: Response): Promise<void> => {
-    const { name, password } = req.body;
+    const { username, password } = req.body;
 
     try {
         const collection = req.app.locals.db.collection("users");
-        const user = await collection.findOne({ name });
+        const user = await collection.findOne({ username });
 
         if (!user) {
             res.status(401).json({ message: "Authentication failed" });
@@ -64,12 +70,12 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
         }
 
         // Authentication successful
-        const token = jwt.sign({ name: user.name }, process.env.JWT_SECRET || '', { expiresIn: "1h" });
+        const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET || '', { expiresIn: "1h" });
 
         res.status(200).json({
             message: "Authentication successful",
             token,
-            name: user.name
+            username: user.username
         });
         return;
     } catch (e) {
