@@ -11,6 +11,11 @@ const router = express.Router();
 const store = new ExpressBrute.MemoryStore();
 const bruteforce = new ExpressBrute(store);
 
+// Regex Patterns
+const accountNumberPattern = /^\d{7,11}$/;
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+
 // Signup Route
 router.post("/signup", async (req: Request, res: Response): Promise<void> => {
     try {
@@ -64,6 +69,7 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
     }
 });
 
+
 // Login Route
 router.post("/login", bruteforce.prevent, async (req: Request, res: Response): Promise<void> => {
     const { identifier, password } = req.body;
@@ -71,6 +77,18 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
     // Input validation
     if (!identifier || !password) {
         res.status(400).json({ message: "Username/Account Number and Password are required" });
+        return;
+    }
+
+    // Validate identifier if it's an account number
+    if (accountNumberPattern.test(identifier) && !accountNumberPattern.test(identifier)) {
+        res.status(400).json({ message: "Invalid Account Number format. Must be numeric and contain between 7 to 11 digits" });
+        return;
+    }
+
+    // Validate password format
+    if (!passwordPattern.test(password)) {
+        res.status(400).json({ message: "Password must contain at least one lowercase letter, one uppercase letter, one digit, one special character (@$!%*?&), and must be at least 8 characters long" });
         return;
     }
 
