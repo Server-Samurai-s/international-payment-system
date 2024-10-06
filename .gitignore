@@ -15,3 +15,6 @@ build/
 # OS specific files
 .DS_Store  # macOS
 Thumbs.db  # Windows
+
+# npm package locks
+package-lock.json
