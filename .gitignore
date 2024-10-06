@@ -4,6 +4,9 @@ node_modules/
 # Environment variables
 .env
 
+package.json
+package-lock.json
+
 # Logs
 *.log
 logs/
