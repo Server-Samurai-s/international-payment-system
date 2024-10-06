@@ -58,15 +58,6 @@ input.form-control:focus {
     background-color: #ffffff;
 }
 
-/* Specific styling for password fields to reduce space */
-.form-group.password-group {
-    margin-bottom: 0.8rem; /* Less space below password fields */
-}
-
-.password-group label {
-    margin-bottom: 0.4rem; /* Tighter space for the password label */
-}
-
 /* Error input field styling */
 .custom-tooltip {
     position: absolute;
