@@ -64,20 +64,27 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
     }
 });
 
-// Login Route remains unchanged
+// Login Route
 router.post("/login", bruteforce.prevent, async (req: Request, res: Response): Promise<void> => {
-    const { identifier, password } = req.body; // 'identifier' can be either the username or account number
+    const { identifier, password } = req.body;
+
+    // Input validation
+    if (!identifier || !password) {
+        res.status(400).json({ message: "Username/Account Number and Password are required" });
+        return;
+    }
 
     try {
         const collection = req.app.locals.db.collection("users");
 
-        // Check if the user exists by either 'username' or 'accountNumber'
+        // Find the user by either username or accountNumber
         const user = await collection.findOne({
             $or: [{ username: identifier }, { accountNumber: identifier }],
         });
 
         if (!user) {
-            res.status(401).json({ message: "Authentication failed: User not found" });
+            console.error("User not found for identifier:", identifier);
+            res.status(401).json({ message: "Username/Account Number not found" });
             return;
         }
 
@@ -85,11 +92,12 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            res.status(401).json({ message: "Authentication failed: Incorrect password" });
+            console.error("Incorrect password for identifier:", identifier);
+            res.status(401).json({ message: "Incorrect password" });
             return;
         }
 
-        // If authentication is successful, generate a JWT token
+        // Authentication successful
         const token = jwt.sign(
             { username: user.username, accountNumber: user.accountNumber },
             process.env.JWT_SECRET || '',
@@ -101,7 +109,7 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
             message: "Authentication successful",
             token,
             username: user.username,
-            accountNumber: user.accountNumber
+            accountNumber: user.accountNumber,
         });
         return;
     } catch (e) {
@@ -110,6 +118,5 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
         return;
     }
 });
-
 
 export default router;

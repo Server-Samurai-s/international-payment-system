@@ -36,22 +36,27 @@ const Login: React.FC = () => {
             });
 
             if (!response.ok) {
-                throw new Error(`Error: ${response.statusText}`);
+                // Extract error message from response body if available
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error: ${response.statusText}`);
             }
 
             const data = await response.json();
-            const { token, name, firstName } = data;
+            const { token, firstName, userId } = data;
 
-            console.log(`${name} ${token}`);
+            console.log(`${firstName} ${userId} ${token}`);
 
             // Save the JWT and firstName to localStorage
             localStorage.setItem("jwt", token);
-            localStorage.setItem("firstName", firstName); // Save the firstName directly
+            localStorage.setItem("firstName", firstName);
+            localStorage.setItem("userId", userId);
 
             setForm({ identifier: "", password: "" });
             navigate("/dashboard");
-        } catch (error) {
-            window.alert(error);
+        } catch (error: any) {
+            // Detailed error for debugging purposes
+            console.error("Failed to login:", error);
+            window.alert(`Failed to fetch: ${error.message}`);
         }
     };
 
