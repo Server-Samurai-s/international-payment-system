@@ -14,11 +14,10 @@ const bruteforce = new ExpressBrute(store);
 // Signup Route
 router.post("/signup", async (req: Request, res: Response): Promise<void> => {
     try {
-        const { firstName, lastName, emailAddress, username, password, accountNumber, idNumber } = req.body;
+        const { name, password } = req.body;
 
-        // Validate that all required fields are provided
-        if (!firstName || !lastName || !emailAddress || !username || !password || !accountNumber || !idNumber) {
-            res.status(400).json({ message: "All fields are required" });
+        if (!name || !password) {
+            res.status(400).json({ message: "Name and password are required" });
             return;
         }
 
@@ -27,20 +26,15 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
 
         // Create new user document
         const newDocument = {
-            firstName,
-            lastName,
-            emailAddress,
-            username,
+            name,
             password: hashedPassword,
-            accountNumber,
-            idNumber,
         };
 
         // Access the users collection and insert the new user document
         const collection = req.app.locals.db.collection("users");
         const result = await collection.insertOne(newDocument);
 
-        res.status(201).json({ result });
+        res.status(201).json({ message: "User registered successfully", result });
         return;
     } catch (e) {
         console.error("Signup error:", e);
@@ -49,33 +43,36 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
     }
 });
 
-// Login Route
+// Login Route remains unchanged
 router.post("/login", bruteforce.prevent, async (req: Request, res: Response): Promise<void> => {
-    const { username, password } = req.body;
+    const { name, password } = req.body;
 
     try {
         const collection = req.app.locals.db.collection("users");
-        const user = await collection.findOne({ username });
+        const user = await collection.findOne({ name });
 
         if (!user) {
-            res.status(401).json({ message: "Authentication failed" });
+            res.status(401).json({ message: "Authentication failed: User not found" });
             return;
         }
 
+        // Compare the provided password with the stored hashed password
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            res.status(401).json({ message: "Authentication failed" });
+            res.status(401).json({ message: "Authentication failed: Incorrect password" });
             return;
         }
 
         // Authentication successful
-        const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET || '', { expiresIn: "1h" });
+        const token = jwt.sign({ name: user.name }, process.env.JWT_SECRET || '', { expiresIn: "1h" });
 
+        // Send response with the token and user details
         res.status(200).json({
+            userId: user._id,
             message: "Authentication successful",
             token,
-            username: user.username
+            name: user.name
         });
         return;
     } catch (e) {
@@ -84,5 +81,6 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
         return;
     }
 });
+
 
 export default router;
