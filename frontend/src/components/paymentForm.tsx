@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface PaymentFormState {
     recipientName: string;
@@ -11,6 +11,9 @@ interface PaymentFormState {
 }
 
 const PaymentForm: React.FC = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+
     const [form, setForm] = useState<PaymentFormState>({
         recipientName: "",
         recipientBank: "",
@@ -19,7 +22,12 @@ const PaymentForm: React.FC = () => {
         swiftCode: "",
     });
 
-    const navigate = useNavigate();
+    useEffect(() => {
+        if (location.state) {
+            const transaction = location.state as PaymentFormState;
+            setForm(transaction);
+        }
+    }, [location.state]);    
 
     // Handle input changes
     const updateForm = (value: Partial<PaymentFormState>) => {

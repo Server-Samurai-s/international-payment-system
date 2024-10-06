@@ -13,7 +13,6 @@ interface Transaction {
     recipientBank: string;
     amount: number;
     transactionDate: string; // assuming it's stored as a string in the database
-    description: string;
 }
 
 const CustomerDashboard: React.FC = () => {
@@ -104,11 +103,14 @@ const CustomerDashboard: React.FC = () => {
                             <div key={transaction._id} className="d-flex justify-content-between align-items-center mb-2">
                                 <div>
                                     <p className="mb-0"><strong>{new Date(transaction.transactionDate).toLocaleDateString()}</strong></p>
-                                    <p className="mb-0">{transaction.description || 'Payment'}</p>
+                                    <p className="mb-0">{transaction.recipientName || 'Payment'}</p>
                                 </div>
                                 <div>
                                     <p className="mb-0">${transaction.amount}</p>
-                                    <button className="btn btn-primary btn-sm">Pay again</button>
+                                    <button 
+                                        className="btn btn-primary btn-sm" 
+                                        onClick={() => handlePayAgain(transaction)} // Pass transaction to handler
+                                    >Pay again</button>
                                 </div>
                             </div>
                         ))
