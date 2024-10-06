@@ -62,6 +62,11 @@ const CustomerDashboard: React.FC = () => {
             }
         }
     };
+
+    // Handle "Pay again" button click
+    const handlePayAgain = (transaction: Transaction) => {
+        navigate("/payment", { state: transaction }); // Pass the transaction data
+    };
     
 
     return (
