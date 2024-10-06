@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap is imported
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from "react-router-dom";
 
 interface PaymentFormState {
@@ -19,6 +19,8 @@ const PaymentForm: React.FC = () => {
         swiftCode: "",
     });
 
+    const navigate = useNavigate();
+
     // Handle input changes
     const updateForm = (value: Partial<PaymentFormState>) => {
         setForm((prev) => ({
@@ -28,13 +30,63 @@ const PaymentForm: React.FC = () => {
     };
 
     // Handle form submission
-    const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(form); // Add actual submission logic here
+
+        const token = localStorage.getItem("jwt"); // Assuming JWT is stored in localStorage
+        if (!token) {
+            alert("Please log in first.");
+            navigate("/login");
+            return;
+        }
+
+        const transactionData = {
+            ...form,
+            userId: localStorage.getItem("userId"), // Assuming userId is stored in localStorage
+            transactionDate: new Date().toISOString(), // Automatically set the transaction date
+        };
+
+        try {
+            const response = await fetch("https://localhost:3001/transactions/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`, // Pass the token for authorization
+                },
+                body: JSON.stringify(transactionData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`Error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("Transaction created:", data);
+
+            // Reset form and navigate to dashboard
+            setForm({
+                recipientName: "",
+                recipientBank: "",
+                accountNumber: "",
+                amount: "",
+                swiftCode: "",
+            });
+            navigate("/dashboard"); // Redirect to dashboard after payment
+        } catch (error) {
+            console.error("Error creating transaction:", error);
+            alert("Failed to process payment. Please try again.");
+        }
     };
 
-    const navigate = useNavigate();
+    // Handle cancel button click
     const handleCancelBtn = () => {
+        setForm({
+            recipientName: "",
+            recipientBank: "",
+            accountNumber: "",
+            amount: "",
+            swiftCode: "",
+        });
         navigate("/dashboard");
     };
 
@@ -130,16 +182,7 @@ const PaymentForm: React.FC = () => {
                 {/* Buttons */}
                 <div className="d-flex justify-content-between">
                     <button type="submit" className="btn btn-primary">PAY NOW</button>
-                    <button type="button" className="btn btn-outline-secondary" onClick={() => {
-                        setForm({
-                            recipientName: "",
-                            recipientBank: "",
-                            accountNumber: "",
-                            amount: "",
-                            swiftCode: "",
-                        });
-                        handleCancelBtn();
-                    }}>
+                    <button type="button" className="btn btn-outline-secondary" onClick={handleCancelBtn}>
                         Cancel
                     </button>
                 </div>

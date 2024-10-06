@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 // Import routes
-import postRoutes from "./routes/post.routes";
+import transactionRoutes from "./routes/transaction.routes";
 import userRoutes from "./routes/user.routes";
 
 // Load environment variables from .env file
@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 });
 
 // Routes
-app.use("/posts", postRoutes); // Handle all routes for posts
+app.use("/transaction", transactionRoutes); // Handle all routes for posts
 app.use("/user", userRoutes);  // Handle all routes for users
 
 // Create HTTPS server

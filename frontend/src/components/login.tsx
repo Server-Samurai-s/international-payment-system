@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import 'bootstrap/dist/css/bootstrap.min.css'; // Ensure Bootstrap is imported
 
 interface FormState {
-    name: string;
+    identifier: string; // Could be username or account number
     password: string;
 }
 
 const Login: React.FC = () => {
     const [form, setForm] = useState<FormState>({
-        name: "",
+        identifier: "",
         password: "",
     });
     const navigate = useNavigate();
@@ -24,7 +24,7 @@ const Login: React.FC = () => {
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const newPerson = { ...form };
+        const userCredentials = { ...form };
 
         try {
             const response = await fetch("https://localhost:3001/user/login", {
@@ -32,7 +32,7 @@ const Login: React.FC = () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(newPerson),
+                body: JSON.stringify(userCredentials),
             });
 
             if (!response.ok) {
@@ -40,15 +40,15 @@ const Login: React.FC = () => {
             }
 
             const data = await response.json();
-            const { token, name } = data;
+            const { token, name, firstName } = data;
 
             console.log(`${name} ${token}`);
 
-            // Save the JWT to localStorage
+            // Save the JWT and firstName to localStorage
             localStorage.setItem("jwt", token);
-            localStorage.setItem("name", name);
+            localStorage.setItem("firstName", firstName); // Save the firstName directly
 
-            setForm({ name: "", password: "" });
+            setForm({ identifier: "", password: "" });
             navigate("/dashboard");
         } catch (error) {
             window.alert(error);
@@ -60,13 +60,13 @@ const Login: React.FC = () => {
             <h3 className="text-center mb-4">Login Form</h3>
             <form onSubmit={onSubmit}>
                 <div className="form-group mb-3">
-                    <label htmlFor="name" className="form-label">Username or Account Number</label>
+                    <label htmlFor="identifier" className="form-label">Username or Account Number</label>
                     <input
                         type="text"
                         className="form-control"
-                        id="name"
-                        value={form.name}
-                        onChange={(e) => updateForm({ name: e.target.value })}
+                        id="identifier"
+                        value={form.identifier}
+                        onChange={(e) => updateForm({ identifier: e.target.value })}
                     />
                 </div>
 
