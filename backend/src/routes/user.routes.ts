@@ -89,9 +89,9 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
             return;
         }
 
-        // If authentication is successful, generate a JWT token
+        // If authentication is successful, generate a JWT token with userId included
         const token = jwt.sign(
-            { username: user.username, accountNumber: user.accountNumber },
+            { userId: user._id, username: user.username, accountNumber: user.accountNumber },
             process.env.JWT_SECRET || '',
             { expiresIn: "1h" }
         );
@@ -112,6 +112,7 @@ router.post("/login", bruteforce.prevent, async (req: Request, res: Response): P
         return;
     }
 });
+
 
 
 export default router;

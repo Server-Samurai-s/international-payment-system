@@ -1,13 +1,20 @@
 import express, { Request, Response } from "express";
 import { ObjectId } from "mongodb";
+import { authenticateUser } from "../middleware/auth";
+
+interface AuthenticatedRequest extends Request {
+    userId?: string;
+  }
 
 const router = express.Router();
 
 // Get all the transactions
-router.get("/", async (req: Request, res: Response): Promise<void> => {
+router.get("/", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
+        const userId = new ObjectId(req.userId); // Extracted userId from the authenticated middleware
         const collection = req.app.locals.db.collection("transactions");
-        const results = await collection.find({}).toArray();
+        const results = await collection.find({ user: userId }).toArray(); // Fetch transactions for this user
+        console.log('Transactions for user:', userId, results); // Debug log
         res.status(200).send(results);
     } catch (e) {
         console.error("Error fetching transactions:", e);
@@ -15,11 +22,14 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
     }
 });
 
+
 // Upload a new transaction
-router.post("/create", async (req: Request, res: Response): Promise<void> => {
+router.post("/create", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
+        const userId = req.userId;
+
         const newTransaction = {
-            user: req.body.user,
+            user: new ObjectId(userId),  // Assign the userId to the user field
             recipientName: req.body.recipientName,
             recipientBank: req.body.recipientBank,
             accountNumber: req.body.accountNumber,

@@ -52,6 +52,7 @@ const CustomerDashboard: React.FC = () => {
                 });
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('Transactions fetched:', data); // Log the response data
                     setTransactions(data);
                 } else {
                     console.error("Failed to fetch transactions");
@@ -61,6 +62,7 @@ const CustomerDashboard: React.FC = () => {
             }
         }
     };
+    
 
     return (
         <div className="container mt-5 p-4 border rounded shadow-sm" style={{ maxWidth: '800px', backgroundColor: '#f9f9f9' }}>
