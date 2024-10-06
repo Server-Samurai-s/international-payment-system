@@ -97,7 +97,7 @@ const Login: React.FC = () => {
             <div className="login-form-container">
                 <h3 className="text-center mb-4">Login Form</h3>
                 <form onSubmit={onSubmit}>
-                    <div className="form-group mb-3">
+                    <div className="form-group mb-3 position-relative">
                         <label htmlFor="name" className="form-label">Username or Account Number</label>
                         <input
                             type="text"
@@ -118,7 +118,7 @@ const Login: React.FC = () => {
                             className={`form-control ${submitted && errors.password ? 'is-invalid' : ''}`}
                             id="password"
                             value={form.password}
-                            onChange={(e) => updateForm({ password: e.target.value })}
+                            onChange={(e) => updateForm({ password: e.target.value })} 
                         />
                         {submitted && errors.password && (
                             <div className="custom-tooltip">{errors.password}</div>
