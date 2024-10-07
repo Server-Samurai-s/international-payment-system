@@ -18,51 +18,70 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
+      # Step 3: Install dependencies for backend
+      - name: Install backend dependencies
+        working-directory: ./backend
         run: npm install
 
-      # Step 4: Run unit tests for password hashing/salting and RegEx input whitelisting
-      - name: Run security unit tests
-        run: |
-          npm run test # Ensure tests include password hashing, salting, and RegEx input validation
+      # Step 4: Install dependencies for frontend
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm install
 
-      # Step 5: Run ESLint to ensure code best practices and catch potential security issues
-      - name: Run ESLint
+      # Step 5: Run backend unit tests
+      - name: Run backend security unit tests
+        working-directory: ./backend
+        run: |
+          npm run test # Ensure backend tests include password hashing, salting, and RegEx input validation
+
+      # Step 6: Run frontend unit tests
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm run test
+
+      # Step 7: Run ESLint for backend
+      - name: Run ESLint on backend
+        working-directory: ./backend
         run: npm run lint
 
-      # Step 6: Check for SSL certificate and key presence (for SSL encryption)
+      # Step 8: Run ESLint for frontend
+      - name: Run ESLint on frontend
+        working-directory: ./frontend
+        run: npm run lint
+
+      # Step 9: Check for SSL certificate and key presence (for SSL encryption)
       - name: Check SSL configuration
         run: |
           if [ ! -f /path/to/your/ssl/cert ] || [ ! -f /path/to/your/ssl/key ]; then
             echo "SSL certificate or key missing" && exit 1
           fi
 
-      # Step 7: Enforce HTTPS in application
+      # Step 10: Enforce HTTPS in application
       - name: Check HTTPS redirection enforcement
         run: |
           if ! curl -s -o /dev/null -w "%{http_code}" https://localhost | grep -q "301"; then
             echo "HTTPS redirection not enforced" && exit 1
           fi
 
-      # Step 8: Run Vulnerability Scan for known vulnerabilities in dependencies using npm audit
-      - name: Run Vulnerability Scan (npm audit)
+      # Step 11: Run Vulnerability Scan for known vulnerabilities in backend dependencies
+      - name: Run Vulnerability Scan on backend (npm audit)
+        working-directory: ./backend
         run: npm audit --audit-level=high
 
-      # Step 9: Run security tools like Helmet, Express Brute, and middleware to prevent attacks
-      - name: Run Security Middleware Checks
-        run: |
-          npm run security-check # Ensure Helmet and Express Brute are configured in the project
+      # Step 12: Run Security Middleware Checks for backend
+      - name: Run Security Middleware Checks on backend
+        working-directory: ./backend
+        run: npm run security-check # Ensure Helmet and Express Brute are configured in the project
 
-      # Step 10: Perform OWASP ZAP Baseline Scan for vulnerabilities
+      # Step 13: Perform OWASP ZAP Baseline Scan for vulnerabilities
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.4.0
         with:
           target: 'https://your-app-url.com'
 
-      # Step 11: Check for Rate Limiting and CSRF Protection
+      # Step 14: Check for Rate Limiting and CSRF Protection
       - name: Check for Rate Limiting and CSRF Protection
         run: |
           if ! grep -q 'rateLimit' /path/to/your/app.js; then
@@ -72,7 +91,7 @@ jobs:
             echo "CSRF protection not enforced" && exit 1
           fi
 
-      # Step 12: Check for protection against additional attacks
+      # Step 15: Security Attack Checks
       - name: Security Attack Checks
         run: |
           # Check for Clickjacking Protection
@@ -105,7 +124,7 @@ jobs:
             echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
           fi
 
-      # Step 13: Upload results (optional)
+      # Step 16: Upload results (optional)
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v3
