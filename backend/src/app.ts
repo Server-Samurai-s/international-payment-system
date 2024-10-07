@@ -1,58 +1,94 @@
-import https from "https";
-import fs from "fs";
-import express from "express";
-import cors from "cors";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
+import https from "https"; // Import https module for creating a secure server
+import fs from "fs"; // Import file system module to read SSL certificate files
+import express, { Request, Response, NextFunction } from "express"; // Import express and types for TypeScript
+import cors from "cors"; // Import CORS for handling cross-origin requests
+import mongoose from "mongoose"; // Import mongoose to interact with MongoDB
+import dotenv from "dotenv"; // Import dotenv to load environment variables
 
-// Import routes
+//--------------------------------------------------------------------------------------------------------//
+
+// Import routes for transactions and users
 import transactionRoutes from "./routes/transaction.routes";
 import userRoutes from "./routes/user.routes";
 
+//--------------------------------------------------------------------------------------------------------//
+
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config(); // Initialize dotenv to use environment variables
 
-// Set the port
+//--------------------------------------------------------------------------------------------------------//
+
+// Set the port from environment variables or default to 3001
 const PORT = process.env.PORT || 3001;
-const app = express();
+const app = express(); // Initialize the express application
 
-// HTTPS options for secure connection
-const options = {
-  key: fs.readFileSync('./src/keys/mongodb-key.pem'),
-  cert: fs.readFileSync('./src/keys/certificate.pem')
-};
+//--------------------------------------------------------------------------------------------------------//
 
-// MongoDB connection
+// HTTPS options with paths to the SSL certificate and key
+let sslOptions: https.ServerOptions;
+try {
+  sslOptions = {
+    key: fs.readFileSync('./src/keys/mongodb-key.pem'), // Read private key for SSL
+    cert: fs.readFileSync('./src/keys/certificate.pem'), // Read certificate for SSL
+  };
+} catch (err) {
+  console.error('Error reading SSL certificate or key:', err);
+  process.exit(1); // Exit if SSL files are not available
+}
+
+//--------------------------------------------------------------------------------------------------------//
+
+// MongoDB connection setup
+const dbURI = process.env.ATLAS_URI;
+if (!dbURI) {
+  console.error('MongoDB URI is missing in environment variables.');
+  process.exit(1);
+}
+
 mongoose
-  .connect(process.env.ATLAS_URI || '')
+  .connect(dbURI) // Simply use mongoose.connect without deprecated options
   .then((connection) => {
-    app.locals.db = connection.connection.db; // Store the db instance in app.locals
-    console.log('MongoDB connected');
+    app.locals.db = connection.connection.db; // Store the database instance in app.locals for later use
+    console.log('MongoDB connected successfully');
   })
   .catch((error) => {
     console.error(`Error connecting to MongoDB: ${error}`);
-    process.exit(1); // Exit if unable to connect to MongoDB
+    process.exit(1); // Exit the process if unable to connect to MongoDB
   });
+
+//--------------------------------------------------------------------------------------------------------//
 
 // Middleware setup
 app.use(cors()); // Enable CORS for all routes
-app.use(express.json({ limit: '10mb' })); // Set the JSON payload limit to 10MB
-app.use(express.urlencoded({ limit: '10mb', extended: true })); // Set the URL-encoded payload limit to 10MB
+app.use(express.json({ limit: '10mb' })); // Parse incoming JSON requests with a size limit of 10MB
+app.use(express.urlencoded({ limit: '10mb', extended: true })); // Parse URL-encoded data with a size limit of 10MB
 
-// CORS header setup manually (can be redundant if using cors middleware)
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+//--------------------------------------------------------------------------------------------------------//
+
+// Manually set CORS headers (redundant if `cors()` is already being used, but included for clarity)
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH'); // Allow specific HTTP methods
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Allow specific headers
   next();
 });
 
-// Routes
-app.use("/transactions", transactionRoutes); // Handle all routes for transactions
-app.use("/user", userRoutes);  // Handle all routes for users
+//--------------------------------------------------------------------------------------------------------//
 
-// Create HTTPS server
-const server = https.createServer(options, app);
+// Define routes for handling transactions and users
+app.use("/transactions", transactionRoutes); // Use transaction routes for /transactions endpoint
+app.use("/user", userRoutes); // Use user routes for /user endpoint
+
+//--------------------------------------------------------------------------------------------------------//
+
+// Create an HTTPS server using the SSL options and express app
+const server = https.createServer(sslOptions, app);
+
+//--------------------------------------------------------------------------------------------------------//
+
+// Start the server and listen on the specified port
 server.listen(PORT, () => {
-  console.log(`Server is running securely on port: ${PORT}`);
+  console.log(`Server is running securely on port: ${PORT}`); // Log when the server is running
 });
+
+//------------------------------------------END OF FILE---------------------------------------------------//

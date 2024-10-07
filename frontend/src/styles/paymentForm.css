@@ -9,6 +9,8 @@
     background-position: center;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Form container styling */
 .payment-form__container {
     background-color: rgba(255, 255, 255, 0.9);
@@ -22,6 +24,8 @@
     align-items: center;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Title styling */
 .payment-form__title {
     text-align: center;
@@ -30,6 +34,8 @@
     color: #333;
     font-weight: bold;
 }
+
+/*--------------------------------------------------------------------------------------------------------*\
 
 /* Form group styling */
 .payment-form__group {
@@ -61,6 +67,8 @@
     background-color: #ffffff;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Tooltip styling for error messages */
 .payment-form__tooltip {
     position: absolute;
@@ -87,6 +95,8 @@
     border-color: #777777 transparent transparent transparent;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Button styles */
 .payment-form__btn-primary,
 .payment-form__btn-cancel {
@@ -105,12 +115,16 @@
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Button hover effect */
 .payment-form__btn-primary:hover,
 .payment-form__btn-cancel:hover {
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
     transform: translateY(-3px);
 }
+
+/*--------------------------------------------------------------------------------------------------------*\
 
 /* Button colors */
 .payment-form__btn-primary {
@@ -129,11 +143,15 @@
     background-color: #5a6268;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Disabled button state */
 button:disabled {
     background-color: #b0b0b0;
     cursor: not-allowed;
 }
+
+/*--------------------------------------------------------------------------------------------------------*\
 
 /* Responsive design for mobile screens */
 @media (max-width: 768px) {
