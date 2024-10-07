@@ -25,25 +25,22 @@ mongoose
         process.exit(1); // Exit if unable to connect to MongoDB
     });
 
-// Set up CORS options
+// Updated CORS options
 const corsOptions = {
-    origin: "https://international-payment-system.vercel.app", // Only allow requests from this origin
-    methods: "GET,POST,PUT,DELETE,PATCH",
-    allowedHeaders: "Content-Type,Authorization",
-    credentials: true, // Allow credentials for cross-origin requests
+    origin: [
+        "https://international-payment-system.vercel.app",
+        "https://international-payment-system-backend.vercel.app"
+    ],
+    methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
 };
 
+// Use CORS middleware with the options
 app.use(cors(corsOptions));
 
-// Debugging middleware to confirm CORS headers are set correctly
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "https://international-payment-system.vercel.app");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    console.log(`CORS headers set for request to: ${req.path}`);
-    next();
-});
+// Handle OPTIONS requests for preflight checks
+app.options("*", cors(corsOptions));
 
 // Middleware setup
 app.use(express.json({ limit: '10mb' }));
