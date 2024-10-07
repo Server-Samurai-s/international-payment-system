@@ -27,8 +27,7 @@ mongoose
 
 // CORS configuration for specific origins
 const allowedOrigins = [
-    "http://localhost:3000", // Local development
-    "https://your-frontend-domain.vercel.app" // Vercel deployed frontend
+    "https://localhost:3000", // Local development
 ];
 app.use(cors({
     origin: allowedOrigins,
