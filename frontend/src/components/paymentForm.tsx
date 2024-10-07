@@ -98,7 +98,7 @@ const PaymentForm: React.FC = () => {
 
         // Validate SWIFT code
         if (!swiftCodeRegex.test(form.swiftCode.trim())) {
-            newErrors.swiftCode = "The SWIFT code must be 8 or 11 alphanumeric characters";
+            newErrors.swiftCode = "The SWIFT code must be 8 or 11 alphanumeric characters (AAAABBCCDDD)";
             valid = false; // Mark form as invalid if this fails
         }
 
