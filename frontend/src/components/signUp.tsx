@@ -136,7 +136,7 @@ const SignUp: React.FC = () => {
             const newUser = { ...form };
 
             try {
-                const response = await fetch('https://localhost:3001/user/signup', {
+                const response = await fetch('https://international-payment-system-backend.vercel.app/user/signup', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

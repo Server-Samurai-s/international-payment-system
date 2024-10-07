@@ -55,7 +55,7 @@ const PaymentForm: React.FC = () => {
         };
 
         try {
-            const response = await fetch("https://localhost:3001/transactions/create", {
+            const response = await fetch("https://international-payment-system-backend.vercel.app/transactions/create", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
