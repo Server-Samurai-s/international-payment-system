@@ -55,6 +55,7 @@ export default app;
 
 // Conditionally start an HTTPS server for local development
 if (process.env.NODE_ENV !== "production") {
+    console.log("Trying to look for keys");
     const options = {
         key: fs.readFileSync('./src/keys/mongodb-key.pem'),
         cert: fs.readFileSync('./src/keys/certificate.pem')
