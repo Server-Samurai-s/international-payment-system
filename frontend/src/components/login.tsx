@@ -4,13 +4,13 @@ import '../styles/login.css'; // Add CSS for styling
 import registerBackground from '../images/registerBackground.jpg'; // Use the same background image
 
 interface FormState {
-    name: string; // Could be username or account number
+    identifier: string; // Could be username or account number
     password: string;
 }
 
 const Login: React.FC = () => {
     const [form, setForm] = useState<FormState>({
-        name: '',
+        identifier: '',
         password: '',
     });
     const [errors, setErrors] = useState<Partial<FormState>>({});
@@ -32,8 +32,8 @@ const Login: React.FC = () => {
         const newErrors: Partial<FormState> = {};
         let valid = true;
 
-        if (!form.name.trim()) {
-            newErrors.name = 'Username or Account Number is required';
+        if (!form.identifier.trim()) {
+            newErrors.identifier = 'Username or Account Number is required';
             valid = false;
         }
 
@@ -55,20 +55,20 @@ const Login: React.FC = () => {
 
         if (!validateForm()) return;
 
-        const newPerson = { ...form };
+        const userCredentials = { ...form };
 
         try {
-            const response = await fetch('https://localhost:3000/login', {
+            const response = await fetch('https://localhost:3001/user/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(newPerson),
+                body: JSON.stringify(userCredentials),
             });
 
             if (!response.ok) {
                 if (response.status === 404) {
-                    setErrors({ name: 'Username or Account Number not found' });
+                    setErrors({ identifier: 'Username or Account Number not found' });
                 } else if (response.status === 401) {
                     setErrors({ password: 'Incorrect password' });
                 }
@@ -76,13 +76,14 @@ const Login: React.FC = () => {
             }
 
             const data = await response.json();
-            const { token, name } = data;
+            const { token, firstName, userId } = data;
 
             // Save the JWT to localStorage
-            localStorage.setItem('jwt', token);
-            localStorage.setItem('name', name);
+            localStorage.setItem("jwt", token);
+            localStorage.setItem("firstName", firstName);
+            localStorage.setItem("userId", userId);
 
-            setForm({ name: '', password: '' });
+            setForm({ identifier: '', password: '' });
             navigate('/dashboard');
         } catch (error) {
             window.alert(error);
@@ -101,13 +102,13 @@ const Login: React.FC = () => {
                         <label htmlFor="name" className="form-label">Username or Account Number</label>
                         <input
                             type="text"
-                            className={`form-control ${submitted && errors.name ? 'is-invalid' : ''}`}
+                            className={`form-control ${submitted && errors.identifier ? 'is-invalid' : ''}`}
                             id="name"
-                            value={form.name}
-                            onChange={(e) => updateForm({ name: e.target.value })}
+                            value={form.identifier}
+                            onChange={(e) => updateForm({ identifier: e.target.value })}
                         />
-                        {submitted && errors.name && (
-                            <div className="custom-tooltip">{errors.name}</div>
+                        {submitted && errors.identifier && (
+                            <div className="custom-tooltip">{errors.identifier}</div>
                         )}
                     </div>
 
