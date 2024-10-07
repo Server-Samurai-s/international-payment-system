@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import ExpressBrute from 'express-brute';
 import dotenv from 'dotenv';
-import { User } from '../models/User'; 
+import { User } from '../models/user';
 
 dotenv.config();
 
