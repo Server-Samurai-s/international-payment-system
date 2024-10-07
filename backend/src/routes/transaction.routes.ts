@@ -15,7 +15,7 @@ router.use(helmet());
 // Set up rate limiting to prevent brute-force attacks
 const transactionLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15-minute window
-  max: 100, // Maximum 100 requests per IP during the window
+  limit: 100, // Maximum 100 requests per IP during the window
   message: "Too many transactions from this IP, please try again later", // Message for rate limit exceeded
 });
 
