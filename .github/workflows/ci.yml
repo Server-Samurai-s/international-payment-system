@@ -1,0 +1,114 @@
+name: Secure Payments Portal CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js (adjust version accordingly)
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Run unit tests for password hashing/salting and RegEx input whitelisting
+      - name: Run security unit tests
+        run: |
+          npm run test # Ensure tests include password hashing, salting, and RegEx input validation
+
+      # Step 5: Run ESLint to ensure code best practices and catch potential security issues
+      - name: Run ESLint
+        run: npm run lint
+
+      # Step 6: Check for SSL certificate and key presence (for SSL encryption)
+      - name: Check SSL configuration
+        run: |
+          if [ ! -f /path/to/your/ssl/cert ] || [ ! -f /path/to/your/ssl/key ]; then
+            echo "SSL certificate or key missing" && exit 1
+          fi
+
+      # Step 7: Enforce HTTPS in application
+      - name: Check HTTPS redirection enforcement
+        run: |
+          if ! curl -s -o /dev/null -w "%{http_code}" https://localhost | grep -q "301"; then
+            echo "HTTPS redirection not enforced" && exit 1
+          fi
+
+      # Step 8: Run Vulnerability Scan for known vulnerabilities in dependencies using npm audit
+      - name: Run Vulnerability Scan (npm audit)
+        run: npm audit --audit-level=high
+
+      # Step 9: Run security tools like Helmet, Express Brute, and middleware to prevent attacks
+      - name: Run Security Middleware Checks
+        run: |
+          npm run security-check # Ensure Helmet and Express Brute are configured in the project
+
+      # Step 10: Perform OWASP ZAP Baseline Scan for vulnerabilities
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.4.0
+        with:
+          target: 'https://your-app-url.com'
+
+      # Step 11: Check for Rate Limiting and CSRF Protection
+      - name: Check for Rate Limiting and CSRF Protection
+        run: |
+          if ! grep -q 'rateLimit' /path/to/your/app.js; then
+            echo "Rate limiting not enforced" && exit 1
+          fi
+          if ! grep -q 'csurf' /path/to/your/app.js; then
+            echo "CSRF protection not enforced" && exit 1
+          fi
+
+      # Step 12: Check for protection against additional attacks
+      - name: Security Attack Checks
+        run: |
+          # Check for Clickjacking Protection
+          if ! grep -q "frameguard" /path/to/your/app.js; then
+            echo "Clickjacking protection missing (Helmet's frameguard)" && exit 1
+          fi
+
+          # Check for Session Jacking Protection
+          if ! grep -q "cookie-session" /path/to/your/app.js; then
+            echo "Session hijacking protection missing (cookie-session or express-session)" && exit 1
+          fi
+
+          # Check for SQL Injection Prevention
+          if ! grep -q "parameterized queries" /path/to/your/db.js; then
+            echo "SQL Injection protection missing (use parameterized queries)" && exit 1
+          fi
+
+          # Check for Cross-Site Scripting (XSS) Protection
+          if ! grep -q "xss-clean" /path/to/your/app.js; then
+            echo "XSS protection missing (xss-clean middleware)" && exit 1
+          fi
+
+          # Check for Man-in-the-Middle Attack Protection
+          if ! grep -q "strict-transport-security" /path/to/your/app.js; then
+            echo "HSTS header missing (use Helmet to enforce Strict-Transport-Security)" && exit 1
+          fi
+
+          # DDoS Protection (Rate Limiting and Network Throttling)
+          if ! grep -q "express-rate-limit" /path/to/your/app.js; then
+            echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
+          fi
+
+      # Step 13: Upload results (optional)
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: ./test-results
