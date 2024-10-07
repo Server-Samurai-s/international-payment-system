@@ -1,114 +1,107 @@
-import express, { Request, Response } from "express";
-import { ObjectId } from "mongodb";
-import { authenticateUser } from "../middleware/auth";
-
-interface AuthenticatedRequest extends Request {
-    userId?: string;
-  }
+import express, { Response, Request } from "express";
+import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
+import { Transaction, hashAccountNumber } from "../models/transaction";
+import validator from "validator"; // For input validation and sanitization
+import rateLimit from "express-rate-limit"; // Rate limiting
+import helmet from "helmet"; // Security headers
 
 const router = express.Router();
 
-// Get all the transactions
-router.get("/", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    try {
-        const userId = new ObjectId(req.userId); // Extracted userId from the authenticated middleware
-        const collection = req.app.locals.db.collection("transactions");
-        const results = await collection.find({ user: userId }).toArray(); // Fetch transactions for this user
-        console.log('Transactions for user:', userId, results); // Debug log
-        res.status(200).send(results);
-    } catch (e) {
-        console.error("Error fetching transactions:", e);
-        res.status(500).send({ message: "Failed to retrieve transactions" });
-    }
+// Apply security headers using helmet
+router.use(helmet());
+
+// Set rate limiting to avoid brute force attacks
+const transactionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per window
+  message: "Too many transactions from this IP, please try again later",
 });
 
+// Regular expressions for validation
+const nameRegex = /^[A-Za-z\s]+$/; // Only alphabets and spaces
+const accountNumberRegex = /^\d{6,34}$/; // 6 to 34 digits
+const amountRegex = /^[1-9]\d*(\.\d+)?$/; // Positive numbers
+const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/; // SWIFT code format
 
-// Upload a new transaction
-router.post("/create", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+// POST - Create transaction securely
+router.post(
+  "/create",
+  [authenticateUser, transactionLimiter],
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        const userId = req.userId;
+      const userId = req.userId;
+      const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body;
 
-        const newTransaction = {
-            user: new ObjectId(userId),  // Assign the userId to the user field
-            recipientName: req.body.recipientName,
-            recipientBank: req.body.recipientBank,
-            accountNumber: req.body.accountNumber,
-            amount: req.body.amount,
-            swiftCode: req.body.swiftCode,
-            transactionDate: new Date(),  // automatically set the date
-        };
+      // Validate inputs using regex
+      if (!nameRegex.test(recipientName)) {
+        res.status(400).json({ message: "Invalid recipient name" });
+        return;
+      }
 
-        const collection = req.app.locals.db.collection("transactions");
-        const result = await collection.insertOne(newTransaction);
-        res.status(201).send(result);
+      if (!nameRegex.test(recipientBank)) {
+        res.status(400).json({ message: "Invalid recipient bank" });
+        return;
+      }
+
+      if (!accountNumberRegex.test(accountNumber)) {
+        res.status(400).json({ message: "Invalid account number" });
+        return;
+      }
+
+      if (!amountRegex.test(amount)) {
+        res.status(400).json({ message: "Invalid amount" });
+        return;
+      }
+
+      if (!swiftCodeRegex.test(swiftCode)) {
+        res.status(400).json({ message: "Invalid SWIFT code format" });
+        return;
+      }
+
+      // Hash account number before storing it
+      const hashedAccountNumber = await hashAccountNumber(accountNumber);
+
+      const newTransaction: Transaction = {
+        user: userId!,
+        recipientName: validator.escape(recipientName), // Sanitize input
+        recipientBank: validator.escape(recipientBank), // Sanitize input
+        accountNumber: hashedAccountNumber,
+        amount: parseFloat(amount),
+        swiftCode: validator.escape(swiftCode), // Sanitize input
+      };
+
+      const collection = req.app.locals.db.collection("transactions");
+      const result = await collection.insertOne(newTransaction);
+      res.status(201).send(result);
     } catch (e) {
-        console.error("Error uploading transaction:", e);
-        res.status(500).send({ message: "Failed to upload transaction" });
+      console.error("Error uploading transaction:", e);
+      res.status(500).send({ message: "Failed to upload transaction" });
     }
-});
+  }
+);
 
-// Update a transaction by id
-router.patch("/:id", async (req: Request, res: Response): Promise<void> => {
+// GET - Retrieve all transactions for the authenticated user
+router.get(
+  "/",
+  [authenticateUser, transactionLimiter],
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        const query = { _id: new ObjectId(req.params.id) };
-        const updates = {
-            $set: {
-                recipientName: req.body.recipientName,
-                recipientBank: req.body.recipientBank,
-                accountNumber: req.body.accountNumber,
-                amount: req.body.amount,
-                swiftCode: req.body.swiftCode,
-            },
-        };
+      const userId = req.userId;
+      const collection = req.app.locals.db.collection("transactions");
 
-        const collection = req.app.locals.db.collection("transactions");
-        const result = await collection.updateOne(query, updates);
+      const transactions = await collection.find({ user: userId }).toArray();
 
-        if (result.modifiedCount === 0) {
-            res.status(404).send({ message: "Transaction not found or no changes applied" });
-        } else {
-            res.status(200).send(result);
-        }
+      if (transactions.length === 0) {
+        res.status(404).json({ message: "No transactions found" });
+        return;
+      }
+
+      res.status(200).json(transactions);
     } catch (e) {
-        console.error("Error updating transaction:", e);
-        res.status(500).send({ message: "Failed to update transaction" });
+      console.error("Error fetching transactions:", e);
+      res.status(500).json({ message: "Failed to retrieve transactions" });
     }
-});
-
-// Get a transaction by id
-router.get("/:id", async (req: Request, res: Response): Promise<void> => {
-    try {
-        const collection = req.app.locals.db.collection("transactions");
-        const query = { _id: new ObjectId(req.params.id) };
-        const result = await collection.findOne(query);
-
-        if (!result) {
-            res.status(404).send({ message: "Transaction not found" });
-        } else {
-            res.status(200).send(result);
-        }
-    } catch (e) {
-        console.error("Error fetching transaction:", e);
-        res.status(500).send({ message: "Failed to retrieve transaction" });
-    }
-});
-
-// Delete a transaction by id
-router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
-    try {
-        const query = { _id: new ObjectId(req.params.id) };
-        const collection = req.app.locals.db.collection("transactions");
-        const result = await collection.deleteOne(query);
-
-        if (result.deletedCount === 0) {
-            res.status(404).send({ message: "Transaction not found" });
-        } else {
-            res.status(200).send({ message: "Transaction deleted successfully" });
-        }
-    } catch (e) {
-        console.error("Error deleting transaction:", e);
-        res.status(500).send({ message: "Failed to delete transaction" });
-    }
-});
+  }
+);
 
 export default router;

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import '../styles/login.css'; // Add CSS for styling
-import registerBackground from '../images/registerBackground.jpg'; // Use the same background image
+import '../styles/login.css'; 
+import registerBackground from '../images/registerBackground.jpg'; 
 
 interface FormState {
-    identifier: string; // Could be username or account number
+    identifier: string; 
     password: string;
 }
 
@@ -24,7 +24,7 @@ const Login: React.FC = () => {
         }));
         setErrors((prevErrors) => ({
             ...prevErrors,
-            [Object.keys(value)[0]]: '', // Reset the error for this field when user types
+            [Object.keys(value)[0]]: '', 
         }));
     };
 

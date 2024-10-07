@@ -1,0 +1,153 @@
+/* Full page background styling */
+.payment-form__full-page-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Form container styling */
+.payment-form__container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Title styling */
+.payment-form__title {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Form group styling */
+.payment-form__group {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.payment-form__group label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.payment-form__group input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #dcdcdc;
+    border-radius: 6px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease-in-out;
+    background-color: #f7f7f7;
+}
+
+.payment-form__group input[type="text"]:focus {
+    border-color: #007bff;
+    background-color: #ffffff;
+}
+
+/* Tooltip styling for error messages */
+.payment-form__tooltip {
+    position: absolute;
+    background-color: #777777;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    top: -30px;
+    left: 0px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.payment-form__tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #777777 transparent transparent transparent;
+}
+
+/* Button styles */
+.payment-form__btn-primary,
+.payment-form__btn-cancel {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+    width: 100%;
+    display: block;
+    margin: 20px auto;
+    text-align: center;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Button hover effect */
+.payment-form__btn-primary:hover,
+.payment-form__btn-cancel:hover {
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+}
+
+/* Button colors */
+.payment-form__btn-primary {
+    background-color: #007bff;
+}
+
+.payment-form__btn-cancel {
+    background-color: #6c757d;
+}
+
+.payment-form__btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.payment-form__btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+/* Disabled button state */
+button:disabled {
+    background-color: #b0b0b0;
+    cursor: not-allowed;
+}
+
+/* Responsive design for mobile screens */
+@media (max-width: 768px) {
+    .payment-form__container {
+        padding: 20px;
+        max-width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .payment-form__tooltip {
+        font-size: 0.75rem;
+        padding: 5px;
+    }
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useLocation, useNavigate } from "react-router-dom";
+import '../styles/paymentForm.css';
+import registerBackground from '../images/registerBackground.jpg';
 
 interface PaymentFormState {
     recipientName: string;
@@ -22,14 +23,21 @@ const PaymentForm: React.FC = () => {
         swiftCode: "",
     });
 
+    const [errors, setErrors] = useState<Partial<PaymentFormState>>({});
+
+    // Regex patterns
+    const nameRegex = /^[a-zA-Z\s]+$/; // Only alphabets and spaces
+    const accountNumberRegex = /^\d{6,34}$/; // 6-34 digits
+    const amountRegex = /^\d+(\.\d{1,2})?$/; // Positive number with up to 2 decimal places
+    const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/; // 8 or 11 alphanumeric characters
+
     useEffect(() => {
         if (location.state) {
             const transaction = location.state as PaymentFormState;
             setForm(transaction);
         }
-    }, [location.state]);    
+    }, [location.state]);
 
-    // Handle input changes
     const updateForm = (value: Partial<PaymentFormState>) => {
         setForm((prev) => ({
             ...prev,
@@ -37,11 +45,43 @@ const PaymentForm: React.FC = () => {
         }));
     };
 
-    // Handle form submission
+    const validateForm = (): boolean => {
+        const newErrors: Partial<PaymentFormState> = {};
+        let valid = true;
+
+        if (!nameRegex.test(form.recipientName.trim())) {
+            newErrors.recipientName = "Invalid recipient name (only alphabets and spaces)";
+            valid = false;
+        }
+        if (!nameRegex.test(form.recipientBank.trim())) {
+            newErrors.recipientBank = "Invalid bank name (only alphabets and spaces)";
+            valid = false;
+        }
+        if (!accountNumberRegex.test(form.accountNumber)) {
+            newErrors.accountNumber = "Account number must be between 6 and 34 digits";
+            valid = false;
+        }
+        if (!amountRegex.test(form.amount)) {
+            newErrors.amount = "Please enter a valid amount (up to 2 decimal places)";
+            valid = false;
+        }
+        if (!swiftCodeRegex.test(form.swiftCode.trim())) {
+            newErrors.swiftCode = "The SWIFT code must be 8 or 11 alphanumeric characters (e.g., ABCDUS33 or ABCDUS33XXX)";
+            valid = false;
+        }
+
+        setErrors(newErrors);
+        return valid;
+    };
+
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const token = localStorage.getItem("jwt"); // Assuming JWT is stored in localStorage
+        if (!validateForm()) {
+            return;
+        }
+
+        const token = localStorage.getItem("jwt");
         if (!token) {
             alert("Please log in first.");
             navigate("/login");
@@ -50,8 +90,7 @@ const PaymentForm: React.FC = () => {
 
         const transactionData = {
             ...form,
-            userId: localStorage.getItem("userId"), // Assuming userId is stored in localStorage
-            transactionDate: new Date().toISOString(), // Automatically set the transaction date
+            userId: localStorage.getItem("userId"),
         };
 
         try {
@@ -59,7 +98,7 @@ const PaymentForm: React.FC = () => {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`, // Pass the token for authorization
+                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify(transactionData),
             });
@@ -71,7 +110,6 @@ const PaymentForm: React.FC = () => {
             const data = await response.json();
             console.log("Transaction created:", data);
 
-            // Reset form and navigate to dashboard
             setForm({
                 recipientName: "",
                 recipientBank: "",
@@ -79,14 +117,13 @@ const PaymentForm: React.FC = () => {
                 amount: "",
                 swiftCode: "",
             });
-            navigate("/dashboard"); // Redirect to dashboard after payment
+            navigate("/dashboard");
         } catch (error) {
             console.error("Error creating transaction:", error);
             alert("Failed to process payment. Please try again.");
         }
     };
 
-    // Handle cancel button click
     const handleCancelBtn = () => {
         setForm({
             recipientName: "",
@@ -99,102 +136,76 @@ const PaymentForm: React.FC = () => {
     };
 
     return (
-        <div className="container mt-5 p-4 border rounded shadow-sm" style={{ maxWidth: '500px', backgroundColor: '#f9f9f9' }}>
-            <h3 className="text-center mb-4">International Payment Form</h3>
-            <form onSubmit={onSubmit}>
-                {/* Recipient's Name */}
-                <div className="row mb-3">
-                    <div className="col-md-6">
-                        <label htmlFor="recipientName" className="form-label">Recipient's Name</label>
-                    </div>
-                    <div className="col-md-6">
+        <div
+            className="payment-form__full-page-container"
+            style={{ backgroundImage: `url(${registerBackground})` }}
+        >
+            <div className="payment-form__container">
+                <h3 className="payment-form__title">International Payment Form</h3>
+                <form onSubmit={onSubmit}>
+                    <div className="payment-form__group">
+                        <label htmlFor="recipientName">Recipient's Name</label>
                         <input
                             type="text"
-                            className="form-control"
                             id="recipientName"
-                            placeholder="Enter Recipient's Name"
                             value={form.recipientName}
                             onChange={(e) => updateForm({ recipientName: e.target.value })}
                         />
+                        {errors.recipientName && <div className="payment-form__tooltip">{errors.recipientName}</div>}
                     </div>
-                </div>
 
-                {/* Recipient's Bank */}
-                <div className="row mb-3">
-                    <div className="col-md-6">
-                        <label htmlFor="recipientBank" className="form-label">Recipient's Bank</label>
-                    </div>
-                    <div className="col-md-6">
+                    <div className="payment-form__group">
+                        <label htmlFor="recipientBank">Recipient's Bank</label>
                         <input
                             type="text"
-                            className="form-control"
                             id="recipientBank"
-                            placeholder="Enter Recipient's Bank"
                             value={form.recipientBank}
                             onChange={(e) => updateForm({ recipientBank: e.target.value })}
                         />
+                        {errors.recipientBank && <div className="payment-form__tooltip">{errors.recipientBank}</div>}
                     </div>
-                </div>
 
-                {/* Recipient's Account Number */}
-                <div className="row mb-3">
-                    <div className="col-md-6">
-                        <label htmlFor="accountNumber" className="form-label">Recipient's Account No.</label>
-                    </div>
-                    <div className="col-md-6">
+                    <div className="payment-form__group">
+                        <label htmlFor="accountNumber">Recipient's Account No.</label>
                         <input
                             type="text"
-                            className="form-control"
                             id="accountNumber"
-                            placeholder="Enter Recipient's Account No."
                             value={form.accountNumber}
                             onChange={(e) => updateForm({ accountNumber: e.target.value })}
                         />
+                        {errors.accountNumber && <div className="payment-form__tooltip">{errors.accountNumber}</div>}
                     </div>
-                </div>
 
-                {/* Amount to Transfer */}
-                <div className="row mb-3">
-                    <div className="col-md-6">
-                        <label htmlFor="amount" className="form-label">Amount to Transfer</label>
-                    </div>
-                    <div className="col-md-6">
+                    <div className="payment-form__group">
+                        <label htmlFor="amount">Amount to Transfer</label>
                         <input
                             type="text"
-                            className="form-control"
                             id="amount"
-                            placeholder="Enter Amount"
                             value={form.amount}
                             onChange={(e) => updateForm({ amount: e.target.value })}
                         />
+                        {errors.amount && <div className="payment-form__tooltip">{errors.amount}</div>}
                     </div>
-                </div>
 
-                {/* SWIFT Code */}
-                <div className="row mb-4">
-                    <div className="col-md-6">
-                        <label htmlFor="swiftCode" className="form-label">Enter SWIFT Code</label>
-                    </div>
-                    <div className="col-md-6">
+                    <div className="payment-form__group">
+                        <label htmlFor="swiftCode">Enter SWIFT Code</label>
                         <input
                             type="text"
-                            className="form-control"
                             id="swiftCode"
-                            placeholder="Enter Bank Swift Code"
                             value={form.swiftCode}
                             onChange={(e) => updateForm({ swiftCode: e.target.value })}
                         />
+                        {errors.swiftCode && <div className="payment-form__tooltip">{errors.swiftCode}</div>}
                     </div>
-                </div>
 
-                {/* Buttons */}
-                <div className="d-flex justify-content-between">
-                    <button type="submit" className="btn btn-primary">PAY NOW</button>
-                    <button type="button" className="btn btn-outline-secondary" onClick={handleCancelBtn}>
-                        Cancel
-                    </button>
-                </div>
-            </form>
+                    <div className="d-flex justify-content-between">
+                        <button type="submit" className="payment-form__btn-primary">PAY NOW</button>
+                        <button type="button" className="payment-form__btn-cancel" onClick={handleCancelBtn}>
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

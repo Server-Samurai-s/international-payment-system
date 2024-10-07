@@ -16,45 +16,43 @@ dotenv.config();
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-// HTTPS options
+// HTTPS options for secure connection
 const options = {
-    key: fs.readFileSync('./src/keys/mongodb-key.pem'),
-    cert: fs.readFileSync('./src/keys/certificate.pem')
+  key: fs.readFileSync('./src/keys/mongodb-key.pem'),
+  cert: fs.readFileSync('./src/keys/certificate.pem')
 };
 
 // MongoDB connection
 mongoose
-    .connect(process.env.ATLAS_URI || '')
-    .then((connection) => {
-        app.locals.db = connection.connection.db; // Store the db instance in app.locals
-        console.log('MongoDB connected');
-    })
-    .catch((error) => {
-        console.error(`Error connecting to MongoDB: ${error}`);
-        process.exit(1); // Exit if unable to connect to MongoDB
-    });
+  .connect(process.env.ATLAS_URI || '')
+  .then((connection) => {
+    app.locals.db = connection.connection.db; // Store the db instance in app.locals
+    console.log('MongoDB connected');
+  })
+  .catch((error) => {
+    console.error(`Error connecting to MongoDB: ${error}`);
+    process.exit(1); // Exit if unable to connect to MongoDB
+  });
 
 // Middleware setup
 app.use(cors()); // Enable CORS for all routes
-
-// Increase request size limits for large payloads (e.g., Base64 images)
 app.use(express.json({ limit: '10mb' })); // Set the JSON payload limit to 10MB
 app.use(express.urlencoded({ limit: '10mb', extended: true })); // Set the URL-encoded payload limit to 10MB
 
-// Add CORS headers manually if needed (can be redundant if cors middleware is already handling this)
+// CORS header setup manually (can be redundant if using cors middleware)
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH'); // Define allowed methods explicitly
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Define allowed headers explicitly
-    next();
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
 });
 
 // Routes
-app.use("/transactions", transactionRoutes); // Handle all routes for posts
+app.use("/transactions", transactionRoutes); // Handle all routes for transactions
 app.use("/user", userRoutes);  // Handle all routes for users
 
 // Create HTTPS server
 const server = https.createServer(options, app);
 server.listen(PORT, () => {
-    console.log(`Server is running securely on port: ${PORT}`);
+  console.log(`Server is running securely on port: ${PORT}`);
 });

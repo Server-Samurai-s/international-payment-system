@@ -1,0 +1,151 @@
+/* Full page container */
+.customer-dashboard__full-page-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+}
+
+/* Dashboard container */
+.customer-dashboard__container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 750px;
+    width: 100%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Title styling */
+.customer-dashboard__title {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Section styling */
+.customer-dashboard__section {
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+/* Banking details */
+.customer-dashboard__banking-details {
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    color: #333;
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+/* Transaction list */
+.customer-dashboard__transaction-list {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+}
+
+/* Transaction item */
+.customer-dashboard__transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.customer-dashboard__transaction-item:hover {
+    background-color: #f1f1f1;
+}
+
+/* Date styling */
+.customer-dashboard__transaction-date {
+    font-weight: 500;
+    color: #007bff;
+}
+
+/* Transaction amount */
+.customer-dashboard__transaction-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 1rem;
+}
+
+/* Menu section */
+.customer-dashboard__menu {
+    margin-top: 1.5rem;
+    width: 100%;
+    text-align: center;
+}
+
+/* Menu buttons */
+.customer-dashboard__menu-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    width: 48%;
+    margin-right: 2%;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.customer-dashboard__menu-btn:hover {
+    background-color: #0056b3;
+}
+
+.customer-dashboard__menu-btn:last-child {
+    margin-right: 0;
+}
+
+/* Primary action button */
+.customer-dashboard__btn-main {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 40px;
+    border-radius: 50px;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.2s ease;
+}
+
+.customer-dashboard__btn-main:hover {
+    background-color: #218838;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .customer-dashboard__container {
+        padding: 20px;
+    }
+
+    .customer-dashboard__menu-btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .customer-dashboard__btn-main {
+        width: 100%;
+    }
+}

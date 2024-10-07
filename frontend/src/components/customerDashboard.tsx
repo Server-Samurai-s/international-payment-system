@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css'; 
 import { useNavigate } from "react-router-dom";
+import registerBackground from '../images/registerBackground.jpg';
+import '../styles/customerDashboard.css'; 
 
-// Define types for transactions and dashboard state
 interface DashboardState {
     firstName: string;
 }
@@ -12,12 +12,12 @@ interface Transaction {
     recipientName: string;
     recipientBank: string;
     amount: number;
-    transactionDate: string; // assuming it's stored as a string in the database
+    transactionDate: string; 
 }
 
 const CustomerDashboard: React.FC = () => {
     const [dashboard, setDashboard] = useState<DashboardState>({ firstName: "" });
-    const [transactions, setTransactions] = useState<Transaction[]>([]); // State for storing transactions
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const navigate = useNavigate();
 
     const handlePaymentsBtn = () => {
@@ -25,33 +25,29 @@ const CustomerDashboard: React.FC = () => {
     };
 
     useEffect(() => {
-        const savedFirstName = localStorage.getItem("firstName"); // Now fetching firstName
+        const savedFirstName = localStorage.getItem("firstName");
         if (savedFirstName) {
             setDashboard((prev) => ({
                 ...prev,
-                firstName: savedFirstName,  // Using firstName for greeting
+                firstName: savedFirstName,
             }));
-
-            // Fetch transactions from the backend for this user
             fetchTransactions();
         } else {
-            navigate("/login"); // Redirect to login if user data is missing
+            navigate("/login");
         }
     }, [navigate]);
 
-    // Function to fetch transactions
     const fetchTransactions = async () => {
-        const token = localStorage.getItem("jwt"); // Assuming JWT token is stored in localStorage
+        const token = localStorage.getItem("jwt");
         if (token) {
             try {
                 const response = await fetch("https://localhost:3001/transactions", {
                     headers: {
-                        "Authorization": `Bearer ${token}`, // Pass the token for authorization
+                        "Authorization": `Bearer ${token}`,
                     },
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Transactions fetched:', data); // Log the response data
                     setTransactions(data);
                 } else {
                     console.error("Failed to fetch transactions");
@@ -62,72 +58,60 @@ const CustomerDashboard: React.FC = () => {
         }
     };
 
-    // Handle "Pay again" button click
     const handlePayAgain = (transaction: Transaction) => {
-        navigate("/payment", { state: transaction }); // Pass the transaction data
+        navigate("/payment", { state: transaction });
     };
-    
 
     return (
-        <div className="container mt-5 p-4 border rounded shadow-sm" style={{ maxWidth: '800px', backgroundColor: '#f9f9f9' }}>
-            <h3 className="text-center mb-4">Customer Dashboard</h3>
-            
-            {/* Customer Greeting */}
-            <div className="text-center mb-4">
-                <h5>Hello, {dashboard.firstName}</h5>
-            </div>
+        <div 
+            className="customer-dashboard__full-page-container"
+            style={{ backgroundImage: `url(${registerBackground})` }}
+        >
+            <div className="customer-dashboard__container">
+                <h3 className="customer-dashboard__title">Welcome, {dashboard.firstName}</h3>
 
-            {/* Payments Buttons */}
-            <div className="row mb-4">
-                <div className="text-center">
-                    <button onClick={handlePaymentsBtn} className="btn btn-outline-primary w-100">Make International Payment</button>
-                </div>
-            </div>
-
-            {/* Banking Details */}
-            <div className="mb-4">
-                <h5>Banking Details</h5>
-                <div className="p-3 border rounded bg-light">
-                    <p><strong>Current Account</strong></p>
-                    <p>Account No: XXXXXXXXXXXX</p>
-                    <p>Available Balance: $1500.00</p>
-                </div>
-            </div>
-
-            {/* Payment Receipts */}
-            <div className="mb-4">
-                <h5>Payment Receipts</h5>
-                <div className="p-3 border rounded bg-light">
-                    {transactions.length > 0 ? (
-                        transactions.map((transaction) => (
-                            <div key={transaction._id} className="d-flex justify-content-between align-items-center mb-2">
-                                <div>
-                                    <p className="mb-0"><strong>{new Date(transaction.transactionDate).toLocaleDateString()}</strong></p>
-                                    <p className="mb-0">{transaction.recipientName || 'Payment'}</p>
-                                </div>
-                                <div>
-                                    <p className="mb-0">${transaction.amount}</p>
-                                    <button 
-                                        className="btn btn-primary btn-sm" 
-                                        onClick={() => handlePayAgain(transaction)} // Pass transaction to handler
-                                    >Pay again</button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p>No payment receipts found</p>
-                    )}
-                </div>
-            </div>
-
-            {/* Side Menu */}
-            <div className="mb-4">
-                <div className="border rounded p-3" style={{ width: 'fit-content', margin: 'auto' }}>
-                    <h6>Menu &gt;</h6>
-                    <div className="mt-3">
-                        <button className="btn btn-outline-secondary w-100 mb-2">Transactions &gt;</button>
-                        <button className="btn btn-outline-secondary w-100">Payments &gt;</button>
+                <div className="customer-dashboard__section">
+                    <h5>Banking Details</h5>
+                    <div className="customer-dashboard__banking-details">
+                        <p><strong>Current Account</strong></p>
+                        <p>Account No: XXXXXXXXXXXX</p>
+                        <p>Available Balance: $1500.00</p>
                     </div>
+                </div>
+
+                <div className="customer-dashboard__section">
+                    <h5>Payment Receipts</h5>
+                    <div className="customer-dashboard__transaction-list">
+                        {transactions.length > 0 ? (
+                            transactions.map((transaction) => (
+                                <div key={transaction._id} className="customer-dashboard__transaction-item">
+                                    <div>
+                                        <p className="customer-dashboard__transaction-date">{new Date(transaction.transactionDate).toLocaleDateString()}</p>
+                                        <p>{transaction.recipientName || 'Payment'}</p>
+                                    </div>
+                                    <div className="customer-dashboard__transaction-amount">
+                                        <p>${transaction.amount}</p>
+                                        <button 
+                                            className="btn btn-primary btn-sm" 
+                                            onClick={() => handlePayAgain(transaction)}
+                                        >Pay again</button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p>No payment receipts found</p>
+                        )}
+                    </div>
+                </div>
+
+                <div className="customer-dashboard__menu">
+                    <h6>Quick Menu</h6>
+                    <button className="btn customer-dashboard__menu-btn">Transactions</button>
+                    <button className="btn customer-dashboard__menu-btn">Payments</button>
+                </div>
+
+                <div className="text-center">
+                    <button onClick={handlePaymentsBtn} className="btn customer-dashboard__btn-main">Make International Payment</button>
                 </div>
             </div>
         </div>
