@@ -1,114 +1,124 @@
-import express, { Request, Response } from "express";
-import { ObjectId } from "mongodb";
-import { authenticateUser } from "../middleware/auth";
+import express, { Response, Request } from "express"; // Import express for routing, Request and Response types for type safety
+import { authenticateUser, AuthenticatedRequest } from "../middleware/auth"; // Import authentication middleware and custom request type
+import { Transaction } from "../models/transaction"; // Import Transaction interface
+import validator from "validator"; // Import validator for input sanitization and validation
+import rateLimit from "express-rate-limit"; // Import rate limiting middleware
+import helmet from "helmet"; // Import helmet for setting security-related HTTP headers
 
-interface AuthenticatedRequest extends Request {
-    userId?: string;
+//--------------------------------------------------------------------------------------------------------//
+
+const router = express.Router(); // Initialize express router
+
+// Apply security headers to all routes using helmet
+router.use(helmet());
+
+// Set up rate limiting to prevent brute-force attacks
+const transactionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15-minute window
+  limit: 100, // Maximum 100 requests per IP during the window
+  message: "Too many transactions from this IP, please try again later", // Message for rate limit exceeded
+});
+
+//--------------------------------------------------------------------------------------------------------//
+
+// Regular expressions for input validation
+const nameRegex = /^[A-Za-z\s]+$/; // Allow alphabets and spaces only
+const accountNumberRegex = /^\d{6,34}$/; // Account number should be 6 to 34 digits long
+const amountRegex = /^[1-9]\d*(\.\d+)?$/; // Positive numbers, allow decimals
+const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/; // SWIFT code format validation
+
+//--------------------------------------------------------------------------------------------------------//
+
+// POST - Create a new transaction with validation and security checks
+router.post(
+  "/create",
+  [authenticateUser, transactionLimiter], // Apply authentication and rate limiting middlewares
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+      const userId = req.userId; // Extract user ID from the authenticated request
+      const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body; // Destructure transaction details from the request body
+
+      // Validate the recipient name using regular expression
+      if (!nameRegex.test(recipientName)) {
+        res.status(400).json({ message: "Invalid recipient name" });
+        return;
+      }
+
+      // Validate the recipient bank name
+      if (!nameRegex.test(recipientBank)) {
+        res.status(400).json({ message: "Invalid recipient bank" });
+        return;
+      }
+
+      // Validate the account number
+      if (!accountNumberRegex.test(accountNumber)) {
+        res.status(400).json({ message: "Invalid account number" });
+        return;
+      }
+
+      // Validate the transaction amount
+      if (!amountRegex.test(amount)) {
+        res.status(400).json({ message: "Invalid amount" });
+        return;
+      }
+
+      // Validate the SWIFT code format
+      if (!swiftCodeRegex.test(swiftCode)) {
+        res.status(400).json({ message: "Invalid SWIFT code format" });
+        return;
+      }
+
+      // Create a new transaction object and sanitize inputs
+      const newTransaction: Transaction = {
+        user: userId!, // Assign the authenticated user ID
+        recipientName: validator.escape(recipientName), // Sanitize the recipient name
+        recipientBank: validator.escape(recipientBank), // Sanitize the recipient bank
+        accountNumber: validator.escape(accountNumber), // Store the plain account number
+        amount: parseFloat(amount), // Parse and store the amount as a number
+        swiftCode: validator.escape(swiftCode), // Sanitize the SWIFT code
+        transactionDate: new Date().toISOString(), // Store the current date in ISO format
+      };
+
+      // Insert the new transaction into the database collection
+      const collection = req.app.locals.db.collection("transactions");
+      const result = await collection.insertOne(newTransaction);
+      res.status(201).send(result); // Respond with the result of the database operation
+    } catch (e) {
+      console.error("Error uploading transaction:", e); // Log any errors that occur during the process
+      res.status(500).send({ message: "Failed to upload transaction" }); // Respond with an error message
+    }
   }
+);
 
-const router = express.Router();
+//--------------------------------------------------------------------------------------------------------//
 
-// Get all the transactions
-router.get("/", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+// GET - Retrieve all transactions for the authenticated user
+router.get(
+  "/",
+  [authenticateUser, transactionLimiter], // Apply authentication and rate limiting middlewares
+  async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-        const userId = new ObjectId(req.userId); // Extracted userId from the authenticated middleware
-        const collection = req.app.locals.db.collection("transactions");
-        const results = await collection.find({ user: userId }).toArray(); // Fetch transactions for this user
-        console.log('Transactions for user:', userId, results); // Debug log
-        res.status(200).send(results);
+      const userId = req.userId; // Extract user ID from the authenticated request
+      const collection = req.app.locals.db.collection("transactions"); // Access the transactions collection
+
+      const transactions = await collection.find({ user: userId }).toArray(); // Find all transactions for the authenticated user
+
+      // If no transactions are found, respond with a 404 status
+      if (transactions.length === 0) {
+        res.status(404).json({ message: "No transactions found" });
+        return;
+      }
+
+      res.status(200).json(transactions); // Respond with the list of transactions
     } catch (e) {
-        console.error("Error fetching transactions:", e);
-        res.status(500).send({ message: "Failed to retrieve transactions" });
+      console.error("Error fetching transactions:", e); // Log any errors that occur during the process
+      res.status(500).json({ message: "Failed to retrieve transactions" }); // Respond with an error message
     }
-});
+  }
+);
 
+//--------------------------------------------------------------------------------------------------------//
 
-// Upload a new transaction
-router.post("/create", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-    try {
-        const userId = req.userId;
+export default router; // Export the router for use in other parts of the application
 
-        const newTransaction = {
-            user: new ObjectId(userId),  // Assign the userId to the user field
-            recipientName: req.body.recipientName,
-            recipientBank: req.body.recipientBank,
-            accountNumber: req.body.accountNumber,
-            amount: req.body.amount,
-            swiftCode: req.body.swiftCode,
-            transactionDate: new Date(),  // automatically set the date
-        };
-
-        const collection = req.app.locals.db.collection("transactions");
-        const result = await collection.insertOne(newTransaction);
-        res.status(201).send(result);
-    } catch (e) {
-        console.error("Error uploading transaction:", e);
-        res.status(500).send({ message: "Failed to upload transaction" });
-    }
-});
-
-// Update a transaction by id
-router.patch("/:id", async (req: Request, res: Response): Promise<void> => {
-    try {
-        const query = { _id: new ObjectId(req.params.id) };
-        const updates = {
-            $set: {
-                recipientName: req.body.recipientName,
-                recipientBank: req.body.recipientBank,
-                accountNumber: req.body.accountNumber,
-                amount: req.body.amount,
-                swiftCode: req.body.swiftCode,
-            },
-        };
-
-        const collection = req.app.locals.db.collection("transactions");
-        const result = await collection.updateOne(query, updates);
-
-        if (result.modifiedCount === 0) {
-            res.status(404).send({ message: "Transaction not found or no changes applied" });
-        } else {
-            res.status(200).send(result);
-        }
-    } catch (e) {
-        console.error("Error updating transaction:", e);
-        res.status(500).send({ message: "Failed to update transaction" });
-    }
-});
-
-// Get a transaction by id
-router.get("/:id", async (req: Request, res: Response): Promise<void> => {
-    try {
-        const collection = req.app.locals.db.collection("transactions");
-        const query = { _id: new ObjectId(req.params.id) };
-        const result = await collection.findOne(query);
-
-        if (!result) {
-            res.status(404).send({ message: "Transaction not found" });
-        } else {
-            res.status(200).send(result);
-        }
-    } catch (e) {
-        console.error("Error fetching transaction:", e);
-        res.status(500).send({ message: "Failed to retrieve transaction" });
-    }
-});
-
-// Delete a transaction by id
-router.delete("/:id", async (req: Request, res: Response): Promise<void> => {
-    try {
-        const query = { _id: new ObjectId(req.params.id) };
-        const collection = req.app.locals.db.collection("transactions");
-        const result = await collection.deleteOne(query);
-
-        if (result.deletedCount === 0) {
-            res.status(404).send({ message: "Transaction not found" });
-        } else {
-            res.status(200).send({ message: "Transaction deleted successfully" });
-        }
-    } catch (e) {
-        console.error("Error deleting transaction:", e);
-        res.status(500).send({ message: "Failed to delete transaction" });
-    }
-});
-
-export default router;
+//------------------------------------------END OF FILE---------------------------------------------------//

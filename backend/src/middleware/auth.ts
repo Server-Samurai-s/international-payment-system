@@ -1,44 +1,52 @@
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'; 
 import { Request, Response, NextFunction } from 'express';
 
+//--------------------------------------------------------------------------------------------------------//
+
 // Extend the Request interface to include userId
-interface AuthenticatedRequest extends Request {
-  userId?: string;
+export interface AuthenticatedRequest extends Request {
+  userId?: string; // Optional userId field for requests that have an authenticated user
 }
 
 // Middleware to authenticate JWT
 export const authenticateUser = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    const authHeader = req.headers.authorization; // Get the Authorization header
+    // Retrieve the Authorization header from the request
+    const authHeader = req.headers.authorization;
 
-    // Check if the Authorization header exists
+    // Check if the Authorization header is missing
     if (!authHeader) {
+        // Respond with 401 Unauthorized if no Authorization header is present
         res.status(401).json({ message: 'Authorization header required' });
-        return; // Stop further execution if no token
+        return; // End function execution to prevent further code from running
     }
 
-    // Extract the token from 'Bearer <token>' format
+    // Extract the token part from the Authorization header (assumed to be in "Bearer <token>" format)
     const token = authHeader.split(' ')[1];
 
-    // Check if the token exists
+    // Check if the token is missing after splitting the header
     if (!token) {
+        // Respond with 401 Unauthorized if no token is found
         res.status(401).json({ message: 'Authorization token required' });
-        return; // Stop further execution if no token
+        return; // End function execution
     }
 
     try {
-        // Verify the token and extract userId from the payload
+        // Verify the JWT using the secret stored in the environment variable
         const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string };
-
-        // Attach the extracted userId to the request object
+        
+        // Assign the decoded userId to the request object for later use
         req.userId = decoded.userId;
 
-        // Log for debugging (optional)
+        // Log the authenticated userId for debugging purposes
         console.log("Authenticated userId:", req.userId);
 
-        next(); // Proceed to the next middleware or route handler
+        // Move to the next middleware or request handler
+        next();
     } catch (error) {
+        // Log the error if token verification fails
         console.error('Token verification failed:', error);
+        
+        // Respond with 403 Forbidden if the token is invalid or expired
         res.status(403).json({ message: 'Invalid or expired token' });
-        return; // Stop further execution if token is invalid
     }
-};
+};//------------------------------------------END OF FILE---------------------------------------------------//
