@@ -58,7 +58,7 @@ const Login: React.FC = () => {
         const userCredentials = { ...form };
 
         try {
-            const response = await fetch('https://international-payment-system-backend.vercel.app/user/login', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/user/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ const Login: React.FC = () => {
                             className={`form-control ${submitted && errors.password ? 'is-invalid' : ''}`}
                             id="password"
                             value={form.password}
-                            onChange={(e) => updateForm({ password: e.target.value })} 
+                            onChange={(e) => updateForm({ password: e.target.value })}
                         />
                         {submitted && errors.password && (
                             <div className="custom-tooltip">{errors.password}</div>

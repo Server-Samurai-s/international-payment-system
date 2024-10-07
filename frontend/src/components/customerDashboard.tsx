@@ -44,7 +44,7 @@ const CustomerDashboard: React.FC = () => {
         const token = localStorage.getItem("jwt"); // Assuming JWT token is stored in localStorage
         if (token) {
             try {
-                const response = await fetch("https://localhost:3001/transactions", {
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/transactions`, {
                     headers: {
                         "Authorization": `Bearer ${token}`, // Pass the token for authorization
                     },
