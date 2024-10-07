@@ -9,24 +9,15 @@ import dotenv from "dotenv";
 import transactionRoutes from "./routes/transaction.routes";
 import userRoutes from "./routes/user.routes";
 
-// Load environment variables from .env file
-dotenv.config();
+dotenv.config(); // Load environment variables
 
-// Set the port
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-// HTTPS options
-const options = {
-    key: fs.readFileSync('./src/keys/mongodb-key.pem'),
-    cert: fs.readFileSync('./src/keys/certificate.pem')
-};
+const app = express(); // Export this instance
 
 // MongoDB connection
 mongoose
     .connect(process.env.ATLAS_URI || '')
     .then((connection) => {
-        app.locals.db = connection.connection.db; // Store the db instance in app.locals
+        app.locals.db = connection.connection.db;
         console.log('MongoDB connected');
     })
     .catch((error) => {
@@ -34,27 +25,48 @@ mongoose
         process.exit(1); // Exit if unable to connect to MongoDB
     });
 
+// Updated CORS options
+const corsOptions = {
+    origin: [
+        "https://international-payment-system.vercel.app",
+        "https://international-payment-system-backend.vercel.app"
+    ],
+    methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+};
+
+// Use CORS middleware with the options
+app.use(cors(corsOptions));
+
+// Handle OPTIONS requests for preflight checks
+app.options("*", cors(corsOptions));
+
 // Middleware setup
-app.use(cors()); // Enable CORS for all routes
-
-// Increase request size limits for large payloads (e.g., Base64 images)
-app.use(express.json({ limit: '10mb' })); // Set the JSON payload limit to 10MB
-app.use(express.urlencoded({ limit: '10mb', extended: true })); // Set the URL-encoded payload limit to 10MB
-
-// Add CORS headers manually if needed (can be redundant if cors middleware is already handling this)
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH'); // Define allowed methods explicitly
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Define allowed headers explicitly
-    next();
-});
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Routes
-app.use("/transactions", transactionRoutes); // Handle all routes for posts
-app.use("/user", userRoutes);  // Handle all routes for users
+app.use("/transactions", transactionRoutes);
+app.use("/user", userRoutes);
 
-// Create HTTPS server
-const server = https.createServer(options, app);
-server.listen(PORT, () => {
-    console.log(`Server is running securely on port: ${PORT}`);
-});
+// Export `app` for Vercel deployment (no HTTPS)
+export default app;
+
+// Conditionally start an HTTPS server for local development
+if (process.env.NODE_ENV !== "production") {
+    console.log("Trying to look for keys");
+    const options = {
+        key: fs.readFileSync('./src/keys/mongodb-key.pem'),
+        cert: fs.readFileSync('./src/keys/certificate.pem')
+    };
+
+    https.createServer(options, app).listen(process.env.PORT || 3001, () => {
+        console.log(`Server running locally with HTTPS on port ${process.env.PORT || 3001}`);
+    });
+} else {
+    // Start an HTTP server if NODE_ENV is set to production (for Vercel compatibility)
+    app.listen(process.env.PORT || 3001, () => {
+        console.log(`Server running on port ${process.env.PORT || 3001}`);
+    });
+}
