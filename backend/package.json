@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "start": "npx ts-node src/app.ts"
   },
   "keywords": [],
   "author": "",
