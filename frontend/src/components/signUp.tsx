@@ -54,26 +54,38 @@ const SignUp: React.FC = () => {
         const newErrors: Partial<FormState> = {};
         let valid = true;
 
+        // Regex for input validation (whitelisting)
+        const nameRegex = /^[A-Za-z\s]+$/; // Only letters and spaces
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email format
+        const usernameRegex = /^[A-Za-z0-9_]+$/; // Letters, numbers, underscores
+        const accountNumberRegex = /^\d{7,11}$/; // 7-11 digits
+        const idNumberRegex = /^\d{13}$/; // Exactly 13 digits
+
         const minLength = form.password.length >= 8;
         const hasUppercase = /[A-Z]/.test(form.password);
         const hasLowercase = /[a-z]/.test(form.password);
         const hasNumber = /\d/.test(form.password);
         const hasSpecialChar = /[@$!%*?&]/.test(form.password);
 
-        if (!form.firstName.trim()) {
-            newErrors.firstName = 'First Name is required';
+        // First Name and Last Name validation
+        if (!nameRegex.test(form.firstName)) {
+            newErrors.firstName = 'First Name must contain only letters';
             valid = false;
         }
-        if (!form.lastName.trim()) {
-            newErrors.lastName = 'Last Name is required';
+        if (!nameRegex.test(form.lastName)) {
+            newErrors.lastName = 'Last Name must contain only letters';
             valid = false;
         }
-        if (!form.emailAddress.includes('@')) {
+
+        // Email validation
+        if (!emailRegex.test(form.emailAddress)) {
             newErrors.emailAddress = 'Please enter a valid email address';
             valid = false;
         }
-        if (!form.username.trim()) {
-            newErrors.username = 'Username is required';
+
+        // Username validation
+        if (!usernameRegex.test(form.username)) {
+            newErrors.username = 'Username can only contain letters, numbers, and underscores';
             valid = false;
         }
 
@@ -100,20 +112,14 @@ const SignUp: React.FC = () => {
             valid = false;
         }
 
-        // Account Number Validation
-        if (!/^\d+$/.test(form.accountNumber)) {
-            newErrors.accountNumber = 'Account Number must be numeric';
-            valid = false;
-        } else if (form.accountNumber.length < 7 || form.accountNumber.length > 11) {
+        // Account Number validation (numeric and length between 7 and 11)
+        if (!accountNumberRegex.test(form.accountNumber)) {
             newErrors.accountNumber = 'Account Number must be between 7 and 11 digits';
             valid = false;
         }
 
-        // ID Number Validation
-        if (!/^\d+$/.test(form.idNumber)) {
-            newErrors.idNumber = 'ID Number must be numeric';
-            valid = false;
-        } else if (form.idNumber.length !== 13) {
+        // ID Number validation (numeric and exactly 13 digits)
+        if (!idNumberRegex.test(form.idNumber)) {
             newErrors.idNumber = 'ID Number must be exactly 13 digits';
             valid = false;
         }
