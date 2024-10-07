@@ -29,6 +29,7 @@ mongoose
 const corsOptions = {
     origin: [
         "https://international-payment-system.vercel.app",
+        "international-payment-system-frontend-bwwkby4h4.vercel.app",
         "https://international-payment-system-backend.vercel.app"
     ],
     methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
