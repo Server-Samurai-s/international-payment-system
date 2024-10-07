@@ -25,6 +25,14 @@ mongoose
         process.exit(1); // Exit if unable to connect to MongoDB
     });
 
+const corsOptions = {
+    origin: ["https://international-payment-system.vercel.app"],
+    methods: "GET,POST,PUT,DELETE,PATCH",
+    allowedHeaders: "Content-Type,Authorization",
+};
+
+app.use(cors(corsOptions));
+
 // Middleware setup
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
