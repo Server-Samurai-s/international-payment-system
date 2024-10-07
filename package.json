@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "react-scripts": "^5.0.1"
-  },
-  "scripts": {
-    "test": "react-scripts test"
-  }
-}
