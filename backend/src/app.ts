@@ -11,17 +11,19 @@ import userRoutes from "./routes/user.routes";
 
 dotenv.config(); // Load environment variables
 
-const app = express(); // Export this instance
+const app = express(); // Create the Express instance
 
-// MongoDB connection
-mongoose
-    .connect(process.env.ATLAS_URI || '')
+// MongoDB connection with additional logging
+mongoose.connect(process.env.ATLAS_URI || '', {
+    serverSelectionTimeoutMS: 5000,
+    maxPoolSize: 10,
+})
     .then((connection) => {
         app.locals.db = connection.connection.db;
         console.log('MongoDB connected');
     })
     .catch((error) => {
-        console.error(`Error connecting to MongoDB: ${error}`);
+        console.error("MongoDB connection error:", error);
         process.exit(1); // Exit if unable to connect to MongoDB
     });
 
@@ -29,7 +31,7 @@ mongoose
 const corsOptions = {
     origin: [
         "https://international-payment-system.vercel.app",
-        "international-payment-system-frontend-bwwkby4h4.vercel.app",
+        "https://international-payment-system-frontend-bwwkby4h4.vercel.app",
         "https://international-payment-system-backend.vercel.app"
     ],
     methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS",
@@ -47,6 +49,12 @@ app.options("*", cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+// Log all requests to monitor incoming traffic
+app.use((req, res, next) => {
+    console.log(`Incoming ${req.method} request to ${req.path}`);
+    next();
+});
+
 // Routes
 app.use("/transactions", transactionRoutes);
 app.use("/user", userRoutes);
@@ -56,7 +64,7 @@ export default app;
 
 // Conditionally start an HTTPS server for local development
 if (process.env.NODE_ENV !== "production") {
-    console.log("Trying to look for keys");
+    console.log("Looking for SSL keys for local HTTPS development");
     const options = {
         key: fs.readFileSync('./src/keys/mongodb-key.pem'),
         cert: fs.readFileSync('./src/keys/certificate.pem')
