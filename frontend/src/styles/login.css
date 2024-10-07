@@ -9,6 +9,8 @@
     background-position: center;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Form container styling */
 .login-form-container {
     background-color: rgba(255, 255, 255, 0.9);
@@ -22,6 +24,8 @@
     align-items: center;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* Heading styles */
 h3 {
     text-align: center;
@@ -30,10 +34,14 @@ h3 {
     color: #333;
 }
 
+/*--------------------------------------------------------------------------------------------------------*\
+
 /* General form group styling */
 .form-group {
     margin-bottom: 1.2rem; /* Reduced spacing between form fields */
 }
+
+/*--------------------------------------------------------------------------------------------------------*\
 
 /* Label and input field styling */
 .form-group label {
@@ -57,6 +65,8 @@ input.form-control:focus {
     border-color: #999999;
     background-color: #ffffff;
 }
+
+/*--------------------------------------------------------------------------------------------------------*\
 
 /* Error input field styling */
 .custom-tooltip {
@@ -82,6 +92,8 @@ input.form-control:focus {
     border-style: solid;
     border-color: #777777 transparent transparent transparent;
 }
+
+/*--------------------------------------------------------------------------------------------------------*\
 
 /* Button styles */
 .btn-primary {
@@ -120,6 +132,8 @@ input.form-control:focus {
     background-color: #007bff;
     color: white;
 }
+
+/*--------------------------------------------------------------------------------------------------------*\
 
 /* Responsive adjustments */
 @media (max-width: 768px) {

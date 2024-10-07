@@ -1,107 +1,124 @@
-import express, { Response, Request } from "express";
-import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
-import { Transaction, hashAccountNumber } from "../models/transaction";
-import validator from "validator"; // For input validation and sanitization
-import rateLimit from "express-rate-limit"; // Rate limiting
-import helmet from "helmet"; // Security headers
+import express, { Response, Request } from "express"; // Import express for routing, Request and Response types for type safety
+import { authenticateUser, AuthenticatedRequest } from "../middleware/auth"; // Import authentication middleware and custom request type
+import { Transaction } from "../models/transaction"; // Import Transaction interface
+import validator from "validator"; // Import validator for input sanitization and validation
+import rateLimit from "express-rate-limit"; // Import rate limiting middleware
+import helmet from "helmet"; // Import helmet for setting security-related HTTP headers
 
-const router = express.Router();
+//--------------------------------------------------------------------------------------------------------//
 
-// Apply security headers using helmet
+const router = express.Router(); // Initialize express router
+
+// Apply security headers to all routes using helmet
 router.use(helmet());
 
-// Set rate limiting to avoid brute force attacks
+// Set up rate limiting to prevent brute-force attacks
 const transactionLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per window
-  message: "Too many transactions from this IP, please try again later",
+  windowMs: 15 * 60 * 1000, // 15-minute window
+  max: 100, // Maximum 100 requests per IP during the window
+  message: "Too many transactions from this IP, please try again later", // Message for rate limit exceeded
 });
 
-// Regular expressions for validation
-const nameRegex = /^[A-Za-z\s]+$/; // Only alphabets and spaces
-const accountNumberRegex = /^\d{6,34}$/; // 6 to 34 digits
-const amountRegex = /^[1-9]\d*(\.\d+)?$/; // Positive numbers
-const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/; // SWIFT code format
+//--------------------------------------------------------------------------------------------------------//
 
-// POST - Create transaction securely
+// Regular expressions for input validation
+const nameRegex = /^[A-Za-z\s]+$/; // Allow alphabets and spaces only
+const accountNumberRegex = /^\d{6,34}$/; // Account number should be 6 to 34 digits long
+const amountRegex = /^[1-9]\d*(\.\d+)?$/; // Positive numbers, allow decimals
+const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/; // SWIFT code format validation
+
+//--------------------------------------------------------------------------------------------------------//
+
+// POST - Create a new transaction with validation and security checks
 router.post(
   "/create",
-  [authenticateUser, transactionLimiter],
+  [authenticateUser, transactionLimiter], // Apply authentication and rate limiting middlewares
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.userId;
-      const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body;
+      const userId = req.userId; // Extract user ID from the authenticated request
+      const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body; // Destructure transaction details from the request body
 
-      // Validate inputs using regex
+      // Validate the recipient name using regular expression
       if (!nameRegex.test(recipientName)) {
         res.status(400).json({ message: "Invalid recipient name" });
         return;
       }
 
+      // Validate the recipient bank name
       if (!nameRegex.test(recipientBank)) {
         res.status(400).json({ message: "Invalid recipient bank" });
         return;
       }
 
+      // Validate the account number
       if (!accountNumberRegex.test(accountNumber)) {
         res.status(400).json({ message: "Invalid account number" });
         return;
       }
 
+      // Validate the transaction amount
       if (!amountRegex.test(amount)) {
         res.status(400).json({ message: "Invalid amount" });
         return;
       }
 
+      // Validate the SWIFT code format
       if (!swiftCodeRegex.test(swiftCode)) {
         res.status(400).json({ message: "Invalid SWIFT code format" });
         return;
       }
 
-      // Hash account number before storing it
-      const hashedAccountNumber = await hashAccountNumber(accountNumber);
-
+      // Create a new transaction object and sanitize inputs
       const newTransaction: Transaction = {
-        user: userId!,
-        recipientName: validator.escape(recipientName), // Sanitize input
-        recipientBank: validator.escape(recipientBank), // Sanitize input
-        accountNumber: hashedAccountNumber,
-        amount: parseFloat(amount),
-        swiftCode: validator.escape(swiftCode), // Sanitize input
+        user: userId!, // Assign the authenticated user ID
+        recipientName: validator.escape(recipientName), // Sanitize the recipient name
+        recipientBank: validator.escape(recipientBank), // Sanitize the recipient bank
+        accountNumber: validator.escape(accountNumber), // Store the plain account number
+        amount: parseFloat(amount), // Parse and store the amount as a number
+        swiftCode: validator.escape(swiftCode), // Sanitize the SWIFT code
+        transactionDate: new Date().toISOString(), // Store the current date in ISO format
       };
 
+      // Insert the new transaction into the database collection
       const collection = req.app.locals.db.collection("transactions");
       const result = await collection.insertOne(newTransaction);
-      res.status(201).send(result);
+      res.status(201).send(result); // Respond with the result of the database operation
     } catch (e) {
-      console.error("Error uploading transaction:", e);
-      res.status(500).send({ message: "Failed to upload transaction" });
+      console.error("Error uploading transaction:", e); // Log any errors that occur during the process
+      res.status(500).send({ message: "Failed to upload transaction" }); // Respond with an error message
     }
   }
 );
 
+//--------------------------------------------------------------------------------------------------------//
+
 // GET - Retrieve all transactions for the authenticated user
 router.get(
   "/",
-  [authenticateUser, transactionLimiter],
+  [authenticateUser, transactionLimiter], // Apply authentication and rate limiting middlewares
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.userId;
-      const collection = req.app.locals.db.collection("transactions");
+      const userId = req.userId; // Extract user ID from the authenticated request
+      const collection = req.app.locals.db.collection("transactions"); // Access the transactions collection
 
-      const transactions = await collection.find({ user: userId }).toArray();
+      const transactions = await collection.find({ user: userId }).toArray(); // Find all transactions for the authenticated user
 
+      // If no transactions are found, respond with a 404 status
       if (transactions.length === 0) {
         res.status(404).json({ message: "No transactions found" });
         return;
       }
 
-      res.status(200).json(transactions);
+      res.status(200).json(transactions); // Respond with the list of transactions
     } catch (e) {
-      console.error("Error fetching transactions:", e);
-      res.status(500).json({ message: "Failed to retrieve transactions" });
+      console.error("Error fetching transactions:", e); // Log any errors that occur during the process
+      res.status(500).json({ message: "Failed to retrieve transactions" }); // Respond with an error message
     }
   }
 );
 
-export default router;
+//--------------------------------------------------------------------------------------------------------//
+
+export default router; // Export the router for use in other parts of the application
+
+//------------------------------------------END OF FILE---------------------------------------------------//

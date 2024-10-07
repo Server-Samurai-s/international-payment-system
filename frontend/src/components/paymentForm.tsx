@@ -1,115 +1,155 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import '../styles/paymentForm.css';
-import registerBackground from '../images/registerBackground.jpg';
+import React, { useState, useEffect } from "react"; // Import React hooks for managing state and side effects
+import { useLocation, useNavigate } from "react-router-dom"; // Import hooks for navigation and location state
+import '../styles/paymentForm.css'; // Import CSS file for payment form styling
+import registerBackground from '../images/registerBackground.jpg'; // Import background image for the payment form
 
+//--------------------------------------------------------------------------------------------------------//
+
+// Define the structure of the form's state
 interface PaymentFormState {
-    recipientName: string;
-    recipientBank: string;
-    accountNumber: string;
-    amount: string;
-    swiftCode: string;
+    recipientName: string; // Recipient's name
+    recipientBank: string; // Recipient's bank
+    accountNumber: string; // Recipient's account number (plain text)
+    amount: string; // Amount to transfer
+    swiftCode: string; // SWIFT code for the recipient's bank
 }
 
-const PaymentForm: React.FC = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
+//--------------------------------------------------------------------------------------------------------//
 
+// Functional component for the payment form
+const PaymentForm: React.FC = () => {
+    const location = useLocation(); // Hook to access passed state from the previous page
+    const navigate = useNavigate(); // Hook for programmatic navigation
+
+//--------------------------------------------------------------------------------------------------------//
+
+    // State to store the form input values
     const [form, setForm] = useState<PaymentFormState>({
-        recipientName: "",
-        recipientBank: "",
-        accountNumber: "",
-        amount: "",
-        swiftCode: "",
+        recipientName: "", // Default value for recipient's name
+        recipientBank: "", // Default value for recipient's bank
+        accountNumber: "", // Default value for recipient's account number
+        amount: "", // Default value for amount
+        swiftCode: "", // Default value for SWIFT code
     });
 
+//--------------------------------------------------------------------------------------------------------//
+
+    // State to store any validation errors
     const [errors, setErrors] = useState<Partial<PaymentFormState>>({});
 
-    // Regex patterns
-    const nameRegex = /^[a-zA-Z\s]+$/; // Only alphabets and spaces
-    const accountNumberRegex = /^\d{6,34}$/; // 6-34 digits
-    const amountRegex = /^\d+(\.\d{1,2})?$/; // Positive number with up to 2 decimal places
-    const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/; // 8 or 11 alphanumeric characters
+//--------------------------------------------------------------------------------------------------------//
 
+    // Regular expressions for validating the form fields
+    const nameRegex = /^[a-zA-Z\s]+$/; // Allow alphabets and spaces only
+    const accountNumberRegex = /^\d{6,34}$/; // Account number should be 6 to 34 digits
+    const amountRegex = /^\d+(\.\d{1,2})?$/; // Amount should be a number with optional decimal places (up to 2)
+    const swiftCodeRegex = /^[A-Za-z0-9]{8,11}$/; // SWIFT code should be 8 to 11 alphanumeric characters
+
+//--------------------------------------------------------------------------------------------------------//
+
+    // Effect to populate the form with passed transaction data if available
     useEffect(() => {
         if (location.state) {
-            const transaction = location.state as PaymentFormState;
-            setForm(transaction);
+            const transaction = location.state as PaymentFormState; // Cast the state to the PaymentFormState type
+            setForm(transaction); // Set the form state with the transaction data
         }
-    }, [location.state]);
+    }, [location.state]); // The effect will re-run if location.state changes
 
+//--------------------------------------------------------------------------------------------------------//
+
+    // Function to update form state when input values change
     const updateForm = (value: Partial<PaymentFormState>) => {
         setForm((prev) => ({
-            ...prev,
-            ...value,
+            ...prev, // Retain previous form values
+            ...value, // Update the specific field that changed
         }));
     };
 
-    const validateForm = (): boolean => {
-        const newErrors: Partial<PaymentFormState> = {};
-        let valid = true;
+//--------------------------------------------------------------------------------------------------------//
 
+    // Function to validate the form fields before submission
+    const validateForm = (): boolean => {
+        const newErrors: Partial<PaymentFormState> = {}; // Object to store any validation errors
+        let valid = true; // Flag to track if the form is valid
+
+        // Validate recipient's name
         if (!nameRegex.test(form.recipientName.trim())) {
             newErrors.recipientName = "Invalid recipient name (only alphabets and spaces)";
-            valid = false;
+            valid = false; // Mark form as invalid if this fails
         }
+
+        // Validate recipient's bank name
         if (!nameRegex.test(form.recipientBank.trim())) {
             newErrors.recipientBank = "Invalid bank name (only alphabets and spaces)";
-            valid = false;
+            valid = false; // Mark form as invalid if this fails
         }
+
+        // Validate account number
         if (!accountNumberRegex.test(form.accountNumber)) {
             newErrors.accountNumber = "Account number must be between 6 and 34 digits";
-            valid = false;
+            valid = false; // Mark form as invalid if this fails
         }
+
+        // Validate amount
         if (!amountRegex.test(form.amount)) {
             newErrors.amount = "Please enter a valid amount (up to 2 decimal places)";
-            valid = false;
-        }
-        if (!swiftCodeRegex.test(form.swiftCode.trim())) {
-            newErrors.swiftCode = "The SWIFT code must be 8 or 11 alphanumeric characters (e.g., ABCDUS33 or ABCDUS33XXX)";
-            valid = false;
+            valid = false; // Mark form as invalid if this fails
         }
 
-        setErrors(newErrors);
-        return valid;
+        // Validate SWIFT code
+        if (!swiftCodeRegex.test(form.swiftCode.trim())) {
+            newErrors.swiftCode = "The SWIFT code must be 8 or 11 alphanumeric characters";
+            valid = false; // Mark form as invalid if this fails
+        }
+
+        setErrors(newErrors); // Set the error state with any found validation errors
+        return valid; // Return whether the form is valid
     };
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+//--------------------------------------------------------------------------------------------------------//
 
+    // Function to handle form submission
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault(); // Prevent the default form submission
+
+        // Validate the form before proceeding
         if (!validateForm()) {
-            return;
+            return; // If the form is invalid, do not submit
         }
 
+        // Get the JWT token from local storage for authentication
         const token = localStorage.getItem("jwt");
         if (!token) {
-            alert("Please log in first.");
-            navigate("/login");
+            alert("Please log in first."); // Alert user if they are not logged in
+            navigate("/login"); // Redirect to login page
             return;
         }
 
+        // Prepare the transaction data to be sent to the server
         const transactionData = {
-            ...form,
-            userId: localStorage.getItem("userId"),
+            ...form, // Include all form fields
+            userId: localStorage.getItem("userId"), // Add the user ID from local storage
         };
 
+        // Send the transaction data to the backend via POST request
         try {
             const response = await fetch("https://localhost:3001/transactions/create", {
-                method: "POST",
+                method: "POST", // HTTP method
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json", // Set content type to JSON
+                    "Authorization": `Bearer ${token}`, // Include JWT token for authentication
                 },
-                body: JSON.stringify(transactionData),
+                body: JSON.stringify(transactionData), // Convert the transaction data to JSON
             });
 
             if (!response.ok) {
-                throw new Error(`Error: ${response.statusText}`);
+                throw new Error(`Error: ${response.statusText}`); // Throw an error if response is not OK
             }
 
-            const data = await response.json();
-            console.log("Transaction created:", data);
+            const data = await response.json(); // Parse the response JSON
+            console.log("Transaction created:", data); // Log the created transaction
 
+            // Reset the form fields after successful submission
             setForm({
                 recipientName: "",
                 recipientBank: "",
@@ -117,14 +157,20 @@ const PaymentForm: React.FC = () => {
                 amount: "",
                 swiftCode: "",
             });
+
+            // Redirect to the dashboard after successful transaction
             navigate("/dashboard");
         } catch (error) {
-            console.error("Error creating transaction:", error);
-            alert("Failed to process payment. Please try again.");
+            console.error("Error creating transaction:", error); // Log any errors
+            alert("Failed to process payment. Please try again."); // Alert user if there is a failure
         }
     };
 
+//--------------------------------------------------------------------------------------------------------//
+
+    // Function to handle form cancelation
     const handleCancelBtn = () => {
+        // Reset the form fields
         setForm({
             recipientName: "",
             recipientBank: "",
@@ -132,25 +178,28 @@ const PaymentForm: React.FC = () => {
             amount: "",
             swiftCode: "",
         });
-        navigate("/dashboard");
+        navigate("/dashboard"); // Redirect to the dashboard
     };
+
+//------------------------------------------------------------------------------------------------
 
     return (
         <div
             className="payment-form__full-page-container"
-            style={{ backgroundImage: `url(${registerBackground})` }}
+            style={{ backgroundImage: `url(${registerBackground})` }} // Set the background image
         >
             <div className="payment-form__container">
                 <h3 className="payment-form__title">International Payment Form</h3>
-                <form onSubmit={onSubmit}>
+                <form onSubmit={onSubmit}> {/* Form submission handler */}
                     <div className="payment-form__group">
                         <label htmlFor="recipientName">Recipient's Name</label>
                         <input
                             type="text"
                             id="recipientName"
-                            value={form.recipientName}
-                            onChange={(e) => updateForm({ recipientName: e.target.value })}
+                            value={form.recipientName} // Bind input value to form state
+                            onChange={(e) => updateForm({ recipientName: e.target.value })} // Update form on change
                         />
+                        {/* Display validation error for recipientName if it exists */}
                         {errors.recipientName && <div className="payment-form__tooltip">{errors.recipientName}</div>}
                     </div>
 
@@ -159,9 +208,10 @@ const PaymentForm: React.FC = () => {
                         <input
                             type="text"
                             id="recipientBank"
-                            value={form.recipientBank}
-                            onChange={(e) => updateForm({ recipientBank: e.target.value })}
+                            value={form.recipientBank} // Bind input value to form state
+                            onChange={(e) => updateForm({ recipientBank: e.target.value })} // Update form on change
                         />
+                        {/* Display validation error for recipientBank if it exists */}
                         {errors.recipientBank && <div className="payment-form__tooltip">{errors.recipientBank}</div>}
                     </div>
 
@@ -170,9 +220,10 @@ const PaymentForm: React.FC = () => {
                         <input
                             type="text"
                             id="accountNumber"
-                            value={form.accountNumber}
-                            onChange={(e) => updateForm({ accountNumber: e.target.value })}
+                            value={form.accountNumber} // Bind input value to form state
+                            onChange={(e) => updateForm({ accountNumber: e.target.value })} // Update form on change
                         />
+                        {/* Display validation error for accountNumber if it exists */}
                         {errors.accountNumber && <div className="payment-form__tooltip">{errors.accountNumber}</div>}
                     </div>
 
@@ -181,9 +232,10 @@ const PaymentForm: React.FC = () => {
                         <input
                             type="text"
                             id="amount"
-                            value={form.amount}
-                            onChange={(e) => updateForm({ amount: e.target.value })}
+                            value={form.amount} // Bind input value to form state
+                            onChange={(e) => updateForm({ amount: e.target.value })} // Update form on change
                         />
+                        {/* Display validation error for amount if it exists */}
                         {errors.amount && <div className="payment-form__tooltip">{errors.amount}</div>}
                     </div>
 
@@ -192,12 +244,14 @@ const PaymentForm: React.FC = () => {
                         <input
                             type="text"
                             id="swiftCode"
-                            value={form.swiftCode}
-                            onChange={(e) => updateForm({ swiftCode: e.target.value })}
+                            value={form.swiftCode} // Bind input value to form state
+                            onChange={(e) => updateForm({ swiftCode: e.target.value })} // Update form on change
                         />
+                        {/* Display validation error for swiftCode if it exists */}
                         {errors.swiftCode && <div className="payment-form__tooltip">{errors.swiftCode}</div>}
                     </div>
 
+                    {/* Submit and cancel buttons */}
                     <div className="d-flex justify-content-between">
                         <button type="submit" className="payment-form__btn-primary">PAY NOW</button>
                         <button type="button" className="payment-form__btn-cancel" onClick={handleCancelBtn}>
@@ -210,4 +264,8 @@ const PaymentForm: React.FC = () => {
     );
 };
 
-export default PaymentForm;
+//--------------------------------------------------------------------------------------------------------//
+
+export default PaymentForm; // Export the PaymentForm component
+
+//------------------------------------------END OF FILE---------------------------------------------------//
