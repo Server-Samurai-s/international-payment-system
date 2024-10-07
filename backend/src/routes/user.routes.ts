@@ -36,7 +36,7 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Create and save new user
+    // Create and save new user with default account balance
     const newUser = new User({
       firstName,
       lastName,
@@ -45,16 +45,17 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       password,
       accountNumber,
       idNumber,
+      // `accountBalance` will default to 10000 due to the schema definition
     });
 
     // Hash the password before saving
     await newUser.hashPassword();
     await newUser.save();
 
-    // Generate JWT token
-    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET || '', { expiresIn: '1h' });
+    // Generate JWT token with basic user details
+    const token = jwt.sign({ userId: newUser._id, firstName: newUser.firstName, username: newUser.username }, process.env.JWT_SECRET || '', { expiresIn: '1h' });
 
-    // Return success response
+    // Return success response with token
     res.status(201).json({ message: 'User registered successfully', token });
   } catch (error) {
     console.error('Signup error:', error);
@@ -84,21 +85,20 @@ router.post('/login', bruteforce.prevent, async (req: Request, res: Response): P
       return;
     }
 
-    // Generate JWT token
+    // Generate JWT token with essential user details
     const token = jwt.sign(
-      { userId: user._id, username: user.username, accountNumber: user.accountNumber },
+      { userId: user._id, firstName: user.firstName, username: user.username },
       process.env.JWT_SECRET || '',
       { expiresIn: '1h' }
     );
 
-    // Return success response
+    // Return success response with token and additional user details (not in JWT)
     res.status(200).json({
       userId: user._id,
-      message: 'Authentication successful',
       token,
       firstName: user.firstName,
-      username: user.username,
       accountNumber: user.accountNumber,
+      accountBalance: user.accountBalance, // Include account balance in response, not JWT
     });
   } catch (error) {
     console.error('Login error:', error);

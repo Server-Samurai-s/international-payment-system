@@ -9,6 +9,7 @@ export interface IUser extends Document {
   password: string;
   accountNumber: string;
   idNumber: string;
+  accountBalance: number;
   hashPassword(): Promise<void>;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
