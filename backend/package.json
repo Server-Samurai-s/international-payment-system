@@ -5,7 +5,7 @@
   "scripts": {
     "test": "jest --config jest.config.ts",
     "start": "npx ts-node src/app.ts",
-    "lint": "eslint . --ext .js,.ts" 
+    "lint": "eslint ." 
   },
   "keywords": [],
   "author": "",
