@@ -47,7 +47,7 @@ jobs:
           count=0
           until [ $count -ge $retries ]
           do
-            npm ci && break
+            npm install --legacy-peer-deps && break
             count=$((count+1))
             echo "Retrying npm ci... ($count/$retries)"
             sleep 10
