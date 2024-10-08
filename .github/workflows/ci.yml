@@ -100,12 +100,12 @@ jobs:
       - name: Security Attack Checks
         run: |
           # Check for Clickjacking Protection
-          if ! grep -q "frameguard" ./backend/src/routes/transaction.route.ts; then
+          if ! grep -q "frameguard" ./backend/src/routes/transaction.router.ts; then
             echo "Clickjacking protection missing (Helmet's frameguard)" && exit 1
           fi
 
           # Check for Session Hijacking Protection
-          if ! grep -q "cookie-session" ./backend/src/routes/transaction.route.ts; then
+          if ! grep -q "cookie-session" ./backend/src/routes/transaction.router.ts; then
             echo "Session hijacking protection missing (cookie-session or express-session)" && exit 1
           fi
 
@@ -115,17 +115,17 @@ jobs:
           fi
 
           # Check for Cross-Site Scripting (XSS) Protection
-          if ! grep -q "xss-clean" ./backend/src/routes/transaction.route.ts; then
+          if ! grep -q "xss-clean" ./backend/src/routes/transaction.router.ts; then
             echo "XSS protection missing (xss-clean middleware)" && exit 1
           fi
 
           # Check for Man-in-the-Middle Attack Protection
-          if ! grep -q "strict-transport-security" ./backend/src/routes/transaction.route.ts; then
+          if ! grep -q "strict-transport-security" ./backend/src/routes/transaction.router.ts; then
             echo "HSTS header missing (use Helmet to enforce Strict-Transport-Security)" && exit 1
           fi
 
           # DDoS Protection (Rate Limiting and Network Throttling)
-          if ! grep -q "express-rate-limit" ./backend/src/routes/transaction.route.ts; then
+          if ! grep -q "express-rate-limit" ./backend/src/routes/transaction.router.ts; then
             echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
           fi
 
