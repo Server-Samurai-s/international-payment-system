@@ -91,4 +91,6 @@ server.listen(PORT, () => {
   console.log(`Server is running securely on port: ${PORT}`); // Log when the server is running
 });
 
+
+export {app, server}; // Export the express app for testing purposes
 //------------------------------------------END OF FILE---------------------------------------------------//
