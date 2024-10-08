@@ -62,9 +62,19 @@ Ensure that you have the following installed:
 ### Cloning the Repository
 
 ```bash
-git clone https://github.com/your-username/customer-portal.git
+git clone https://github.com/Server-Samurai-s/international-payment-system.git
 cd customer-portal
 ```
+
+### Setting up SSL Certificates
+
+1. Create a `src/keys` folder in the project root directory:
+
+```bash
+mkdir -p src/keys
+```
+
+2. Copy the `certificate.pem` and `mongodb-key.pem` files from the project submission folder into the `src/keys` directory.
 
 ---
 
@@ -82,11 +92,9 @@ cd frontend
 npm install
 ```
 
-3. **Run the React app**:
-
-```bash
-npm start
-```
+3. **Set up environment variables**:
+   - Create a `.env` file in the frontend directory
+   - Copy the contents from `frontend-env-values.txt` in the project submission folder into this `.env` file
 
 ---
 
@@ -104,30 +112,15 @@ cd backend
 npm install
 ```
 
-3. **Run the Node.js server**:
-
-```bash
-npm start
-```
+3. **Set up environment variables**:
+   - Create a `.env` file in the backend directory
+   - Copy the contents from `backend-env-values.txt` in the project submission folder into this `.env` file
 
 ---
 
 ## Environment Variables
 
-To run this project, you will need to add the following environment variables to your `.env` file in the **backend** folder:
-
-```bash
-# MongoDB connection string
-ATLAS_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/<your-db>?retryWrites=true&w=majority
-
-# JWT secret key for signing tokens
-JWT_SECRET=your_jwt_secret
-
-# Port for the backend server
-PORT=3001
-```
-
-> Note: Replace `<username>`, `<password>`, and `<your-db>` with your actual MongoDB connection details.
+Ensure that you have set up the `.env` files for both frontend and backend as described in the setup steps above. These files should contain all necessary environment variables for the project to run correctly.
 
 ---
 
@@ -140,7 +133,7 @@ cd backend
 npm start
 ```
 
-The server will start at `https://localhost:3001`.
+The server will start at `https://localhost:3001` (or the port specified in your backend `.env` file).
 
 2. **Run the frontend React app**:
 
@@ -149,9 +142,13 @@ cd frontend
 npm start
 ```
 
-The app will start at `http://localhost:3000`.
+The app will start at `http://localhost:3000` (or the port specified in your frontend `.env` file).
 
 ---
+
+## Key Functionalities
+
+[The rest of the README remains the same...]
 
 ## Key Functionalities
 
