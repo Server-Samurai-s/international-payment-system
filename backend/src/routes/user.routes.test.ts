@@ -10,25 +10,25 @@ app.use('/api/users', userRoutes);
 // Mock the User model
 jest.mock('../models/user');
 
-// Optional: Jest timeout if needed
-jest.setTimeout(10000);  // Adjust this based on your test suite needs
+// Use supertest agent to maintain a persistent connection
+const agent = request.agent(app);
 
 describe('User Routes', () => {
-    // Clean up mocks and timers before each test
+    // Use fake timers to clear any pending timers
     beforeEach(() => {
+        jest.useFakeTimers();
         jest.clearAllMocks();
-        jest.clearAllTimers();  // In case there are timers
     });
 
-    // If you need to close a server, you can handle it here (usually unnecessary for supertest)
-    afterAll(() => {
-        // You can perform additional cleanup if needed (e.g., closing DB connections)
-        jest.restoreAllMocks();  // Restore original behavior of all mocked functions
+    // Ensure all timers are cleared after each test
+    afterEach(() => {
+        jest.runOnlyPendingTimers(); // Run all pending timers
+        jest.useRealTimers(); // Reset to real timers
     });
 
     describe('POST /signup', () => {
         it('should return 400 if any required field is missing', async () => {
-            const response = await request(app)
+            const response = await agent
                 .post('/api/users/signup')
                 .send({
                     firstName: 'John',
@@ -45,7 +45,7 @@ describe('User Routes', () => {
         });
 
         it('should return 400 if passwords do not match', async () => {
-            const response = await request(app)
+            const response = await agent
                 .post('/api/users/signup')
                 .send({
                     firstName: 'John',
@@ -65,7 +65,7 @@ describe('User Routes', () => {
         it('should return 409 if user already exists', async () => {
             (User.findOne as jest.Mock).mockResolvedValueOnce({});  // Mock an existing user
 
-            const response = await request(app)
+            const response = await agent
                 .post('/api/users/signup')
                 .send({
                     firstName: 'John',
@@ -86,7 +86,7 @@ describe('User Routes', () => {
             (User.findOne as jest.Mock).mockResolvedValueOnce(null);  // No user found
             (User.prototype.save as jest.Mock).mockResolvedValueOnce({});  // Successful save
 
-            const response = await request(app)
+            const response = await agent
                 .post('/api/users/signup')
                 .send({
                     firstName: 'John',
@@ -109,7 +109,7 @@ describe('User Routes', () => {
         it('should return 401 if user is not found', async () => {
             (User.findOne as jest.Mock).mockResolvedValueOnce(null);  // No user found
 
-            const response = await request(app)
+            const response = await agent
                 .post('/api/users/login')
                 .send({
                     identifier: 'johndoe',
@@ -126,7 +126,7 @@ describe('User Routes', () => {
             };
             (User.findOne as jest.Mock).mockResolvedValueOnce(mockUser);
 
-            const response = await request(app)
+            const response = await agent
                 .post('/api/users/login')
                 .send({
                     identifier: 'johndoe',
@@ -147,7 +147,7 @@ describe('User Routes', () => {
             };
             (User.findOne as jest.Mock).mockResolvedValueOnce(mockUser);
 
-            const response = await request(app)
+            const response = await agent
                 .post('/api/users/login')
                 .send({
                     identifier: 'johndoe',
