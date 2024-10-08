@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --config jest.config.ts",
-    "start": "npx ts-node src/app.ts"
+    "start": "npx ts-node src/app.ts",
+    "lint": "eslint . --ext .js,.ts" 
   },
   "keywords": [],
   "author": "",
