@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'; // Import jsonwebtoken for creating and verifyin
 import ExpressBrute from 'express-brute'; // Import ExpressBrute for brute-force protection
 import dotenv from 'dotenv'; // Import dotenv to load environment variables
 import { User } from '../models/user'; // Import the User model for interacting with the database
+import { AuthenticatedRequest, authenticateUser } from '../middleware/auth';
 
 //--------------------------------------------------------------------------------------------------------//
 
@@ -53,6 +54,7 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       password,
       accountNumber,
       idNumber,
+      balance: 10000, // Set initial balance
     });
 
     // Hash the user's password before saving it to the database
@@ -114,6 +116,22 @@ router.post('/login', bruteforce.prevent, async (req: Request, res: Response): P
   } catch (error) {
     console.error('Login error:', error); // Log any errors during login process
     res.status(500).json({ message: 'Login failed' }); // Return generic error message
+  }
+});
+
+//--------------------------------------------------------------------------------------------------------//
+
+router.get('/balance', authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    res.status(200).json({ balance: user.balance, accountNumber: user.accountNumber });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ message: 'Failed to fetch user data' });
   }
 });
 

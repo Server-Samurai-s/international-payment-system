@@ -12,6 +12,7 @@ export interface IUser extends Document {
   password: string;
   accountNumber: string;
   idNumber: string;
+  balance: number;
   hashPassword(): Promise<void>; // Method to hash the user's password
   comparePassword(candidatePassword: string): Promise<boolean>; // Method to compare the candidate password with the hashed password
 }
@@ -55,6 +56,11 @@ const userSchema: Schema<IUser> = new Schema({
     type: String,
     required: true, // ID number is required
     match: /^\d{13}$/, // Regular expression to ensure ID number is exactly 13 digits
+  },
+  balance: {
+    type: Number,
+    default: 10000, // Set default balance to 10000
+    required: true,
   },
 });
 
