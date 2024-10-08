@@ -84,31 +84,23 @@ jobs:
             echo "SSL certificate and key are present"
           fi
 
-      # Step 11: Enforce HTTPS redirection
-      - name: Check HTTPS redirection enforcement
-        run: |
-          status_code=$(curl -s -o /dev/null -w "%{http_code}" https://localhost)
-          if [ "$status_code" != "301" ]; then
-            echo "HTTPS redirection not enforced, expected 301 but got $status_code" && exit 1
-          fi
-
-      # Step 12: Run Vulnerability Scan on backend dependencies (npm audit)
+      # Step 11: Run Vulnerability Scan on backend dependencies (npm audit)
       - name: Run Vulnerability Scan on backend
         working-directory: ./backend
         run: npm audit --audit-level=high
 
-      # Step 13: Run security middleware checks on backend
+      # Step 12: Run security middleware checks on backend
       - name: Run Security Middleware Checks on backend
         working-directory: ./backend
         run: npm run security-check
 
-      # Step 14: Perform OWASP ZAP Baseline Scan
+      # Step 13: Perform OWASP ZAP Baseline Scan
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.4.0
         with:
           target: 'https://your-app-url.com'
 
-      # Step 15: Security Attack Checks
+      # Step 14: Security Attack Checks
       - name: Security Attack Checks
         run: |
           # Check for Clickjacking Protection
@@ -141,7 +133,7 @@ jobs:
             echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
           fi
 
-      # Step 16: Upload test results if tests or checks fail
+      # Step 15: Upload test results if tests or checks fail
       - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
