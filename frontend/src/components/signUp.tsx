@@ -18,7 +18,7 @@ interface FormState {
 
 const SignUp: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
-
+    
     const [form, setForm] = useState<FormState>({
         firstName: '',
         lastName: '',

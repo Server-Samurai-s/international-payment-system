@@ -1,7 +1,7 @@
 .payment-form__full-page-container {
     position: relative;
     min-height: 100vh;
-    background-color: #0b0e1a;
+    background-color: #000;
     display: flex;
     align-items: center;
     justify-content: center;
