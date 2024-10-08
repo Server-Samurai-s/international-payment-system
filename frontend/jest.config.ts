@@ -1,14 +1,17 @@
-export {};
+import type { Config } from '@jest/types';
 
-module.exports = {
+const config: Config.InitialOptions = {
   preset: 'ts-jest',
-  testEnvironment: 'jsdom',
+  testEnvironment: 'jsdom', // Use 'jsdom' for frontend tests
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
   moduleNameMapper: {
     '\\.(css|less)$': 'identity-obj-proxy',
-    '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/fileMock.js', // Add this line
+    '^@react-three/fiber$': '<rootDir>/src/__mocks__/@react-three/fiber.ts', // Add this line
+    '^@react-three/drei$': '<rootDir>/src/__mocks__/@react-three/drei.ts', // Add this line
   },
-  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'], // Optional: if you have a setup file
 };
+
+export default config;
