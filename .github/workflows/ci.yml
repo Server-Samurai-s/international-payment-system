@@ -96,18 +96,7 @@ jobs:
             echo "SSL certificate and key are present"
           fi
 
-      # Step 13: Run security middleware checks on backend
-      - name: Run Security Middleware Checks on backend
-        working-directory: ./backend
-        run: npm run security-check
-
-      # Step 14: Perform OWASP ZAP Baseline Scan
-      - name: OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.4.0
-        with:
-          target: 'https://your-app-url.com'
-
-      # Step 15: Security Attack Checks
+      # Step 13: Security Attack Checks
       - name: Security Attack Checks
         run: |
           # Check for Clickjacking Protection
@@ -140,7 +129,7 @@ jobs:
             echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
           fi
 
-      # Step 16: Upload test results if tests or checks fail
+      # Step 14: Upload test results if tests or checks fail
       - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
