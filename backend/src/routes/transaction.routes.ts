@@ -81,8 +81,6 @@ router.post(
         return;
       }
 
-
-
       // Create a new transaction object and sanitize inputs
       const newTransaction: Transaction = {
         user: userId!, // Assign the authenticated user ID
