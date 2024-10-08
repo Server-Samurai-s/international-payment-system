@@ -1,4 +1,4 @@
-import express, { Response, Request } from "express"; // Import express for routing, Request and Response types for type safety
+import express, { Response } from "express"; // Import express for routing, Request and Response types for type safety
 import { authenticateUser, AuthenticatedRequest } from "../middleware/auth"; // Import authentication middleware and custom request type
 import { Transaction } from "../models/transaction"; // Import Transaction interface
 import validator from "validator"; // Import validator for input sanitization and validation

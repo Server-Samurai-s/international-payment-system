@@ -1,7 +1,6 @@
 import request from 'supertest';
 import express from 'express';
 import transactionRoutes from './transaction.routes';
-import { authenticateUser } from '../middleware/auth';
 
 const app = express();
 app.use(express.json());
@@ -76,8 +75,6 @@ describe('Transaction Routes', () => {
 
             expect(response.body).toEqual({ message: 'Invalid recipient name' });
         });
-
-        // Add more tests for other validation cases...
     });
 
     describe('GET /transactions', () => {
