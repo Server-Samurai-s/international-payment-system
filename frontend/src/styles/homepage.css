@@ -1,0 +1,134 @@
+/* General body styling */
+body {
+    font-family: 'Kumbh Sans', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .hero-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+    z-index: 0; /* Ensures it's behind the content but above the background */
+  }
+  
+  .hero-wave svg {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 167px;
+  }
+  
+  .hero-wave .shape-fill {
+    fill: #383838;
+  }
+  
+  .hero-section {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background-color: transparent;
+    padding: 10px 20px;
+    height: 100vh; /* Full viewport height */
+    position: relative;
+  }
+  
+  .hero-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    width: 90%;
+    max-width: 1200px;
+    margin-top: 20px;
+  }
+  
+  .hero-content {
+    flex: 1;
+    margin-right: 20px;
+    margin-top: 100px;
+  }
+  
+  .trusted-by {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    margin-left: 10%;
+  }
+  
+  .trusted-heading {
+    margin-right: 10px;
+    font-size: 24px;
+  }
+  
+  .trusted-by img {
+    height: 40px;
+  }
+  
+  .hero-image {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .hero-image img {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+  }
+  
+  .color-blue {
+    font-size: 52px;
+    font-weight: 800;
+    color: #2a8ed6;
+    margin: 20px 0 0px 5px;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .color-blue:hover {
+    transform: translateY(-5px);
+    animation: colorSwap 1s forwards;
+  }
+  
+  .home-heading {
+    font-size: 52px;
+    font-weight: 800;
+    margin: 20px 0 0px 40px;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .home-heading:hover {
+    transform: translateY(-5px);
+    animation: colorSwapHeading 1s forwards;
+  }
+  
+  @keyframes colorSwap {
+    0% {
+      color: #2a8ed6;
+    }
+    50% {
+      color: black;
+    }
+    100% {
+      color: #2a8ed6;
+    }
+  }
+  
+  @keyframes colorSwapHeading {
+    0% {
+      color: black;
+    }
+    50% {
+      color: #2a8ed6;
+    }
+    100% {
+      color: black;
+    }
+  }
+  
