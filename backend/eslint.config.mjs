@@ -8,7 +8,11 @@ export default [
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     languageOptions: {
       sourceType: "module",
-      globals: globals.browser, 
+      ecmaVersion: "latest",
+      globals: {
+        ...globals.browser,  // Correct placement of browser globals
+        ...globals.node,     // Add node globals if needed
+      },
     },
   },
   pluginJs.configs.recommended,
@@ -17,7 +21,7 @@ export default [
   {
     settings: {
       react: {
-        version: "detect", 
+        version: "detect",  // Automatically detect React version
       },
     },
   },
