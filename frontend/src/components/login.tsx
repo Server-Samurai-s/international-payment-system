@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import '../styles/login.css';
+import SuccessMessage from './successMessage';
 
 interface FormState {
     identifier: string;
@@ -14,6 +15,10 @@ const Login: React.FC = () => {
         identifier: '',
         password: '',
     });
+
+    const [showSuccess, setShowSuccess] = useState(false);
+
+
 
     const [errors, setErrors] = useState<Partial<FormState>>({});
     const [submitted, setSubmitted] = useState(false);
@@ -84,8 +89,10 @@ const Login: React.FC = () => {
             localStorage.setItem("firstName", firstName);
             localStorage.setItem("userId", userId);
 
+            setShowSuccess(true);
+            
             setForm({ identifier: '', password: '' });
-            navigate('/dashboard');
+            setTimeout(() => navigate('/dashboard'), 2000);
         } catch (error) {
             window.alert(error);
         }
@@ -100,7 +107,6 @@ const Login: React.FC = () => {
                 <h3>Login Form</h3>
                 <form onSubmit={onSubmit} noValidate>
                     <div className="form-group">
-                        <label htmlFor="identifier">Username or Account Number</label>
                         <input
                             type="text"
                             className={`form-control ${submitted && errors.identifier ? 'is-invalid' : ''}`}
@@ -115,7 +121,6 @@ const Login: React.FC = () => {
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="password">Password</label>
                         <input
                             type="password"
                             className={`form-control ${submitted && errors.password ? 'is-invalid' : ''}`}
@@ -134,16 +139,17 @@ const Login: React.FC = () => {
                     </button>
                 </form>
 
-                <div className="text-center mt-4">
+                {/* <div className="text-center mt-4">
                     <Link to="/forgot-password" className="btn btn-outline-info">
                         Forgot Password?
                     </Link>
-                </div>
+                </div> */}
 
                 <div className="text-center mt-4">
                     <p>Don't have an account? <Link to="/signup" className="btn btn-link">Sign Up</Link></p>
                 </div>
             </div>
+            {showSuccess && <SuccessMessage message="Login successful! Redirecting..." />}
         </div>
     );
 };

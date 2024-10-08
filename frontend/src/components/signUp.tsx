@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import '../styles/signUp.css';
+import SuccessMessage from './successMessage';
 
 interface FormState {
     firstName: string;
@@ -16,6 +17,8 @@ interface FormState {
 }
 
 const SignUp: React.FC = () => {
+    const [showSuccess, setShowSuccess] = useState(false);
+
     const [form, setForm] = useState<FormState>({
         firstName: '',
         lastName: '',
@@ -117,7 +120,8 @@ const SignUp: React.FC = () => {
                     firstName: '', lastName: '', emailAddress: '', username: '', password: '', confirmPassword: '', accountNumber: '', idNumber: '',
                 });
                 setSubmitted(false);
-                navigate('/login');
+                setShowSuccess(true);
+                setTimeout(() => navigate('/login'), 2000);
             } catch (error) {
                 window.alert(error);
             }
@@ -228,6 +232,7 @@ const SignUp: React.FC = () => {
                     <p>An existing customer? <a href="/login">Click to Login</a></p>
                 </div>
             </div>
+            {showSuccess && <SuccessMessage message="Account created successfully! Redirecting to login..." />}
         </div>
     );
 };

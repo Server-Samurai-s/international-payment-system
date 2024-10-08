@@ -116,11 +116,11 @@ const CustomerDashboard: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="customer-dashboard__menu">
+                {/* <div className="customer-dashboard__menu">
                     <h6>Quick Menu</h6>
                     <button className="customer-dashboard__menu-btn">Transactions</button>
                     <button className="customer-dashboard__menu-btn">Payments</button>
-                </div>
+                </div> */}
 
                 <div className="text-center">
                     <button onClick={handlePaymentsBtn} className="customer-dashboard__btn-main">
