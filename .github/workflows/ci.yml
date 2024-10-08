@@ -15,44 +15,72 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
+      # Step 2: Clear npm cache to prevent issues
+      - name: Clear npm cache
+        run: npm cache clean --force
+
+      # Step 3: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      # Step 3: Install backend dependencies
+      # Step 4: Install backend dependencies with retry logic using npm ci
       - name: Install backend dependencies
         working-directory: ./backend
-        run: npm install
+        run: |
+          retries=3
+          count=0
+          until [ $count -ge $retries ]
+          do
+            npm ci && break
+            count=$((count+1))
+            echo "Retrying npm ci... ($count/$retries)"
+            sleep 10
+          done
 
-      # Step 4: Install frontend dependencies
+      # Step 5: Install frontend dependencies with retry logic using npm ci
       - name: Install frontend dependencies
         working-directory: ./frontend
-        run: npm install
+        run: |
+          retries=3
+          count=0
+          until [ $count -ge $retries ]
+          do
+            npm ci && break
+            count=$((count+1))
+            echo "Retrying npm ci... ($count/$retries)"
+            sleep 10
+          done
 
-      # Step 5: Run backend unit tests
-      - name: Run backend security unit tests
+      # Step 6: Install TypeScript and ts-node for frontend (for Jest config parsing)
+      - name: Install TypeScript and ts-node
+        working-directory: ./frontend
+        run: npm install typescript ts-node --save-dev
+
+      # Step 7: Run backend unit tests
+      - name: Run backend unit tests
         working-directory: ./backend
         run: |
-          npm run test -- --detectOpenHandles # Ensure backend tests include password hashing, salting, and RegEx input validation
+          npm run test -- --detectOpenHandles
 
-      # Step 6: Run frontend unit tests
-      - name: Run frontend tests
+      # Step 8: Run frontend unit tests
+      - name: Run frontend unit tests
         working-directory: ./frontend
-        run: npm run test
+        run: |
+          npm run test -- --detectOpenHandles
 
-      # Step 7: Run ESLint for backend
+      # Step 9: Run ESLint on backend
       - name: Run ESLint on backend
         working-directory: ./backend
         run: npm run lint
 
-      # Step 8: Run ESLint for frontend
+      # Step 10: Run ESLint on frontend
       - name: Run ESLint on frontend
         working-directory: ./frontend
         run: npm run lint
 
-      # Step 9: Check for SSL certificate and key presence (for SSL encryption)
+      # Step 11: Check for SSL certificate and key presence
       - name: Check SSL configuration
         run: |
           if [ ! -f /path/to/your/ssl/cert ] || [ ! -f /path/to/your/ssl/key ]; then
@@ -61,7 +89,7 @@ jobs:
             echo "SSL certificate and key are present"
           fi
 
-      # Step 10: Enforce HTTPS in application
+      # Step 12: Enforce HTTPS redirection
       - name: Check HTTPS redirection enforcement
         run: |
           status_code=$(curl -s -o /dev/null -w "%{http_code}" https://localhost)
@@ -69,23 +97,23 @@ jobs:
             echo "HTTPS redirection not enforced, expected 301 but got $status_code" && exit 1
           fi
 
-      # Step 11: Run Vulnerability Scan for known vulnerabilities in backend dependencies
-      - name: Run Vulnerability Scan on backend (npm audit)
+      # Step 13: Run Vulnerability Scan on backend dependencies (npm audit)
+      - name: Run Vulnerability Scan on backend
         working-directory: ./backend
         run: npm audit --audit-level=high
 
-      # Step 12: Run Security Middleware Checks for backend
+      # Step 14: Run security middleware checks on backend
       - name: Run Security Middleware Checks on backend
         working-directory: ./backend
-        run: npm run security-check # Ensure Helmet and Express Brute are configured in the project
+        run: npm run security-check
 
-      # Step 13: Perform OWASP ZAP Baseline Scan for vulnerabilities
+      # Step 15: Perform OWASP ZAP Baseline Scan
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.4.0
         with:
           target: 'https://your-app-url.com'
 
-      # Step 14: Security Attack Checks
+      # Step 16: Security Attack Checks
       - name: Security Attack Checks
         run: |
           # Check for Clickjacking Protection
@@ -118,8 +146,8 @@ jobs:
             echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
           fi
 
-      # Step 15: Upload results (optional)
-      - name: Upload test results
+      # Step 17: Upload test results if tests or checks fail
+      - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
         with:
