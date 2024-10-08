@@ -109,9 +109,9 @@ jobs:
             echo "Session hijacking protection missing (cookie-session or express-session)" && exit 1
           fi
 
-          # Check for SQL Injection Prevention
-          if ! grep -q "parameterized queries" ./backend/src/db.js; then
-            echo "SQL Injection protection missing (use parameterized queries)" && exit 1
+          # Check for SQL Injection Prevention (ensure Mongoose is used in transaction operations)
+          if ! grep -q "mongoose" ./backend/src/routes/transaction.router.ts; then
+            echo "SQL Injection protection missing (ensure Mongoose is used for database operations)" && exit 1
           fi
 
           # Check for Cross-Site Scripting (XSS) Protection
