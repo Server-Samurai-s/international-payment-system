@@ -15,7 +15,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
+      # Step 2: Set up Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -31,28 +31,34 @@ jobs:
         working-directory: ./frontend
         run: npm install
 
-      # Step 5: Run backend unit tests
-      - name: Run backend security unit tests
+      # Step 5: Install TypeScript and ts-node for frontend (for Jest config parsing)
+      - name: Install TypeScript and ts-node
+        working-directory: ./frontend
+        run: npm install typescript ts-node --save-dev
+
+      # Step 6: Run backend unit tests
+      - name: Run backend unit tests
         working-directory: ./backend
         run: |
-          npm run test -- --detectOpenHandles # Ensure backend tests include password hashing, salting, and RegEx input validation
+          npm run test -- --detectOpenHandles # Ensure backend tests check security like password hashing and validation
 
-      # Step 6: Run frontend unit tests
-      - name: Run frontend tests
+      # Step 7: Run frontend unit tests (ensure ts-node is available)
+      - name: Run frontend unit tests
         working-directory: ./frontend
-        run: npm run test
+        run: |
+          npm run test -- --detectOpenHandles # Ensure Jest handles TypeScript config correctly
 
-      # Step 7: Run ESLint for backend
+      # Step 8: Run ESLint on backend
       - name: Run ESLint on backend
         working-directory: ./backend
         run: npm run lint
 
-      # Step 8: Run ESLint for frontend
+      # Step 9: Run ESLint on frontend
       - name: Run ESLint on frontend
         working-directory: ./frontend
         run: npm run lint
 
-      # Step 9: Check for SSL certificate and key presence (for SSL encryption)
+      # Step 10: Check for SSL certificate and key presence
       - name: Check SSL configuration
         run: |
           if [ ! -f /path/to/your/ssl/cert ] || [ ! -f /path/to/your/ssl/key ]; then
@@ -61,7 +67,7 @@ jobs:
             echo "SSL certificate and key are present"
           fi
 
-      # Step 10: Enforce HTTPS in application
+      # Step 11: Enforce HTTPS redirection
       - name: Check HTTPS redirection enforcement
         run: |
           status_code=$(curl -s -o /dev/null -w "%{http_code}" https://localhost)
@@ -69,23 +75,23 @@ jobs:
             echo "HTTPS redirection not enforced, expected 301 but got $status_code" && exit 1
           fi
 
-      # Step 11: Run Vulnerability Scan for known vulnerabilities in backend dependencies
-      - name: Run Vulnerability Scan on backend (npm audit)
+      # Step 12: Run Vulnerability Scan on backend dependencies (npm audit)
+      - name: Run Vulnerability Scan on backend
         working-directory: ./backend
         run: npm audit --audit-level=high
 
-      # Step 12: Run Security Middleware Checks for backend
+      # Step 13: Run security middleware checks on backend
       - name: Run Security Middleware Checks on backend
         working-directory: ./backend
-        run: npm run security-check # Ensure Helmet and Express Brute are configured in the project
+        run: npm run security-check # Check Helmet, rate-limiting, etc.
 
-      # Step 13: Perform OWASP ZAP Baseline Scan for vulnerabilities
+      # Step 14: Perform OWASP ZAP Baseline Scan
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.4.0
         with:
           target: 'https://your-app-url.com'
 
-      # Step 14: Security Attack Checks
+      # Step 15: Run additional security attack checks
       - name: Security Attack Checks
         run: |
           # Check for Clickjacking Protection
@@ -118,8 +124,8 @@ jobs:
             echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
           fi
 
-      # Step 15: Upload results (optional)
-      - name: Upload test results
+      # Step 16: Upload test results if any step fails
+      - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
         with:
