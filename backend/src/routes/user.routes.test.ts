@@ -1,7 +1,7 @@
 import request from 'supertest';
 import express from 'express';
-import { User } from '../models/user';  // Assuming you're mocking this model
-import userRoutes from './user.routes'; // Assuming your routes are in this file
+import { User } from '../models/user';  // Mocked user model
+import userRoutes from './user.routes'; // Your user routes
 
 const app = express();
 app.use(express.json());
@@ -10,13 +10,20 @@ app.use('/api/users', userRoutes);
 // Mock the User model
 jest.mock('../models/user');
 
+// Optional: Jest timeout if needed
+jest.setTimeout(10000);  // Adjust this based on your test suite needs
+
 describe('User Routes', () => {
+    // Clean up mocks and timers before each test
     beforeEach(() => {
-        jest.clearAllMocks();  // Clears all mock usage before each test
+        jest.clearAllMocks();
+        jest.clearAllTimers();  // In case there are timers
     });
 
+    // If you need to close a server, you can handle it here (usually unnecessary for supertest)
     afterAll(() => {
-        jest.restoreAllMocks();  // Restores original implementation of mocks
+        // You can perform additional cleanup if needed (e.g., closing DB connections)
+        jest.restoreAllMocks();  // Restore original behavior of all mocked functions
     });
 
     describe('POST /signup', () => {
@@ -46,7 +53,7 @@ describe('User Routes', () => {
                     emailAddress: 'john.doe@example.com',
                     username: 'johndoe',
                     password: 'password123',
-                    confirmPassword: 'password456',  // Non-matching passwords
+                    confirmPassword: 'password456',  // Mismatching passwords
                     accountNumber: '12345678',
                     idNumber: '87654321',
                 });
@@ -56,7 +63,7 @@ describe('User Routes', () => {
         });
 
         it('should return 409 if user already exists', async () => {
-            (User.findOne as jest.Mock).mockResolvedValueOnce({});  // Mock user found
+            (User.findOne as jest.Mock).mockResolvedValueOnce({});  // Mock an existing user
 
             const response = await request(app)
                 .post('/api/users/signup')
@@ -77,8 +84,7 @@ describe('User Routes', () => {
 
         it('should return 201 and token if user is created successfully', async () => {
             (User.findOne as jest.Mock).mockResolvedValueOnce(null);  // No user found
-            (User.prototype.save as jest.Mock).mockResolvedValueOnce({});  // Mock successful save
-            (User.prototype.hashPassword as jest.Mock).mockResolvedValueOnce({});  // Mock password hashing
+            (User.prototype.save as jest.Mock).mockResolvedValueOnce({});  // Successful save
 
             const response = await request(app)
                 .post('/api/users/signup')
@@ -95,7 +101,7 @@ describe('User Routes', () => {
 
             expect(response.status).toBe(201);
             expect(response.body.message).toBe('User registered successfully');
-            expect(response.body.token).toBeDefined();  // Check if the token is returned
+            expect(response.body.token).toBeDefined();  // Check for the token
         });
     });
 
@@ -116,7 +122,7 @@ describe('User Routes', () => {
 
         it('should return 401 if password is incorrect', async () => {
             const mockUser = {
-                comparePassword: jest.fn().mockResolvedValueOnce(false),  // Password mismatch
+                comparePassword: jest.fn().mockResolvedValueOnce(false),  // Incorrect password
             };
             (User.findOne as jest.Mock).mockResolvedValueOnce(mockUser);
 
@@ -124,7 +130,7 @@ describe('User Routes', () => {
                 .post('/api/users/login')
                 .send({
                     identifier: 'johndoe',
-                    password: 'wrongpassword',  // Incorrect password
+                    password: 'wrongpassword',
                 });
 
             expect(response.status).toBe(401);
@@ -150,7 +156,7 @@ describe('User Routes', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('Authentication successful');
-            expect(response.body.token).toBeDefined();  // Check if the token is returned
+            expect(response.body.token).toBeDefined();  // Check for the token
             expect(response.body.userId).toBe(mockUser._id);
             expect(response.body.username).toBe(mockUser.username);
             expect(response.body.accountNumber).toBe(mockUser.accountNumber);
@@ -158,5 +164,3 @@ describe('User Routes', () => {
         });
     });
 });
-
-jest.setTimeout(10000);
