@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -14,8 +15,8 @@ describe('Login Component', () => {
 
     test('renders login form', () => {
         expect(screen.getByText(/Login Form/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Username or Account Number/i)).toBeInTheDocument();
-        expect(screen.getByLabelText(/Password/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter username or account number/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter password/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument();
     });
 
@@ -29,8 +30,8 @@ describe('Login Component', () => {
     });
 
     test('shows password length validation error', async () => {
-        fireEvent.change(screen.getByLabelText(/Username or Account Number/i), { target: { value: 'testuser' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'short' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'short' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
         await waitFor(() => {
@@ -46,8 +47,8 @@ describe('Login Component', () => {
             })
         ) as jest.Mock;
 
-        fireEvent.change(screen.getByLabelText(/Username or Account Number/i), { target: { value: 'testuser' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'validpassword' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'validpassword' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
         await waitFor(() => {
@@ -66,12 +67,47 @@ describe('Login Component', () => {
             })
         ) as jest.Mock;
 
-        fireEvent.change(screen.getByLabelText(/Username or Account Number/i), { target: { value: 'testuser' } });
-        fireEvent.change(screen.getByLabelText(/Password/i), { target: { value: 'wrongpassword' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'wrongpassword' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
         await waitFor(() => {
             expect(screen.getByText(/Incorrect password/i)).toBeInTheDocument();
+        });
+    });
+
+    test('shows error message for non-existent user', async () => {
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: false,
+                status: 404,
+                statusText: 'Not Found',
+            })
+        ) as jest.Mock;
+
+        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'nonexistentuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'somepassword' } });
+        fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
+
+        await waitFor(() => {
+            expect(screen.getByText(/Username or Account Number not found/i)).toBeInTheDocument();
+        });
+    });
+
+    test('shows success message on successful login', async () => {
+        global.fetch = jest.fn(() =>
+            Promise.resolve({
+                ok: true,
+                json: () => Promise.resolve({ token: 'fake-token', firstName: 'John', userId: '123' }),
+            })
+        ) as jest.Mock;
+
+        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'validpassword' } });
+        fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
+
+        await waitFor(() => {
+            expect(screen.getByText(/Login successful! Redirecting.../i)).toBeInTheDocument();
         });
     });
 });

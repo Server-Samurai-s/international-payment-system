@@ -1,125 +1,164 @@
-import request from 'supertest'; // Import the supertest library for HTTP assertions
-import express from 'express'; // Import the express framework for routing
-import transactionRoutes from './transaction.routes'; // Import the transaction routes
+import request from 'supertest';
+import express from 'express';
+import transactionRoutes from './transaction.routes';
+import { User } from '../models/user';
+import { ObjectId } from 'mongodb';
 
-//--------------------------------------------------------------------------------------------------------//
+jest.mock('../models/user', () => ({
+    User: {
+        findById: jest.fn(),
+    },
+}));
 
-const app = express(); // Initialize an Express application
-app.use(express.json()); // Enable JSON request body parsing
-app.use('/transactions', transactionRoutes); // Use the transaction routes under the /transactions endpoint
+jest.mock('express-rate-limit', () => jest.fn(() => (_req: express.Request, res: express.Response, next: express.NextFunction) => next()));
+jest.mock('helmet', () => jest.fn(() => (_req: express.Request, _res: express.Response, next: express.NextFunction) => next()));
 
-//--------------------------------------------------------------------------------------------------------//
+const app = express();
+app.use(express.json());
+app.use('/transactions', transactionRoutes);
 
-// Mock the authenticateUser middleware
 jest.mock('../middleware/auth', () => ({
     authenticateUser: jest.fn((req, res, next) => {
-        req.userId = 'testUserId'; // Simulate adding userId to the request
-        next(); // Call the next middleware
+        req.userId = new ObjectId().toHexString();
+        next();
     }),
 }));
 
-//--------------------------------------------------------------------------------------------------------//
-
-// Mock the database collection
 const mockCollection = {
-    insertOne: jest.fn(), // Mock the insertOne function
+    insertOne: jest.fn(),
     find: jest.fn().mockReturnValue({
-        toArray: jest.fn(), // Mock the toArray function of the find method
+        toArray: jest.fn(),
     }),
 };
 
-//--------------------------------------------------------------------------------------------------------//
-
-// Assign the mocked collection to the app's local database
 app.locals.db = {
-    collection: jest.fn().mockReturnValue(mockCollection), // Mock the collection method
+    collection: jest.fn().mockReturnValue(mockCollection),
 };
-//--------------------------------------------------------------------------------------------------------//
 
-describe('Transaction Routes', () => { // Group test cases for transaction routes
+describe('Transaction Routes', () => {
     beforeEach(() => {
-        jest.clearAllMocks(); // Clear mocks before each test to ensure no state leakage
+        jest.clearAllMocks();
     });
 
-//--------------------------------------------------------------------------------------------------------//
+    describe('POST /transactions/create', () => {
+        it('should create a new transaction with valid data', async () => {
+            const testUserId = new ObjectId();
+            const initialBalance = 1000;
+            const transactionAmount = 100.50;
 
-    describe('POST /transactions/create', () => { // Group tests for the create transaction route
-        it('should create a new transaction with valid data', async () => { // Test for successful transaction creation
-            const transactionData = { // Valid transaction data
+            (User.findById as jest.Mock).mockResolvedValue({
+                _id: testUserId,
+                balance: initialBalance,
+                save: jest.fn().mockResolvedValue(true)
+            });
+
+            mockCollection.insertOne.mockResolvedValue({ insertedId: new ObjectId() });
+
+            const transactionData = {
                 recipientName: 'John Doe',
                 recipientBank: 'Bank of Test',
                 accountNumber: '123456789012',
-                amount: '100.50',
-                swiftCode: 'TESTUS33',
+                amount: transactionAmount.toString(),
+                swiftCode: 'TESTUS33XXX',
             };
 
-            mockCollection.insertOne.mockResolvedValue({ insertedId: 'testTransactionId' }); // Mock response for insertOne
-
-            const response = await request(app) // Make a POST request to create a transaction
-                .post('/transactions/create')
-                .send(transactionData) // Send the transaction data
-                .expect(201); // Expect a 201 Created response
-
-            expect(response.body).toEqual({ insertedId: 'testTransactionId' }); // Check the response body
-            expect(mockCollection.insertOne).toHaveBeenCalledWith(expect.objectContaining({ // Validate the parameters for insertOne
-                user: 'testUserId', // Ensure the userId is included
-                recipientName: 'John Doe',
-                recipientBank: 'Bank of Test',
-                accountNumber: '123456789012',
-                amount: 100.50, // Ensure the amount is a number
-                swiftCode: 'TESTUS33',
-            }));
-        });
-
-//--------------------------------------------------------------------------------------------------------//
-
-        it('should return 400 for invalid recipient name', async () => { // Test for validation failure
-            const transactionData = { // Invalid transaction data
-                recipientName: 'John123', // Invalid name with numbers
-                recipientBank: 'Bank of Test',
-                accountNumber: '123456789012',
-                amount: '100.50',
-                swiftCode: 'TESTUS33',
-            };
-
-            const response = await request(app) // Make a POST request with invalid data
+            const response = await request(app)
                 .post('/transactions/create')
                 .send(transactionData)
-                .expect(400); // Expect a 400 Bad Request response
+                .expect(201);
 
-            expect(response.body).toEqual({ message: 'Invalid recipient name' }); // Check the response message
+            expect(response.body).toHaveProperty('message', 'Transaction successful');
+            expect(response.body).toHaveProperty('transaction');
+            expect(response.body).toHaveProperty('newBalance', initialBalance - transactionAmount);
+
+            expect(User.findById).toHaveBeenCalled();
+            expect(mockCollection.insertOne).toHaveBeenCalled();
+        });
+
+        it('should return 400 for invalid recipient name', async () => {
+            const transactionData = {
+                recipientName: 'John123',
+                recipientBank: 'Bank of Test',
+                accountNumber: '123456789012',
+                amount: '100.50',
+                swiftCode: 'TESTUS33XXX',
+            };
+
+            const response = await request(app)
+                .post('/transactions/create')
+                .send(transactionData)
+                .expect(400);
+
+            expect(response.body).toEqual({ message: 'Invalid recipient name' });
+        });
+
+        it('should return 400 for insufficient funds', async () => {
+            const testUserId = new ObjectId();
+            (User.findById as jest.Mock).mockResolvedValue({
+                _id: testUserId,
+                balance: 50,
+                save: jest.fn().mockResolvedValue(true)
+            });
+
+            const transactionData = {
+                recipientName: 'John Doe',
+                recipientBank: 'Bank of Test',
+                accountNumber: '123456789012',
+                amount: '100.50',
+                swiftCode: 'TESTUS33XXX',
+            };
+
+            const response = await request(app)
+                .post('/transactions/create')
+                .send(transactionData)
+                .expect(400);
+
+            expect(response.body).toEqual({ message: 'Insufficient funds' });
+        });
+
+        it('should return 400 for invalid SWIFT code', async () => {
+            const transactionData = {
+                recipientName: 'John Doe',
+                recipientBank: 'Bank of Test',
+                accountNumber: '123456789012',
+                amount: '100.50',
+                swiftCode: 'INVALID',
+            };
+
+            const response = await request(app)
+                .post('/transactions/create')
+                .send(transactionData)
+                .expect(400);
+
+            expect(response.body).toEqual({ message: 'Invalid SWIFT code format' });
         });
     });
 
-//--------------------------------------------------------------------------------------------------------//
-
-    describe('GET /transactions', () => { // Group tests for retrieving transactions
-        it('should retrieve all transactions for the authenticated user', async () => { // Test for successful retrieval
-            const transactions = [ // Mock transaction data
+    describe('GET /transactions', () => {
+        it('should retrieve all transactions for the authenticated user', async () => {
+            const transactions = [
                 { user: 'testUserId', amount: 100.50 },
                 { user: 'testUserId', amount: 200.75 },
             ];
 
-            mockCollection.find().toArray.mockResolvedValue(transactions); // Mock response for finding transactions
+            mockCollection.find().toArray.mockResolvedValue(transactions);
 
-            const response = await request(app) // Make a GET request to retrieve transactions
+            const response = await request(app)
                 .get('/transactions')
-                .expect(200); // Expect a 200 OK response
+                .expect(200);
 
-            expect(response.body).toEqual(transactions); // Check the response body
-            expect(mockCollection.find).toHaveBeenCalledWith({ user: 'testUserId' }); // Validate the parameters for find
+            expect(response.body).toEqual(transactions);
+            expect(mockCollection.find).toHaveBeenCalled();
         });
 
-//--------------------------------------------------------------------------------------------------------//
+        it('should return 404 if no transactions are found', async () => {
+            mockCollection.find().toArray.mockResolvedValue([]);
 
-        it('should return 404 if no transactions are found', async () => { // Test for no transactions found
-            mockCollection.find().toArray.mockResolvedValue([]); // Mock an empty response
-
-            const response = await request(app) // Make a GET request to retrieve transactions
+            const response = await request(app)
                 .get('/transactions')
-                .expect(404); // Expect a 404 Not Found response
+                .expect(404);
 
-            expect(response.body).toEqual({ message: 'No transactions found' }); // Check the response message
+            expect(response.body).toEqual({ message: 'No transactions found' });
         });
     });
-});//------------------------------------------END OF FILE---------------------------------------------------//
+});

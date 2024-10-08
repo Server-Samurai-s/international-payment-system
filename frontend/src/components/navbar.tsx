@@ -1,20 +1,41 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import "../styles/Navbar.css"; // Custom CSS for navbar
+import "../styles/Navbar.css";
+import SuccessMessage from "./successMessage";
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
-    const isLoggedIn = !!localStorage.getItem("jwt");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    useEffect(() => {
+        // Check login status whenever the component mounts or updates
+        const checkLoginStatus = () => {
+            const token = localStorage.getItem("jwt");
+            setIsLoggedIn(!!token);
+        };
+
+        checkLoginStatus();
+        // Set up an interval to periodically check login status
+        const intervalId = setInterval(checkLoginStatus, 1000);
+
+        // Clean up the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("jwt");
-        navigate("/login");
+        setIsLoggedIn(false);
+        setShowSuccess(true);
+        setTimeout(() => {
+            setShowSuccess(false);
+            navigate("/");
+        }, 2000);
     };
 
     return (
         <header className="navbar-container">
             <nav className="navbar">
-                {/* Logo or Brand Name */}
                 <NavLink className="navbar-brand" to="/">
                     <h1>IntPay</h1>
                 </NavLink>
@@ -51,6 +72,7 @@ const Navbar: React.FC = () => {
                     </ul>
                 </div>
             </nav>
+            {showSuccess && <SuccessMessage message="Logged out successfully! Redirecting to login..." />}
         </header>
     );
 };

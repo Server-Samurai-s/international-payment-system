@@ -6,6 +6,8 @@ import '../styles/customerDashboard.css';
 
 interface DashboardState {
     firstName: string;
+    balance: number;
+    accountNumber: string;
 }
 
 interface Transaction {
@@ -18,7 +20,11 @@ interface Transaction {
 }
 
 const CustomerDashboard: React.FC = () => {
-    const [dashboard, setDashboard] = useState<DashboardState>({ firstName: "" });
+    const [dashboard, setDashboard] = useState<DashboardState>({ 
+        firstName: "", 
+        balance: 0, 
+        accountNumber: "" 
+    });
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const navigate = useNavigate();
 
@@ -34,10 +40,36 @@ const CustomerDashboard: React.FC = () => {
                 firstName: savedFirstName,
             }));
             fetchTransactions();
+            fetchBalance();
         } else {
             navigate("/login");
         }
     }, [navigate]);
+
+    const fetchBalance = async () => {
+        const token = localStorage.getItem("jwt");
+        if (token) {
+            try {
+                const response = await fetch("https://localhost:3001/user/balance", {
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                    },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setDashboard((prev) => ({
+                        ...prev,
+                        balance: data.balance,
+                        accountNumber: data.accountNumber,
+                    }));
+                } else {
+                    console.error("Failed to fetch balance");
+                }
+            } catch (error) {
+                console.error("Error fetching balance:", error);
+            }
+        }
+    };
 
     const fetchTransactions = async () => {
         const token = localStorage.getItem("jwt");
@@ -80,8 +112,8 @@ const CustomerDashboard: React.FC = () => {
                     <h5>Banking Details</h5>
                     <div className="customer-dashboard__banking-details">
                         <p><strong>Current Account</strong></p>
-                        <p>Account No: XXXXXXXXXXXX</p>
-                        <p>Available Balance: $1500.00</p>
+                        <p>Account No: {dashboard.accountNumber}</p>
+                        <p>Available Balance: ${dashboard.balance.toFixed(2)}</p>
                     </div>
                 </div>
 
@@ -116,11 +148,11 @@ const CustomerDashboard: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="customer-dashboard__menu">
+                {/* <div className="customer-dashboard__menu">
                     <h6>Quick Menu</h6>
                     <button className="customer-dashboard__menu-btn">Transactions</button>
                     <button className="customer-dashboard__menu-btn">Payments</button>
-                </div>
+                </div> */}
 
                 <div className="text-center">
                     <button onClick={handlePaymentsBtn} className="customer-dashboard__btn-main">

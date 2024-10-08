@@ -4,6 +4,7 @@ import { Transaction } from "../models/transaction"; // Import Transaction inter
 import validator from "validator"; // Import validator for input sanitization and validation
 import rateLimit from "express-rate-limit"; // Import rate limiting middleware
 import helmet from "helmet"; // Import helmet for setting security-related HTTP headers
+import { User } from '../models/user';
 
 //--------------------------------------------------------------------------------------------------------//
 
@@ -68,6 +69,18 @@ router.post(
         return;
       }
 
+
+      const user = await User.findById(userId);
+      if (!user) {
+        res.status(404).json({ message: "User not found" });
+        return;
+      }
+
+      if (user.balance < parseFloat(amount)) {
+        res.status(400).json({ message: "Insufficient funds" });
+        return;
+      }
+
       // Create a new transaction object and sanitize inputs
       const newTransaction: Transaction = {
         user: userId!, // Assign the authenticated user ID
@@ -82,7 +95,12 @@ router.post(
       // Insert the new transaction into the database collection
       const collection = req.app.locals.db.collection("transactions");
       const result = await collection.insertOne(newTransaction);
-      res.status(201).send(result); // Respond with the result of the database operation
+
+      // Update user's balance
+      user.balance -= parseFloat(amount);
+      await user.save();
+
+      res.status(201).json({ message: "Transaction successful", transaction: result, newBalance: user.balance });
     } catch (e) {
       console.error("Error uploading transaction:", e); // Log any errors that occur during the process
       res.status(500).send({ message: "Failed to upload transaction" }); // Respond with an error message
