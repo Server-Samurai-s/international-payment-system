@@ -78,7 +78,7 @@ jobs:
       # Step 10: Check for SSL certificate and key presence
       - name: Check SSL configuration
         run: |
-          if [ ! -f /path/to/your/ssl/cert ] || [ ! -f /path/to/your/ssl/key ]; then
+          if [ ! -f ./backend/src/keys/certificate.pem ] || [ ! -f ./backend/src/keys/mongodb-key.pem ]; then
             echo "SSL certificate or key missing" && exit 1
           else
             echo "SSL certificate and key are present"
@@ -112,32 +112,32 @@ jobs:
       - name: Security Attack Checks
         run: |
           # Check for Clickjacking Protection
-          if ! grep -q "frameguard" /path/to/your/app.js; then
+          if ! grep -q "frameguard" ./backend/src/app.js; then
             echo "Clickjacking protection missing (Helmet's frameguard)" && exit 1
           fi
 
           # Check for Session Hijacking Protection
-          if ! grep -q "cookie-session" /path/to/your/app.js; then
+          if ! grep -q "cookie-session" ./backend/src/app.js; then
             echo "Session hijacking protection missing (cookie-session or express-session)" && exit 1
           fi
 
           # Check for SQL Injection Prevention
-          if ! grep -q "parameterized queries" /path/to/your/db.js; then
+          if ! grep -q "parameterized queries" ./backend/src/db.js; then
             echo "SQL Injection protection missing (use parameterized queries)" && exit 1
           fi
 
           # Check for Cross-Site Scripting (XSS) Protection
-          if ! grep -q "xss-clean" /path/to/your/app.js; then
+          if ! grep -q "xss-clean" ./backend/src/app.js; then
             echo "XSS protection missing (xss-clean middleware)" && exit 1
           fi
 
           # Check for Man-in-the-Middle Attack Protection
-          if ! grep -q "strict-transport-security" /path/to/your/app.js; then
+          if ! grep -q "strict-transport-security" ./backend/src/app.js; then
             echo "HSTS header missing (use Helmet to enforce Strict-Transport-Security)" && exit 1
           fi
 
           # DDoS Protection (Rate Limiting and Network Throttling)
-          if ! grep -q "express-rate-limit" /path/to/your/app.js; then
+          if ! grep -q "express-rate-limit" ./backend/src/app.js; then
             echo "DDoS protection missing (express-rate-limit middleware)" && exit 1
           fi
 
