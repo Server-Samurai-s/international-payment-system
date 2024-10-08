@@ -77,22 +77,25 @@
     padding: 5px 10px;
     border-radius: 4px;
     font-size: 0.875rem;
-    top: -30px;
+    top: 105%; 
     left: 0px;
     white-space: nowrap;
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-top: 5px;
+    display: block; 
+    visibility: visible; 
 }
 
 .payment-form__tooltip::after {
     content: "";
     position: absolute;
-    top: 100%;
+    top: -9px; /* Adjust this to make the arrow visible */
     left: 20px;
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #777777 transparent transparent transparent;
+    border-color: transparent transparent #777777 transparent;
 }
 
 /*--------------------------------------------------------------------------------------------------------*\
