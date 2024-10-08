@@ -1,45 +1,40 @@
-import React from "react"; // Import React for building the component
-import "bootstrap/dist/css/bootstrap.css"; // Import Bootstrap CSS for styling
-import { NavLink, useNavigate } from "react-router-dom"; // Import NavLink for navigation links and useNavigate for redirection
-
-//--------------------------------------------------------------------------------------------------------//
+import React from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import "../styles/Navbar.css"; // Custom CSS for navbar
 
 const Navbar: React.FC = () => {
-    const navigate = useNavigate(); // Hook for programmatic navigation
-
-//--------------------------------------------------------------------------------------------------------//
-
-    // Check if the user is logged in by checking the existence of a JWT token in localStorage
+    const navigate = useNavigate();
     const isLoggedIn = !!localStorage.getItem("jwt");
 
-//--------------------------------------------------------------------------------------------------------//
-
-    // Handle logout functionality
     const handleLogout = () => {
-        localStorage.removeItem("jwt"); // Remove the JWT token from localStorage
-        navigate("/login"); // Redirect the user to the login page after logout
+        localStorage.removeItem("jwt");
+        navigate("/login");
     };
 
-//--------------------------------------------------------------------------------------------------------//
-
     return (
-        <div>
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <header className="navbar-container">
+            <nav className="navbar">
+                {/* Logo or Brand Name */}
                 <NavLink className="navbar-brand" to="/">
-                    {/* Add a logo or brand name here if needed */}
+                    <h1>IntPay</h1>
                 </NavLink>
-                <div className="navbar" id="navbarSupportedContent">
-                    <ul className="navbar-nav ml-auto">
-                        {/* Conditionally render the Dashboard link if the user is logged in */}
-                        {isLoggedIn && (
-                            <li className="nav-item">
-                                <NavLink className="nav-link" to="/dashboard">
-                                    Dashboard
-                                </NavLink>
-                            </li>
-                        )}
-                        {/* Conditionally render Login and Register links if the user is not logged in */}
-                        {!isLoggedIn && (
+
+                <div className="navbar-links">
+                    <ul className="nav-links">
+                        {isLoggedIn ? (
+                            <>
+                                <li className="nav-item">
+                                    <NavLink className="nav-link" to="/dashboard">
+                                        Dashboard
+                                    </NavLink>
+                                </li>
+                                <li className="nav-item">
+                                    <button className="nav-link btn-logout" onClick={handleLogout}>
+                                        Logout
+                                    </button>
+                                </li>
+                            </>
+                        ) : (
                             <>
                                 <li className="nav-item">
                                     <NavLink className="nav-link" to="/signUp">
@@ -53,23 +48,11 @@ const Navbar: React.FC = () => {
                                 </li>
                             </>
                         )}
-                        {/* Show Logout button if the user is logged in */}
-                        {isLoggedIn && (
-                            <li className="nav-item">
-                                <button className="nav-link btn" onClick={handleLogout}>
-                                    Logout
-                                </button>
-                            </li>
-                        )}
                     </ul>
                 </div>
             </nav>
-        </div>
+        </header>
     );
 };
 
-//--------------------------------------------------------------------------------------------------------//
-
-export default Navbar; // Export the Navbar component for use in other parts of the app
-
-//------------------------------------------END OF FILE---------------------------------------------------//
+export default Navbar;

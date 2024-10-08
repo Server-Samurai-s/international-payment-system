@@ -1,176 +1,154 @@
-/* Full page container */
 .customer-dashboard__full-page-container {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-size: cover;
-    background-position: center;
+    position: relative;
+    min-height: 100vh;
+    background-color: #000;
+    overflow-x: hidden;
+    padding: 2rem;
+    display: flex; /* Add this line */
+    align-items: center; /* Add this line */
+    justify-content: center; /* Add this line */
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
 
-/* Dashboard container */
-.customer-dashboard__container {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 12px;
-    max-width: 750px;
+.background-animation {
+    position: fixed !important;
+    top: 0;
+    left: 0;
     width: 100%;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.customer-dashboard__container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: rgba(17, 19, 34, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    z-index: 10;
+}
+
+.customer-dashboard__title {
+    color: #2515d1;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.customer-dashboard__section {
+    background-color: rgba(55, 65, 81, 0.3);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.customer-dashboard__section h5 {
+    color: #2515d1;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.customer-dashboard__banking-details {
+    background-color: rgba(55, 65, 81, 0.4);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.customer-dashboard__banking-details p {
+    margin: 0.5rem 0;
+}
+
+.customer-dashboard__transaction-list {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: 1rem;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Title styling */
-.customer-dashboard__title {
-    text-align: center;
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Section styling */
-.customer-dashboard__section {
-    width: 100%;
-    margin-bottom: 1.5rem;
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Banking details */
-.customer-dashboard__banking-details {
-    padding: 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    color: #333;
-    font-size: 1rem;
-    margin-bottom: 20px;
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Transaction list */
-.customer-dashboard__transaction-list {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Transaction item */
 .customer-dashboard__transaction-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    transition: background-color 0.2s ease;
+    background-color: rgba(55, 65, 81, 0.4);
+    padding: 1rem;
+    border-radius: 8px;
+    transition: transform 0.2s ease;
 }
 
 .customer-dashboard__transaction-item:hover {
-    background-color: #f1f1f1;
+    transform: translateX(5px);
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Date styling */
 .customer-dashboard__transaction-date {
-    font-weight: 500;
-    color: #007bff;
+    color: #2515d1;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Transaction amount */
 .customer-dashboard__transaction-amount {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    font-size: 1rem;
+    align-items: center;
+    gap: 1rem;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Menu section */
 .customer-dashboard__menu {
-    margin-top: 1.5rem;
-    width: 100%;
+    margin-top: 2rem;
     text-align: center;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
+.customer-dashboard__menu h6 {
+    color: #2515d1;
+    margin-bottom: 1rem;
+}
 
-/* Menu buttons */
 .customer-dashboard__menu-btn {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
+    background-color: rgba(37, 21, 209, 0.1);
+    color: #ffffff;
+    border: 1px solid #2515d1;
+    padding: 0.8rem 1.5rem;
+    margin: 0.5rem;
     border-radius: 8px;
-    border: none;
-    font-size: 1rem;
-    width: 48%;
-    margin-right: 2%;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .customer-dashboard__menu-btn:hover {
-    background-color: #0056b3;
+    background-color: #2515d1;
+    color: #ffffff;
 }
 
-
-.customer-dashboard__menu-btn:last-child {
-    margin-right: 0;
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Primary action button */
 .customer-dashboard__btn-main {
-    background-color: #28a745;
-    color: white;
-    padding: 12px 40px;
-    border-radius: 50px;
+    background-color: #2515d1;
+    color: #ffffff;
+    padding: 1rem 2rem;
     border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    margin-top: 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-top: 2rem;
     transition: background-color 0.2s ease;
 }
 
 .customer-dashboard__btn-main:hover {
-    background-color: #218838;
+    background-color: #1f10b0;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .customer-dashboard__container {
-        padding: 20px;
-    }
+.btn-primary {
+    background-color: #2515d1;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
 
-    .customer-dashboard__menu-btn {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .customer-dashboard__btn-main {
-        width: 100%;
-    }
+.btn-primary:hover {
+    background-color: #1f10b0;
 }

@@ -10,6 +10,7 @@ import Login from "./components/login";
 import CustomerDashboard from './components/customerDashboard';
 import PaymentForm from './components/paymentForm';
 import ProtectedRoute from './components/protectedRoute';
+import LandingPage from './components/landingPage';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         {/* <Route path="/edit/:id" element={<PostEdit />} /> */}
         <Route path="/signup" element={<SignUp/>} />
         <Route path="/login" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/payment" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
       </Routes>
     </div>
