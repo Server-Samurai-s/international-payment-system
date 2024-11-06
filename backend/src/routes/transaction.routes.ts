@@ -17,7 +17,7 @@ router.use(helmet());
 router.use(cookieSession({
   name: "session",
   keys: [process.env.SESSION_SECRET || "default_secret_key"], // Use an environment variable for the secret key
-  maxAge: 24 * 60 * 60 * 1000 // Set session duration to 24 hour
+  maxAge: 24 * 60 * 60 * 1000 // Set session duration to 24 hours
 }));
 
 // XSS Protection middleware
