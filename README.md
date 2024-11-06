@@ -148,10 +148,6 @@ The app will start at `http://localhost:3000` (or the port specified in your fro
 
 ## Key Functionalities
 
-[The rest of the README remains the same...]
-
-## Key Functionalities
-
 ### User Authentication
 
 - Users can register and log in using a username or account number and password.
