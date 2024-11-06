@@ -1,6 +1,5 @@
 name: Secure Payments Portal CI
 
-# Trigger the workflow on pushes to the main branch
 on:
   push:
     branches:
@@ -25,7 +24,7 @@ jobs:
         with:
           node-version: '18'
 
-      # Step 4: Install backend dependencies with retry logic using npm ci
+      # Step 4: Install backend dependencies
       - name: Install backend dependencies
         working-directory: ./backend
         run: |
@@ -33,13 +32,13 @@ jobs:
           count=0
           until [ $count -ge $retries ]
           do
-            npm install --legacy-peer-deps && break
+            npm ci --legacy-peer-deps && break
             count=$((count+1))
-            echo "Retrying npm install with --legacy-peer-deps... ($count/$retries)"
+            echo "Retrying npm install... ($count/$retries)"
             sleep 10
           done
 
-      # Step 5: Install frontend dependencies with retry logic using npm ci
+      # Step 5: Install frontend dependencies
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: |
@@ -47,40 +46,36 @@ jobs:
           count=0
           until [ $count -ge $retries ]
           do
-            npm install --legacy-peer-deps && break
+            npm ci --legacy-peer-deps && break
             count=$((count+1))
             echo "Retrying npm ci... ($count/$retries)"
             sleep 10
           done
 
-      # Step 6: Install TypeScript and ts-node for frontend (for Jest config parsing)
+      # Step 6: Install TypeScript and ts-node for Jest in frontend
       - name: Install TypeScript and ts-node
         working-directory: ./frontend
         run: npm install typescript ts-node --save-dev
 
-      # Step 7: Run Vulnerability Scan on backend dependencies (npm audit)
+      # Step 7: Vulnerability Scan on backend
       - name: Run Vulnerability Scan on backend
         working-directory: ./backend
-        run: |
-          npm audit --audit-level=high || echo "Vulnerabilities found in backend, but continuing with the build."
+        run: npm audit --audit-level=high || echo "Vulnerabilities found in backend, but continuing with the build."
 
-      # Step 8: Run Vulnerability Scan on frontend dependencies (npm audit)
+      # Step 8: Vulnerability Scan on frontend
       - name: Run Vulnerability Scan on frontend
         working-directory: ./frontend
-        run: |
-          npm audit --audit-level=high || echo "Vulnerabilities found in frontend, but continuing with the build."
+        run: npm audit --audit-level=high || echo "Vulnerabilities found in frontend, but continuing with the build."
 
       # Step 9: Run backend unit tests
       - name: Run backend unit tests
         working-directory: ./backend
-        run: |
-          npm run test
+        run: npm run test
 
       # Step 10: Run frontend unit tests
       - name: Run frontend unit tests
         working-directory: ./frontend
-        run: |
-          npm run test
+        run: npm run test
 
       # Step 11: Run ESLint on backend
       - name: Run ESLint on backend
@@ -99,37 +94,37 @@ jobs:
       # Step 13: Security Attack Checks
       - name: Security Attack Checks
         run: |
-          # Check for Clickjacking Protection
-          if ! grep -q "frameguard" ./backend/src/routes/transaction.routes.ts; then
+          # Clickjacking Protection (Helmet in app.ts)
+          if ! grep -q "helmet()" ./backend/src/app.ts; then
             echo "Clickjacking protection missing (Helmet's frameguard)"
           fi
 
-          # Check for Session Hijacking Protection
-          if ! grep -q "cookie-session" ./backend/src/routes/transaction.routes.ts; then
+          # Session Hijacking Protection
+          if ! grep -q "cookie-session" ./backend/src/app.ts; then
             echo "Session hijacking protection missing (cookie-session or express-session)"
           fi
 
-          # Check for SQL Injection Prevention (ensure Mongoose is used in transaction operations)
+          # SQL Injection Protection (Mongoose in transaction routes)
           if ! grep -q "mongoose" ./backend/src/routes/transaction.routes.ts; then
             echo "SQL Injection protection missing (ensure Mongoose is used for database operations)"
           fi
 
-          # Check for Cross-Site Scripting (XSS) Protection
-          if ! grep -q "xss-clean" ./backend/src/routes/transaction.routes.ts; then
+          # Cross-Site Scripting (XSS) Protection
+          if ! grep -q "xss-clean" ./backend/src/app.ts; then
             echo "XSS protection missing (xss-clean middleware)"
           fi
 
-          # Check for Man-in-the-Middle Attack Protection
-          if ! grep -q "strict-transport-security" ./backend/src/routes/transaction.routes.ts; then
+          # MITM Attack Protection (HSTS in app.ts)
+          if ! grep -q "Strict-Transport-Security" ./backend/src/app.ts; then
             echo "HSTS header missing (use Helmet to enforce Strict-Transport-Security)"
           fi
 
-          # DDoS Protection (Rate Limiting and Network Throttling)
+          # DDoS Protection (Rate Limiting in transaction routes)
           if ! grep -q "express-rate-limit" ./backend/src/routes/transaction.routes.ts; then
             echo "DDoS protection missing (express-rate-limit middleware)"
           fi
 
-      # Step 14: Upload test results if tests or checks fail
+      # Step 14: Upload test results on failure
       - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
