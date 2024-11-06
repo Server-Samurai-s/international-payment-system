@@ -5,21 +5,21 @@ import tsParser from "@typescript-eslint/parser";
 
 export default [
   {
-    files: ["**/*.{js,mjs,cjs,ts}"],
+    files: ["**/*.{ts,tsx}"],
     languageOptions: {
       parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
       globals: globals.node,
-      sourceType: "module",
     },
-  },
-  pluginJs.configs.recommended,
-  tseslint.configs.recommended,
-  {
     plugins: {
       "@typescript-eslint": tseslint,
     },
     rules: {
-      // Custom rules specific to your backend
+      ...pluginJs.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
     },
   },
 ];

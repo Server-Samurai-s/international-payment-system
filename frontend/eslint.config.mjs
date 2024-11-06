@@ -9,26 +9,24 @@ export default [
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     languageOptions: {
       parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+      },
       globals: globals.browser,
-      sourceType: "module",
     },
-  },
-  pluginJs.configs.recommended,
-  tseslint.configs.recommended,
-  {
     plugins: {
       "@typescript-eslint": tseslint,
       react: pluginReact,
     },
     rules: {
-      // Frontend-specific rules, including TypeScript and React
+      ...pluginJs.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
+      ...pluginReact.configs.recommended.rules,
     },
-  },
-  pluginReact.configs.recommended,
-  {
     settings: {
       react: {
-        version: "detect", // Automatically detect React version
+        version: "detect",
       },
     },
   },
