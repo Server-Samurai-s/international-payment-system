@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
-import { Transaction } from "../models/transaction";
+import { Transaction } from "../models/transaction";  // Correctly import the Mongoose model
 import validator from "validator";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
@@ -36,7 +36,7 @@ router.use((req, res, next) => {
   next();
 });
 
-// Regex for validation
+// Validation regex patterns
 const nameRegex = /^[A-Za-z\s]+$/;
 const accountNumberRegex = /^\d{6,34}$/;
 const amountRegex = /^[1-9]\d*(\.\d+)?$/;
@@ -75,23 +75,25 @@ router.post(
         return;
       }
 
-      const newTransaction: Transaction = {
+      // Create a new transaction document using Mongoose
+      const newTransaction = new Transaction({
         user: userId!,
         recipientName: validator.escape(recipientName),
         recipientBank: validator.escape(recipientBank),
         accountNumber: validator.escape(accountNumber),
         amount: parseFloat(amount),
         swiftCode: validator.escape(swiftCode),
-        transactionDate: new Date().toISOString(),
-      };
+        transactionDate: new Date(),
+      });
 
-      const collection = req.app.locals.db.collection("transactions");
-      const result = await collection.insertOne(newTransaction);
+      // Save the transaction using Mongoose
+      const savedTransaction = await newTransaction.save();
 
+      // Update user's balance
       user.balance -= parseFloat(amount);
       await user.save();
 
-      res.status(201).json({ message: "Transaction successful", transaction: result, newBalance: user.balance });
+      res.status(201).json({ message: "Transaction successful", transaction: savedTransaction, newBalance: user.balance });
     } catch (e) {
       console.error("Error uploading transaction:", e);
       res.status(500).send({ message: "Failed to upload transaction" });
@@ -106,9 +108,9 @@ router.get(
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.userId;
-      const collection = req.app.locals.db.collection("transactions");
 
-      const transactions = await collection.find({ user: userId }).toArray();
+      // Retrieve transactions using Mongoose
+      const transactions = await Transaction.find({ user: userId }).exec();
 
       if (transactions.length === 0) {
         res.status(404).json({ message: "No transactions found" });

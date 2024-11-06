@@ -1,26 +1,26 @@
-// Define the Transaction interface which includes user, recipient, and transaction details
-export interface Transaction {
+import mongoose, { Schema, Document } from "mongoose";
+
+// Define the TypeScript interface for transaction data
+export interface ITransaction extends Document {
     user: string;
     recipientName: string;
     recipientBank: string;
-    accountNumber: string; 
+    accountNumber: string;
     amount: number;
     swiftCode: string;
-    transactionDate?: string; 
+    transactionDate?: Date;
 }
 
-//--------------------------------------------------------------------------------------------------------//
+// Define the Mongoose schema for the transaction model
+const TransactionSchema: Schema = new Schema({
+    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    recipientName: { type: String, required: true },
+    recipientBank: { type: String, required: true },
+    accountNumber: { type: String, required: true },
+    amount: { type: Number, required: true },
+    swiftCode: { type: String, required: true },
+    transactionDate: { type: Date, default: Date.now },
+});
 
-// Function to retrieve the plain account number (no hashing needed)
-export async function getAccountNumber(accountNumber: string): Promise<string> {
-    return accountNumber; // Simply return the plain account number
-}
-
-//--------------------------------------------------------------------------------------------------------//
-
-// Function to compare a plain account number with another for validation (no hashing comparison needed)
-export async function compareAccountNumbers(accountNumber1: string, accountNumber2: string): Promise<boolean> {
-    return accountNumber1 === accountNumber2; // Directly compare two plain account numbers
-}
-
-//------------------------------------------END OF FILE---------------------------------------------------//
+// Export the Mongoose model, `Transaction`
+export const Transaction = mongoose.model<ITransaction>("Transaction", TransactionSchema);

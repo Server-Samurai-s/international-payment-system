@@ -2,7 +2,7 @@ export {};
 
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node', // Use 'node' for backend tests
+  testEnvironment: 'node', 
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
