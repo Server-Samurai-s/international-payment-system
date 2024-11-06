@@ -1,12 +1,11 @@
-export {};
-
 module.exports = {
   preset: 'ts-jest',
-  testEnvironment: 'node', 
+  testEnvironment: 'node',
   transform: {
-    '^.+\\.tsx?$': 'ts-jest',
+      '^.+\\.tsx?$': 'ts-jest',
   },
   moduleNameMapper: {
-    '\\.(css|less)$': 'identity-obj-proxy',
+      '\\.(css|less)$': 'identity-obj-proxy',
   },
+  testTimeout: 20000, // Set global timeout to 20 seconds
 };
