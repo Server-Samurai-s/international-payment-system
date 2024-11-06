@@ -104,8 +104,8 @@ jobs:
             echo "Session hijacking protection missing (cookie-session or express-session)"
           fi
 
-          # SQL Injection Protection (Mongoose in transaction routes)
-          if ! grep -q "mongoose" ./backend/src/routes/transaction.routes.ts; then
+          # SQL Injection Protection (Check for Mongoose models usage in transaction routes)
+          if ! grep -Eq "Transaction\." ./backend/src/routes/transaction.routes.ts; then
             echo "SQL Injection protection missing (ensure Mongoose is used for database operations)"
           fi
 
