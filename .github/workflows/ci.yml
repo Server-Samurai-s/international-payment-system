@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '18'
 
-      # Step 4: Install backend dependencies
+      # Step 4: Install backend dependencies with retry logic
       - name: Install backend dependencies
         working-directory: ./backend
         run: |
@@ -38,7 +38,7 @@ jobs:
             sleep 10
           done
 
-      # Step 5: Install frontend dependencies
+      # Step 5: Install frontend dependencies with retry logic
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: |
@@ -52,7 +52,7 @@ jobs:
             sleep 10
           done
 
-      # Step 6: Install Jest
+      # Step 6: Install Jest for testing
       - name: Install Jest
         working-directory: ./backend
         run: npm install --save-dev jest
@@ -62,12 +62,12 @@ jobs:
         working-directory: ./frontend
         run: npm install typescript ts-node --save-dev
 
-      # Step 8: Vulnerability Scan on backend
+      # Step 8: Run Vulnerability Scan on backend
       - name: Run Vulnerability Scan on backend
         working-directory: ./backend
         run: npm audit --audit-level=high || echo "Vulnerabilities found in backend, but continuing with the build."
 
-      # Step 9: Vulnerability Scan on frontend
+      # Step 9: Run Vulnerability Scan on frontend
       - name: Run Vulnerability Scan on frontend
         working-directory: ./frontend
         run: npm audit --audit-level=high || echo "Vulnerabilities found in frontend, but continuing with the build."
@@ -85,9 +85,14 @@ jobs:
       # Step 12: Run ESLint on backend
       - name: Run ESLint on backend
         working-directory: ./backend
-        run: npm run lint
+        run: npx eslint .
 
-      # Step 13: Check for SSL certificate and key presence
+      # Step 13: Run ESLint on frontend
+      - name: Run ESLint on frontend
+        working-directory: ./frontend
+        run: npx eslint .
+
+      # Step 14: Check for SSL certificate and key presence
       - name: Check SSL configuration
         run: |
           if [ ! -f ./backend/src/keys/certificate.pem ] || [ ! -f ./backend/src/keys/mongodb-key.pem ]; then
@@ -96,7 +101,7 @@ jobs:
             echo "SSL certificate and key are present"
           fi
 
-      # Step 14: Security Attack Checks
+      # Step 15: Security Attack Checks
       - name: Security Attack Checks
         run: |
           # Clickjacking Protection (Helmet in app.ts)
@@ -129,7 +134,7 @@ jobs:
             echo "DDoS protection missing (express-rate-limit middleware)"
           fi
 
-      # Step 15: Upload test results on failure
+      # Step 16: Upload test results on failure
       - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
