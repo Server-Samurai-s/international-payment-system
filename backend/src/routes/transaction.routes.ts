@@ -1,48 +1,48 @@
-import express, { Response } from "express";
+import express, { Request, Response } from "express";
 import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
 import { Transaction } from "../models/transaction";
 import validator from "validator";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import xss from "xss-clean"; // XSS protection
+import xss from "xss-clean";
 import { User } from '../models/user';
-import cookieSession from "cookie-session"; // For session hijacking protection
+import cookieSession from "cookie-session";
 
 const router = express.Router();
 
-// Apply security headers to all routes using Helmet
+// Apply security headers with Helmet
 router.use(helmet());
 
-// Set up cookie-based session to prevent session hijacking
+// Cookie-based session to prevent session hijacking
 router.use(cookieSession({
   name: "session",
-  keys: [process.env.SESSION_SECRET || "default_secret_key"], // Use an environment variable for the secret key
-  maxAge: 24 * 60 * 60 * 1000 // Set session duration to 24 hours
+  keys: [process.env.SESSION_SECRET || "default_secret_key"],
+  maxAge: 24 * 60 * 60 * 1000,
 }));
 
-// XSS Protection middleware
+// XSS Protection
 router.use(xss());
 
-// Set up rate limiting to prevent brute-force and DDoS attacks
+// Rate limiting
 const transactionLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15-minute window
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: "Too many transactions from this IP, please try again later."
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: "Too many transactions from this IP, please try again later.",
 });
 
-// HSTS middleware for MITM protection
+// Set HSTS for MITM protection
 router.use((req, res, next) => {
   res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   next();
 });
 
-// Regular expressions for input validation
+// Regex for validation
 const nameRegex = /^[A-Za-z\s]+$/;
 const accountNumberRegex = /^\d{6,34}$/;
 const amountRegex = /^[1-9]\d*(\.\d+)?$/;
 const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
 
-// POST - Create a new transaction with validation and security checks
+// POST - Create a transaction
 router.post(
   "/create",
   [authenticateUser, transactionLimiter],
@@ -51,13 +51,9 @@ router.post(
       const userId = req.userId;
       const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body;
 
-      // Validation for each input field
-      if (!nameRegex.test(recipientName)) {
-        res.status(400).json({ message: "Invalid recipient name" });
-        return;
-      }
-      if (!nameRegex.test(recipientBank)) {
-        res.status(400).json({ message: "Invalid recipient bank" });
+      // Validate inputs
+      if (!nameRegex.test(recipientName) || !nameRegex.test(recipientBank)) {
+        res.status(400).json({ message: "Invalid recipient name or bank" });
         return;
       }
       if (!accountNumberRegex.test(accountNumber)) {
@@ -69,18 +65,13 @@ router.post(
         return;
       }
       if (!swiftCodeRegex.test(swiftCode)) {
-        res.status(400).json({ message: "Invalid SWIFT code format" });
+        res.status(400).json({ message: "Invalid SWIFT code" });
         return;
       }
 
       const user = await User.findById(userId);
-      if (!user) {
-        res.status(404).json({ message: "User not found" });
-        return;
-      }
-
-      if (user.balance < parseFloat(amount)) {
-        res.status(400).json({ message: "Insufficient funds" });
+      if (!user || user.balance < parseFloat(amount)) {
+        res.status(400).json({ message: "User not found or insufficient funds" });
         return;
       }
 
@@ -108,7 +99,7 @@ router.post(
   }
 );
 
-// GET - Retrieve all transactions for the authenticated user
+// GET - Retrieve all transactions for authenticated user
 router.get(
   "/",
   [authenticateUser, transactionLimiter],
