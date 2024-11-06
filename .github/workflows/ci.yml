@@ -4,7 +4,7 @@ name: Secure Payments Portal CI
 on:
   push:
     branches:
-      - Dylan-Branch
+      - main
 
 jobs:
   build:
