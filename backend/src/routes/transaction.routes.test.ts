@@ -49,7 +49,7 @@ describe('Transaction Routes', () => {
             (User.findById as jest.Mock).mockResolvedValue({
                 _id: testUserId,
                 balance: initialBalance,
-                save: jest.fn().mockResolvedValue(true)
+                save: jest.fn().mockResolvedValue(true),
             });
 
             mockCollection.insertOne.mockResolvedValue({ insertedId: new ObjectId() });
@@ -89,7 +89,7 @@ describe('Transaction Routes', () => {
                 .send(transactionData)
                 .expect(400);
 
-            expect(response.body).toEqual({ message: 'Invalid recipient name' });
+            expect(response.body).toEqual({ message: 'Invalid recipient name or bank' });
         });
 
         it('should return 400 for insufficient funds', async () => {
@@ -97,7 +97,7 @@ describe('Transaction Routes', () => {
             (User.findById as jest.Mock).mockResolvedValue({
                 _id: testUserId,
                 balance: 50,
-                save: jest.fn().mockResolvedValue(true)
+                save: jest.fn().mockResolvedValue(true),
             });
 
             const transactionData = {
@@ -113,7 +113,7 @@ describe('Transaction Routes', () => {
                 .send(transactionData)
                 .expect(400);
 
-            expect(response.body).toEqual({ message: 'Insufficient funds' });
+            expect(response.body).toEqual({ message: 'User not found or insufficient funds' });
         });
 
         it('should return 400 for invalid SWIFT code', async () => {
@@ -130,7 +130,7 @@ describe('Transaction Routes', () => {
                 .send(transactionData)
                 .expect(400);
 
-            expect(response.body).toEqual({ message: 'Invalid SWIFT code format' });
+            expect(response.body).toEqual({ message: 'Invalid SWIFT code' });
         });
     });
 
