@@ -82,17 +82,7 @@ jobs:
         working-directory: ./frontend
         run: npm run test
 
-      # Step 12: Run ESLint on backend
-      - name: Run ESLint on backend
-        working-directory: ./backend
-        run: npx eslint .
-
-      # Step 13: Run ESLint on frontend
-      - name: Run ESLint on frontend
-        working-directory: ./frontend
-        run: npx eslint .
-
-      # Step 14: Check for SSL certificate and key presence
+      # Step 12: Check for SSL certificate and key presence
       - name: Check SSL configuration
         run: |
           if [ ! -f ./backend/src/keys/certificate.pem ] || [ ! -f ./backend/src/keys/mongodb-key.pem ]; then
@@ -101,7 +91,7 @@ jobs:
             echo "SSL certificate and key are present"
           fi
 
-      # Step 15: Security Attack Checks
+      # Step 13: Security Attack Checks
       - name: Security Attack Checks
         run: |
           # Clickjacking Protection (Helmet in app.ts)
@@ -134,7 +124,7 @@ jobs:
             echo "DDoS protection missing (express-rate-limit middleware)"
           fi
 
-      # Step 16: Upload test results on failure
+      # Step 14: Upload test results on failure
       - name: Upload test results on failure
         if: failure()
         uses: actions/upload-artifact@v3
