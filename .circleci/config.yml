@@ -4,7 +4,6 @@ orbs:
 
 jobs:
   test-node:
-    # Frontend test job
     executor: node/default
     working_directory: ~/international-payment-system/frontend
     steps:
@@ -17,7 +16,6 @@ jobs:
           command: npm test --passWithNoTests
 
   build-node:
-    # Build Node project for frontend
     executor: node/default
     working_directory: ~/international-payment-system/frontend
     steps:
@@ -39,7 +37,6 @@ jobs:
           destination: node-build
 
   sonarcloud:
-    # SonarCloud analysis job
     docker:
       - image: circleci/openjdk:11-jdk
     working_directory: ~/international-payment-system
@@ -57,7 +54,6 @@ jobs:
               -Dsonar.login=$SONAR_TOKEN
 
   deploy:
-    # Placeholder for deployment steps
     docker:
       - image: cimg/base:stable
     steps:
@@ -68,16 +64,22 @@ jobs:
 workflows:
   build-and-test:
     jobs:
-      - test-node
+      - test-node:
+          filters:
+            branches:
+              only:
+                - Dylan-Branch
       - build-node:
           requires:
             - test-node
+          filters:
+            branches:
+              only:
+                - Dylan-Branch
       - sonarcloud:
           requires:
             - build-node
-    # Limit workflow to only run on Dylan-Branch
-    triggers:
-      - push:
-          branches:
-            only:
-              - Dylan-Branch
+          filters:
+            branches:
+              only:
+                - Dylan-Branch
