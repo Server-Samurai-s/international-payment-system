@@ -5,7 +5,8 @@
   "scripts": {
     "test": "jest --config jest.config.ts",
     "start": "npx ts-node src/app.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "create-admin": "ts-node src/scripts/createSuperAdmin.ts"
   },
   "keywords": [],
   "author": "",

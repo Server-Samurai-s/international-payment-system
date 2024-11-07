@@ -134,6 +134,7 @@
 
 .customer-dashboard__btn-main:hover {
     background-color: #1f10b0;
+    cursor: pointer;
 }
 
 .btn-sm {

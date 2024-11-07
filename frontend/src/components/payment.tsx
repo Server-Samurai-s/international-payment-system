@@ -13,7 +13,7 @@ interface PaymentFormState {
     swiftCode: string;
 }
 
-const PaymentForm: React.FC = () => {
+const Payment: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -174,7 +174,7 @@ const PaymentForm: React.FC = () => {
     
                     {/* Account Number */}
                     <div className="payment-form__group">
-                        <label htmlFor="accountNumber">Account Number</label>
+                        <label htmlFor="accountNumber">Recipient's Account Number</label>
                         <input
                             type="text"
                             id="accountNumber"
@@ -222,4 +222,4 @@ const PaymentForm: React.FC = () => {
     );
 };
 
-export default PaymentForm;
+export default Payment;

@@ -1,29 +1,44 @@
-import React from "react"; // Import React for building the component
-import { Navigate } from "react-router-dom"; // Import Navigate for redirecting to another route
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { EmployeeRole } from '../types/employee';
 
-//--------------------------------------------------------------------------------------------------------//
-
-// Define the interface for the ProtectedRoute component props
 interface ProtectedRouteProps {
-    children: JSX.Element; // The content that will be protected (e.g., a dashboard)
+    children: React.ReactElement;
+    allowedRoles?: EmployeeRole[];
 }
 
-//--------------------------------------------------------------------------------------------------------//
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+    const customerToken = localStorage.getItem("jwt");
+    const employeeToken = localStorage.getItem("token");
+    const employeeData = localStorage.getItem('employeeData');
+    const isEmployee = localStorage.getItem("isEmployee") === 'true';
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-    const token = localStorage.getItem("jwt"); // Check if a JWT token exists in localStorage (user is logged in)
-
-    // If no token is found, redirect the user to the login page
-    if (!token) {
-        return <Navigate to="/login" replace />; // Redirect to login and replace the current history entry
+    // Check if user is authenticated
+    if (!customerToken && !employeeToken) {
+        return <Navigate to="/login" replace />;
     }
 
-    // If a token is found, render the protected content (children)
+    // Check role restrictions if specified
+    if (allowedRoles && employeeData) {
+        const employee = JSON.parse(employeeData);
+        if (!allowedRoles.includes(employee.role)) {
+            return <Navigate to="/employee-dashboard" replace />;
+        }
+    }
+
+    // If trying to access employee dashboard without employee privileges
+    if (window.location.pathname === '/employee-dashboard' && !isEmployee) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    // If trying to access customer dashboard with employee privileges
+    if (window.location.pathname === '/dashboard' && isEmployee) {
+        return <Navigate to="/employee-dashboard" replace />;
+    }
+
     return children;
 };
 
-//--------------------------------------------------------------------------------------------------------//
-
-export default ProtectedRoute; // Export the ProtectedRoute component for use in other parts of the app
+export default ProtectedRoute;
 
 //------------------------------------------END OF FILE---------------------------------------------------//

@@ -90,6 +90,7 @@ router.post(
         amount: parseFloat(amount), // Parse and store the amount as a number
         swiftCode: validator.escape(swiftCode), // Sanitize the SWIFT code
         transactionDate: new Date().toISOString(), // Store the current date in ISO format
+        status: 'pending' // Set initial status as pending
       };
 
       // Insert the new transaction into the database collection

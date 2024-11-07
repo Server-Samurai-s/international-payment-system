@@ -3,10 +3,13 @@ export interface Transaction {
     user: string;
     recipientName: string;
     recipientBank: string;
-    accountNumber: string; 
+    accountNumber: string;
     amount: number;
     swiftCode: string;
-    transactionDate?: string; 
+    transactionDate: string;
+    status: 'pending' | 'verified' | 'submitted';
+    verifiedBy?: string;
+    verificationDate?: string;
 }
 
 //--------------------------------------------------------------------------------------------------------//

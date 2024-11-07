@@ -1,0 +1,101 @@
+.verification-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.verification-modal {
+    background-color: rgba(17, 19, 34, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 600px;
+    color: white;
+}
+
+.verification-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.verification-modal__title {
+    color: #2515d1;
+    margin-bottom: 2rem;
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.verification-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.verification-actions__secondary {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.submit-btn, .reject-btn, .cancel-btn, .verify-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submit-btn {
+    background-color: #2515d1;
+    color: white;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    background-color: #1f10b0;
+}
+
+.submit-btn:disabled {
+    background-color: #4b4b4b;
+    cursor: not-allowed;
+}
+
+.cancel-btn {
+    background-color: #374151;
+    color: white;
+    flex: 1;
+}
+
+.cancel-btn:hover {
+    background-color: #4b5563;
+}
+
+.reject-btn {
+    background-color: #dc2626;
+    color: white;
+    flex: 1;
+}
+
+.reject-btn:hover {
+    background-color: #b91c1c;
+}
+
+.verify-btn:hover {
+    background-color: #1f10b0;
+}
+
+.verify-btn.verified:hover {
+    background-color: #047857;
+} 
