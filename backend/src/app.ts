@@ -1,5 +1,3 @@
-// app.ts
-
 import https from "https"; // For creating a secure server
 import http from "http"; // For fallback HTTP in development
 import fs from "fs"; // For handling SSL certificate files
