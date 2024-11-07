@@ -1,13 +1,11 @@
 version: 2.1
 orbs:
-  node: circleci/node@5  # Node.js orb for Node-specific jobs
+  node: circleci/node@5
 
 jobs:
   sonarcloud:
-    # SonarCloud analysis job
     docker:
-      - image: circleci/openjdk:17-jdk  # Update to Java 17
-    working_directory: ~/international-payment-system
+      - image: cimg/openjdk:17.0
     steps:
       - checkout
       - run:
