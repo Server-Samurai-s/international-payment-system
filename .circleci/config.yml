@@ -51,7 +51,7 @@ jobs:
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONAR_TOKEN
+              -Dsonar.login=9e812ea93e5398f93db118eefa377f67d176b364
 
   deploy:
     docker:
