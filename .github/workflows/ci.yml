@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "✅ Node.js version $(node -v) has been set up."
 
-      # Step 5: Install backend dependencies with retry logic
+      # Step 5: Install backend dependencies with retry logic, including xss-clean
       - name: 📦 Install backend dependencies
         working-directory: ./backend
         run: |
@@ -44,12 +44,12 @@ jobs:
           count=0
           until [ $count -ge $retries ]
           do
-            npm ci --legacy-peer-deps && break
+            npm install xss-clean && npm ci --legacy-peer-deps && break
             count=$((count+1))
             echo "⚠️ Retry ($count/$retries): npm ci failed, retrying..."
             sleep 10
           done
-          echo "✅ Backend dependencies installed."
+          echo "✅ Backend dependencies installed, including xss-clean."
           echo "::endgroup::"
 
       # Step 6: Install frontend dependencies with retry logic
