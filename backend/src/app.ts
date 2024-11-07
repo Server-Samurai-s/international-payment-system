@@ -24,17 +24,13 @@ const app = express(); // Initialize the express application
 
 //--------------------------------------------------------------------------------------------------------//
 
+
 // HTTPS options with paths to the SSL certificate and key
-let sslOptions: https.ServerOptions;
-try {
-  sslOptions = {
-    key: fs.readFileSync('./src/keys/mongodb-key.pem'), // Read private key for SSL
-    cert: fs.readFileSync('./src/keys/certificate.pem'), // Read certificate for SSL
-  };
-} catch (err) {
-  console.error('Error reading SSL certificate or key:', err);
-  process.exit(1); // Exit if SSL files are not available
-}
+const sslOptions: https.ServerOptions = {
+  key: fs.readFileSync('./src/keys/ca/server.key'),
+  cert: fs.readFileSync('./src/keys/ca/server.crt'),
+  ca: fs.readFileSync('./src/keys/ca/rootCA.pem')
+};
 
 //--------------------------------------------------------------------------------------------------------//
 
@@ -59,7 +55,11 @@ mongoose
 //--------------------------------------------------------------------------------------------------------//
 
 // Middleware setup
-app.use(cors()); // Enable CORS for all routes
+app.use(cors({
+    origin: 'https://localhost:3000', // Note the HTTPS
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
 app.use(express.json({ limit: '10mb' })); // Parse incoming JSON requests with a size limit of 10MB
 app.use(express.urlencoded({ limit: '10mb', extended: true })); // Parse URL-encoded data with a size limit of 10MB
 

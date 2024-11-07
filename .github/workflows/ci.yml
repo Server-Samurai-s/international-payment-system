@@ -90,10 +90,10 @@ jobs:
       # Step 12: Check for SSL certificate and key presence
       - name: Check SSL configuration
         run: |
-          if [ ! -f ./backend/src/keys/certificate.pem ] || [ ! -f ./backend/src/keys/mongodb-key.pem ]; then
-            echo "SSL certificate or key missing" && exit 1
+          if [ ! -f ./backend/src/keys/ca/server.crt ] || [ ! -f ./backend/src/keys/ca/server.key ] || [ ! -f ./backend/src/keys/ca/rootCA.pem ]; then
+            echo "SSL certificates missing" && exit 1
           else
-            echo "SSL certificate and key are present"
+            echo "SSL certificates are present"
           fi
 
       # Step 13: Security Attack Checks

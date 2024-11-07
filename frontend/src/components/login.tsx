@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import '../styles/login.css';
 import SuccessMessage from './successMessage';
+import fetch from 'node-fetch';
 
 interface FormState {
     identifier: string;
@@ -65,12 +66,13 @@ const Login: React.FC = () => {
         const userCredentials = { ...form };
 
         try {
-            const response = await fetch('https://localhost:3001/user/login', {
+            const response = await fetch('/user/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify(userCredentials),
+                body: JSON.stringify(userCredentials)
             });
 
             if (!response.ok) {
@@ -83,7 +85,7 @@ const Login: React.FC = () => {
             }
 
             const data = await response.json();
-            const { token, firstName, userId } = data;
+            const { token, firstName, userId } = data as { token: string, firstName: string, userId: string };
 
             localStorage.setItem("jwt", token);
             localStorage.setItem("firstName", firstName);

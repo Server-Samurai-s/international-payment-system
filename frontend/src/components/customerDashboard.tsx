@@ -116,7 +116,7 @@ const CustomerDashboard: React.FC = () => {
                         <p>Available Balance: ${dashboard.balance.toFixed(2)}</p>
                     </div>
                 </div>
-
+                
                 <div className="customer-dashboard__section">
                     <h5>Payment Receipts</h5>
                     <div className="customer-dashboard__transaction-list">
