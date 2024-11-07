@@ -194,3 +194,43 @@ If you have any questions or suggestions, feel free to open an issue or contact 
 
 - Email: davidroymellors@gmail.com
 - GitHub: [davidrmellors](https://github.com/davidrmellors)
+
+---
+
+## Local Development Setup
+
+### SSL Configuration
+For secure HTTPS development, follow these steps:
+
+1. **Trust the Root Certificate**
+   Navigate to the certificate directory and trust the root certificate:
+   ```bash
+   cd backend/src/keys/ca
+   
+   # For macOS:
+   sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" rootCA.pem
+   
+   # For Windows:
+   certutil -addstore -f "ROOT" rootCA.pem
+   
+   # For Linux:
+   sudo cp rootCA.pem /usr/local/share/ca-certificates/
+   sudo update-ca-certificates
+   ```
+
+2. **Start the Servers**
+   ```bash
+   # Start backend (in backend directory)
+   npm install
+   npm start
+   
+   # Start frontend (in frontend directory)
+   npm install
+   npm start
+   ```
+
+### Troubleshooting
+If you encounter certificate errors:
+1. Ensure you've trusted the root certificate
+2. Clear your browser cache
+3. Restart both servers (backend first, then frontend)
