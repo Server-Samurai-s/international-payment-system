@@ -1,0 +1,77 @@
+version: 2.1
+orbs:
+  node: circleci/node@5  # Node.js orb for Node-specific jobs
+
+jobs:
+  test-node:
+    # Frontend test job
+    executor: node/default
+    working_directory: ~/international-payment-system/frontend
+    steps:
+      - checkout:
+          path: ~/international-payment-system
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Run tests
+          command: npm test --passWithNoTests
+
+  build-node:
+    # Build Node project for frontend
+    executor: node/default
+    working_directory: ~/international-payment-system/frontend
+    steps:
+      - checkout:
+          path: ~/international-payment-system
+      - node/install-packages:
+          pkg-manager: npm
+      - run:
+          name: Build project
+          command: npm run build
+      - run:
+          name: Create the ~/artifacts directory if it doesn't exist
+          command: mkdir -p ~/artifacts
+      - run:
+          name: Copy artifacts
+          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
+      - store_artifacts:
+          path: ~/artifacts
+          destination: node-build
+
+  sonarcloud:
+    # SonarCloud analysis job
+    docker:
+      - image: circleci/openjdk:11-jdk  # Java is required for sonar-scanner
+    working_directory: ~/international-payment-system
+    steps:
+      - checkout
+      - run:
+          name: Install SonarScanner
+          command: |
+            curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
+            unzip sonar-scanner-cli.zip -d $HOME
+            export PATH=$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH && sonar-scanner \
+              -Dsonar.projectKey=server-samurai-s \
+              -Dsonar.organization=server-samurais \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.login=$SONAR_TOKEN
+
+  deploy:
+    # Placeholder for deployment steps
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - run:
+          name: deploy
+          command: '# e.g., ./deploy.sh'
+
+workflows:
+  build-and-test:
+    jobs:
+      - test-node
+      - build-node:
+          requires:
+            - test-node
+      - sonarcloud:
+          requires:
+            - build-node
