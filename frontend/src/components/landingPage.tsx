@@ -2,12 +2,10 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sphere, Stars, useTexture } from "@react-three/drei";
+import { OrbitControls, Stars, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import "../styles/LandingPage.css"; // Custom styles
 import { useNavigate } from "react-router-dom";
-
-
 
 // Earth Component without Bump Map
 const Earth: React.FC = () => {
@@ -71,31 +69,37 @@ const Earth: React.FC = () => {
   
 
 // Hero Section Component with Dark Background
-const HeroSection: React.FC = () => (
+const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
 
-    
-  <section className="hero-section">
-    <div className="background-animation">
-      <Canvas style={{ background: "#000" }}> {/* Deep black background */}
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[5, 3, 5]} intensity={1} color="#ffffff" />
-        <Stars radius={100} depth={50} count={5000} factor={4} fade />
-        <Earth /> {/* Display the Earth model */}
-        <OrbitControls enableZoom={false} />
-      </Canvas>
-    </div>
-    <motion.div
-      initial={{ opacity: 0, y: -50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      className="hero-content"
-    >
-      <h1>Effortless International Payments</h1>
-      <p>Seamless, secure transactions across borders.</p>
-      <a href="/signup"><button className="cta-button">Get Started</button></a>
-    </motion.div>
-  </section>
-);
+  const handleNavigation = () => {
+    navigate("/signup"); // Navigate to signup page
+  };
+
+  return (
+    <section className="hero-section">
+      <div className="background-animation">
+        <Canvas style={{ background: "#000" }}> {/* Deep black background */}
+          <ambientLight intensity={0.3} />
+          <directionalLight position={[5, 3, 5]} intensity={1} color="#ffffff" />
+          <Stars radius={100} depth={50} count={5000} factor={4} fade />
+          <Earth /> {/* Display the Earth model */}
+          <OrbitControls enableZoom={false} />
+        </Canvas>
+      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+        className="hero-content"
+      >
+        <h1>Effortless International Payments</h1>
+        <p>Seamless, secure transactions across borders.</p>
+        <button className="cta-button" onClick={handleNavigation}>Get Started</button>
+      </motion.div>
+    </section>
+  );
+};
 
 // Main Landing Page Component
 const LandingPage: React.FC = () => (
