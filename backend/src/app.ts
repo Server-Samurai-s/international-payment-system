@@ -10,6 +10,7 @@ import dotenv from "dotenv"; // Import dotenv to load environment variables
 // Import routes for transactions and users
 import transactionRoutes from "./routes/transaction.routes";
 import userRoutes from "./routes/user.routes";
+import employeeRoutes from "./routes/employee.routes";
 
 //--------------------------------------------------------------------------------------------------------//
 
@@ -78,6 +79,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Define routes for handling transactions and users
 app.use("/transactions", transactionRoutes); // Use transaction routes for /transactions endpoint
 app.use("/user", userRoutes); // Use user routes for /user endpoint
+app.use("/employee", employeeRoutes);
 
 //--------------------------------------------------------------------------------------------------------//
 

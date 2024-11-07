@@ -9,22 +9,24 @@ const Navbar: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
-        // Check login status whenever the component mounts or updates
         const checkLoginStatus = () => {
-            const token = localStorage.getItem("jwt");
-            setIsLoggedIn(!!token);
+            const customerToken = localStorage.getItem("jwt");
+            const employeeToken = localStorage.getItem("token");
+            setIsLoggedIn(!!(customerToken || employeeToken));
         };
 
         checkLoginStatus();
-        // Set up an interval to periodically check login status
         const intervalId = setInterval(checkLoginStatus, 1000);
 
-        // Clean up the interval when the component unmounts
         return () => clearInterval(intervalId);
     }, []);
 
     const handleLogout = () => {
         localStorage.removeItem("jwt");
+        localStorage.removeItem("token");
+        localStorage.removeItem("employeeData");
+        localStorage.removeItem("isEmployee");
+        localStorage.removeItem("isLoggedIn");
         setIsLoggedIn(false);
         setShowSuccess(true);
         setTimeout(() => {
@@ -45,7 +47,10 @@ const Navbar: React.FC = () => {
                         {isLoggedIn ? (
                             <>
                                 <li className="nav-item">
-                                    <NavLink className="nav-link" to="/dashboard">
+                                    <NavLink 
+                                        className="nav-link" 
+                                        to={localStorage.getItem("isEmployee") ? "/employee-dashboard" : "/dashboard"}
+                                    >
                                         Dashboard
                                     </NavLink>
                                 </li>
