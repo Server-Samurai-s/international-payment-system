@@ -75,3 +75,9 @@ workflows:
       - sonarcloud:
           requires:
             - build-node
+    # Limit workflow to only run on Dylan-Branch
+    triggers:
+      - push:
+          branches:
+            only:
+              - Dylan-Branch
