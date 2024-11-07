@@ -9,8 +9,14 @@ jobs:
     steps:
       - checkout:
           path: ~/international-payment-system
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Install dependencies
+          command: |
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
       - run:
           name: Run tests
           command: npm test --passWithNoTests
@@ -21,8 +27,14 @@ jobs:
     steps:
       - checkout:
           path: ~/international-payment-system
-      - node/install-packages:
-          pkg-manager: npm
+      - run:
+          name: Install dependencies
+          command: |
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
       - run:
           name: Build project
           command: npm run build
