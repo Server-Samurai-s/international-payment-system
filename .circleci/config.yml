@@ -5,7 +5,7 @@ orbs:
 jobs:
   sonarcloud:
     docker:
-      - image: cimg/openjdk:17.0  # Use Java 17 to match SonarScanner requirements
+      - image: cimg/openjdk:17.0  # Ensure Java 17 is the base image
     working_directory: ~/international-payment-system
     steps:
       - checkout
@@ -17,8 +17,10 @@ jobs:
             export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
             echo 'export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"' >> $BASH_ENV
       - run:
-          name: Run SonarCloud Analysis
+          name: Set Java 17 and Run SonarCloud Analysis
           command: |
+            export JAVA_HOME=/usr/local/openjdk-17  # Force the use of Java 17
+            export PATH="$JAVA_HOME/bin:$PATH"
             sonar-scanner \
               -Dsonar.projectKey=ST10029256_international-payment-system \
               -Dsonar.organization=server-samurais \
