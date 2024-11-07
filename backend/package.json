@@ -2,11 +2,11 @@
   "name": "international-payment-system",
   "version": "1.0.0",
   "main": "index.js",
-"scripts": {
-  "dev": "nodemon --exec ts-node src/app.ts",
-  "start": "npx ts-node src/app.ts",
-  "test": "jest --config jest.config.ts",
-  "lint": "eslint ."
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/app.ts",
+    "start": "npx ts-node src/app.ts",
+    "test": "jest --config jest.config.ts",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
@@ -31,7 +31,8 @@
     "mongodb-memory-server": "^10.0.1",
     "mongoose": "^8.7.0",
     "supertest": "^7.0.0",
-    "validator": "^13.12.0"
+    "validator": "^13.12.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
