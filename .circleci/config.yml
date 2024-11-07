@@ -5,7 +5,8 @@ orbs:
 jobs:
   sonarcloud:
     docker:
-      - image: cimg/openjdk:17.0  # Using a compatible image
+      - image: cimg/openjdk:17.0  # Use Java 17 to match SonarScanner requirements
+    working_directory: ~/international-payment-system
     steps:
       - checkout
       - run:
@@ -14,7 +15,7 @@ jobs:
             curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
             unzip sonar-scanner-cli.zip -d $HOME
             export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
-            echo 'export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"' >> $BASH_ENV  # Adds to PATH persistently
+            echo 'export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"' >> $BASH_ENV
       - run:
           name: Run SonarCloud Analysis
           command: |
