@@ -7,5 +7,5 @@ module.exports = {
   moduleNameMapper: {
       '\\.(css|less)$': 'identity-obj-proxy',
   },
-  testTimeout: 20000, // Set global timeout to 20 seconds
+  testTimeout: 20000, 
 };

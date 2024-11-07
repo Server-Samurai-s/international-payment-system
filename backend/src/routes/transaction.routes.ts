@@ -4,10 +4,10 @@ import { Transaction } from "../models/transaction";  // Correctly import the Mo
 import validator from "validator";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import xss from "xss-clean";
 import { User } from '../models/user';
 import cookieSession from "cookie-session";
 
+const xss = require("xss-clean");
 const router = express.Router();
 
 // Apply security headers with Helmet
