@@ -52,30 +52,29 @@ jobs:
 
   sonarcloud:
     docker:
-      - image: cimg/openjdk:17.0
-        user: root
+      - image: cimg/windows:stable  # Using Windows-compatible image
     working_directory: ~/international-payment-system
-    environment:
-      PATH: "$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
     steps:
       - checkout
       - run:
-          name: Install wget
+          name: Download and Install Wget
           command: |
-            apt-get update && apt-get install -y wget
+            powershell -Command "Invoke-WebRequest -Uri https://eternallybored.org/misc/wget/releases/wget-1.21.1-win64.zip -OutFile wget.zip"
+            powershell -Command "Expand-Archive wget.zip -DestinationPath ."
       - run:
           name: Install SonarScanner
           command: |
-            wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip -O sonar-scanner-cli.zip
-            unzip sonar-scanner-cli.zip -d $HOME
-            chmod +x $HOME/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner
+            ./wget.exe -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-windows.zip -O sonar-scanner-cli.zip
+            powershell -Command "Expand-Archive sonar-scanner-cli.zip -DestinationPath $env:USERPROFILE"
+            chmod +x $env:USERPROFILE/sonar-scanner-4.6.2.2472-windows/bin/sonar-scanner.exe
       - run:
           name: Verify SonarScanner Installation
-          command: sonar-scanner --version
+          command: |
+            $env:USERPROFILE/sonar-scanner-4.6.2.2472-windows/bin/sonar-scanner.exe --version
       - run:
           name: Run SonarScanner
           command: |
-            sonar-scanner \
+            $env:USERPROFILE/sonar-scanner-4.6.2.2472-windows/bin/sonar-scanner.exe \
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
               -Dsonar.host.url=https://sonarcloud.io \
@@ -87,7 +86,7 @@ jobs:
     steps:
       - run:
           name: Deploy
-          command: './deploy.sh'  
+          command: './deploy.sh'  # Replace with actual deployment script if needed
 
 workflows:
   build-and-test:
