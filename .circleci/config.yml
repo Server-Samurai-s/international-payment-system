@@ -74,20 +74,24 @@ jobs:
             curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
             unzip sonar-scanner-cli.zip -d $HOME
             export PATH=$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH
-            echo $PATH  # Verify PATH
+            echo "PATH after adding SonarScanner: $PATH"  # Verify PATH
       - run:
           name: Verify SonarScanner Installation
-          command: sonar-scanner -v  # Check if SonarScanner is accessible
+          command: |
+            if ! command -v sonar-scanner &> /dev/null; then
+              echo "SonarScanner installation failed or is not in PATH"
+              exit 1
+            fi
+            sonar-scanner -v  # Verify installation
       - run:
           name: Run SonarCloud analysis
           command: |
-            sonar-scanner \
+            $HOME/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner \
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=c8b315489fd764344e5ec884e07059b16122e895 \
               -Dsonar.branch.name=Dylan-Branch
-
 
 workflows:
   build-and-test:
