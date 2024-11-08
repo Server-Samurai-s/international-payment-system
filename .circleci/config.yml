@@ -6,12 +6,12 @@ orbs:
 executors:
   node-executor:
     docker:
-      - image: node:18.16.0  # Specifying Node version 18.16.0
+      - image: node:18.16.0
     working_directory: ~/international-payment-system
 
   sonar-executor:
     docker:
-      - image: circleci/openjdk:11  # Use a generic OpenJDK 11 image
+      - image: circleci/openjdk:11
     working_directory: ~/international-payment-system
 
 jobs:
@@ -74,6 +74,10 @@ jobs:
             curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
             unzip sonar-scanner-cli.zip -d $HOME
             export PATH=$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH
+            echo $PATH  # Verify PATH
+      - run:
+          name: Verify SonarScanner Installation
+          command: sonar-scanner -v  # Check if SonarScanner is accessible
       - run:
           name: Run SonarCloud analysis
           command: |
@@ -81,7 +85,9 @@ jobs:
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=9e812ea93e5398f93db118eefa377f67d176b364
+              -Dsonar.login=c8b315489fd764344e5ec884e07059b16122e895 \
+              -Dsonar.branch.name=Dylan-Branch
+
 
 workflows:
   build-and-test:
