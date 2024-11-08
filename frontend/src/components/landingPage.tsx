@@ -2,85 +2,86 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sphere, Stars, useTexture } from "@react-three/drei";
+import { OrbitControls, Stars, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import "../styles/LandingPage.css"; // Custom styles
-import { useNavigate } from "react-router-dom";
 
-
+// Import the Planet and Spaceship components
+import Planet from "../components/purplePlanet";
+import Spaceship from "../components/spaceship";
+import Robot from "../components/robot";
 
 // Earth Component without Bump Map
 const Earth: React.FC = () => {
-    const earthRef = useRef<THREE.Mesh>(null!);
-    const cloudRef = useRef<THREE.Mesh>(null!);
-  
-    // Load Earth textures
-    const [dayMap, specularMap, nightMap, cloudMap] = useTexture([
-      "/textures/earth_daymap.jpg",    // Color map
-      "/textures/earth_specular.jpg",  // Specular map
-      "/textures/earth_nightmap.jpg",  // Night lights
-      "/textures/earth_clouds.jpg"     // Clouds
-    ]);
-  
-    // Rotate the Earth and clouds
-    useFrame(() => {
-      if (earthRef.current) earthRef.current.rotation.y += 0.001;
-      if (cloudRef.current) cloudRef.current.rotation.y += 0.0015;
-    });
-  
-    return (
-      <>
-        {/* Earth */}
-        <mesh ref={earthRef}>
-          <sphereGeometry args={[2, 64, 64]} />
-          <meshPhongMaterial
-            map={dayMap}
-            specularMap={specularMap}
-            shininess={15}
-            emissiveMap={nightMap}
-            emissiveIntensity={0.2}
-            emissive={new THREE.Color(0x222222)}
-          />
-        </mesh>
-  
-        {/* Clouds */}
-        <mesh ref={cloudRef}>
-          <sphereGeometry args={[2.02, 64, 64]} />
-          <meshPhongMaterial
-            map={cloudMap}
-            transparent={true}
-            opacity={0.5}
-            depthWrite={false}
-          />
-        </mesh>
-  
-        {/* Atmosphere */}
-        <mesh>
-          <sphereGeometry args={[2.06, 64, 64]} /> {/* Slightly smaller than before */}
-          <meshBasicMaterial
-            color="#3A9EF5"
-            transparent={true}
-            opacity={0.1} // Lower opacity for subtle effect
-            blending={THREE.AdditiveBlending} // Additive blending for a soft glow
-            side={THREE.BackSide}
-          />
-        </mesh>
-      </>
-    );
-  };
-  
+  const earthRef = useRef<THREE.Mesh>(null!);
+  const cloudRef = useRef<THREE.Mesh>(null!);
 
-// Hero Section Component with Dark Background
+   // Load Earth textures
+   const [dayMap, specularMap, nightMap, cloudMap] = useTexture([
+    "/textures/earth_daymap.jpg",    // Color map
+    "/textures/earth_specular.jpg",  // Specular map
+    "/textures/earth_nightmap.jpg",  // Night lights
+    "/textures/earth_clouds.jpg"     // Clouds
+  ]);
+
+  // Rotate the Earth and clouds
+  useFrame(() => {
+    if (earthRef.current) earthRef.current.rotation.y += 0.001;
+    if (cloudRef.current) cloudRef.current.rotation.y += 0.0015;
+  });
+
+  return (
+    <>
+      {/* Earth */}
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[2, 64, 64]} />
+        <meshPhongMaterial
+          map={dayMap}
+          specularMap={specularMap}
+          shininess={15}
+          emissiveMap={nightMap}
+          emissiveIntensity={0.2}
+          emissive={new THREE.Color(0x222222)}
+        />
+      </mesh>
+
+      {/* Clouds */}
+      <mesh ref={cloudRef}>
+        <sphereGeometry args={[2.02, 64, 64]} />
+        <meshPhongMaterial
+          map={cloudMap}
+          transparent={true}
+          opacity={0.5}
+          depthWrite={false}
+        />
+      </mesh>
+
+      {/* Atmosphere */}
+      <mesh>
+        <sphereGeometry args={[2.06, 64, 64]} /> {/* Slightly smaller than before */}
+        <meshBasicMaterial
+          color="#3A9EF5"
+          transparent={true}
+          opacity={0.1} // Lower opacity for subtle effect
+          blending={THREE.AdditiveBlending} // Additive blending for a soft glow
+          side={THREE.BackSide}
+        />
+      </mesh>
+    </>
+  );
+};
+
 const HeroSection: React.FC = () => (
-
-    
   <section className="hero-section">
     <div className="background-animation">
-      <Canvas style={{ background: "#000" }}> {/* Deep black background */}
+      <Canvas style={{ background: "#000" }}>
         <ambientLight intensity={0.3} />
         <directionalLight position={[5, 3, 5]} intensity={1} color="#ffffff" />
         <Stars radius={100} depth={50} count={5000} factor={4} fade />
-        <Earth /> {/* Display the Earth model */}
+        <Earth />
+        <Planet position={[10, 0, -5]} scale={0.6} />
+        <Spaceship position={[15, 5, -10]} scale={0.3} />
+        <Robot position={[5, -2, -8]} scale={1} /> {/* Add the robot in the scene */}
         <OrbitControls enableZoom={false} />
       </Canvas>
     </div>
@@ -96,6 +97,8 @@ const HeroSection: React.FC = () => (
     </motion.div>
   </section>
 );
+
+
 
 // Main Landing Page Component
 const LandingPage: React.FC = () => (
