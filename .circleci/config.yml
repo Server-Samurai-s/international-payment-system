@@ -20,10 +20,14 @@ jobs:
             cd backend
             # Remove package-lock.json to ensure clean install
             rm -f package-lock.json
-            # Install mongodb-memory-server explicitly first
-            npm install mongodb-memory-server@8.12.2 --save-dev
-            # Then install remaining dependencies
+            # Create .npmrc to skip postinstall scripts
+            echo "ignore-scripts=true" > .npmrc
+            # Install dependencies
             npm install --legacy-peer-deps
+            # Remove .npmrc after installation
+            rm .npmrc
+            # Manually download MongoDB binary
+            npx mongodb-memory-server-core download
 
       # Install frontend dependencies
       - run:
