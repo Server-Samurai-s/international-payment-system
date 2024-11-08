@@ -58,7 +58,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install SonarScanner and Run Analysis
+          name: Install SonarScanner
           command: |
             curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
             unzip sonar-scanner-cli.zip -d $HOME
@@ -74,7 +74,7 @@ jobs:
     steps:
       - run:
           name: Deploy
-          command: './deploy.sh'  
+          command: './deploy.sh'  # Replace with actual deployment script if needed
 
 workflows:
   build-and-test:
@@ -98,3 +98,6 @@ workflows:
             branches:
               only:
                 - Dylan-Branch
+      - deploy:
+          requires:
+            - build-node
