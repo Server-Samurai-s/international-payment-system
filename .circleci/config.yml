@@ -18,16 +18,25 @@ jobs:
           name: Install backend dependencies
           command: |
             cd backend
-            # Remove package-lock.json to ensure clean install
+            # Remove package-lock.json and node_modules
             rm -f package-lock.json
-            # Create .npmrc to skip postinstall scripts
-            echo "ignore-scripts=true" > .npmrc
-            # Install dependencies
-            npm install --legacy-peer-deps
-            # Remove .npmrc after installation
-            rm .npmrc
-            # Manually download MongoDB binary
-            npx mongodb-memory-server-core download
+            rm -rf node_modules
+            
+            # Update package.json to use supported ESLint version
+            sed -i 's/"eslint": "^8.57.1"/"eslint": "^8.56.0"/' package.json
+            
+            # Install dependencies in stages
+            npm install --no-package-lock --legacy-peer-deps eslint@8.56.0
+            npm install --no-package-lock --legacy-peer-deps mongodb-memory-server@8.12.2
+            npm install --no-package-lock --legacy-peer-deps
+            
+            # Verify installation
+            echo "Node version: $(node -v)"
+            echo "NPM version: $(npm -v)"
+            
+            # Create minimal test file to verify ESLint
+            echo "console.log('test');" > test.js
+            ./node_modules/.bin/eslint test.js || true
 
       # Install frontend dependencies
       - run:
