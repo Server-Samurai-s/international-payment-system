@@ -50,7 +50,7 @@ jobs:
 
   sonarcloud:
     docker:
-      - image: circleci/openjdk:11-jdk
+      - image: circleci/openjdk:17-jdk  # Updated to Java 17
     working_directory: ~/international-payment-system
     steps:
       - checkout
