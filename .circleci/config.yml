@@ -52,7 +52,7 @@ jobs:
 
   sonarcloud:
     docker:
-      - image: cimg/openjdk:17.0
+      - image: cimg/openjdk:17.0-bullseye
         user: root
     working_directory: ~/international-payment-system
     environment:
@@ -62,7 +62,7 @@ jobs:
       - run:
           name: Install curl
           command: |
-            apk update && apk add curl
+            apt-get update && apt-get install -y curl
       - run:
           name: Install SonarScanner
           command: |
