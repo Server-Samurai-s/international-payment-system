@@ -1,10 +1,10 @@
 name: Secure Payments Portal CI
 
-# Trigger the workflow on pushes to the main branch
+# Trigger the workflow on pushes to the dev branch
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   build:

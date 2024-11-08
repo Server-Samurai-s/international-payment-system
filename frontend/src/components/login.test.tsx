@@ -1,5 +1,3 @@
-
-import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import Login from './Login';
@@ -14,8 +12,7 @@ describe('Login Component', () => {
     });
 
     test('renders login form', () => {
-        expect(screen.getByText(/Login Form/i)).toBeInTheDocument();
-        expect(screen.getByPlaceholderText(/Enter username or account number/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/Enter account number/i)).toBeInTheDocument();
         expect(screen.getByPlaceholderText(/Enter password/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Log in/i })).toBeInTheDocument();
     });
@@ -24,13 +21,13 @@ describe('Login Component', () => {
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
         await waitFor(() => {
-            expect(screen.getByText(/Username or Account Number is required/i)).toBeInTheDocument();
+            expect(screen.getByText(/Account number is required/i)).toBeInTheDocument();
             expect(screen.getByText(/Password is required/i)).toBeInTheDocument();
         });
     });
 
     test('shows password length validation error', async () => {
-        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter account number/i), { target: { value: 'testuser' } });
         fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'short' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
@@ -47,7 +44,7 @@ describe('Login Component', () => {
             })
         ) as jest.Mock;
 
-        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter account number/i), { target: { value: 'testuser' } });
         fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'validpassword' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
@@ -67,7 +64,7 @@ describe('Login Component', () => {
             })
         ) as jest.Mock;
 
-        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter account number/i), { target: { value: 'testuser' } });
         fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'wrongpassword' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
@@ -85,12 +82,12 @@ describe('Login Component', () => {
             })
         ) as jest.Mock;
 
-        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'nonexistentuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter account number/i), { target: { value: 'nonexistentuser' } });
         fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'somepassword' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
         await waitFor(() => {
-            expect(screen.getByText(/Username or Account Number not found/i)).toBeInTheDocument();
+            expect(screen.getByText(/Account number not found/i)).toBeInTheDocument();
         });
     });
 
@@ -102,7 +99,7 @@ describe('Login Component', () => {
             })
         ) as jest.Mock;
 
-        fireEvent.change(screen.getByPlaceholderText(/Enter username or account number/i), { target: { value: 'testuser' } });
+        fireEvent.change(screen.getByPlaceholderText(/Enter account number/i), { target: { value: 'testuser' } });
         fireEvent.change(screen.getByPlaceholderText(/Enter password/i), { target: { value: 'validpassword' } });
         fireEvent.click(screen.getByRole('button', { name: /Log in/i }));
 
