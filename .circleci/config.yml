@@ -1,0 +1,106 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/node:18.0.0
+
+    steps:
+      - checkout
+
+      # Clear npm cache
+      - run:
+          name: Clear npm cache
+          command: npm cache clean --force
+
+      # Install backend dependencies
+      - run:
+          name: Install backend dependencies
+          command: |
+            cd backend
+            for i in 1 2 3; do
+              npm install --legacy-peer-deps && break
+              echo "Retrying npm install... attempt $i"
+              sleep 10
+            done
+
+      # Install frontend dependencies
+      - run:
+          name: Install frontend dependencies
+          command: |
+            cd frontend
+            for i in 1 2 3; do
+              npm install --legacy-peer-deps && break
+              echo "Retrying npm install... attempt $i"
+              sleep 10
+            done
+
+      # Install TypeScript and ts-node
+      - run:
+          name: Install TypeScript and ts-node
+          command: |
+            cd frontend
+            npm install typescript ts-node --save-dev
+
+      # Run security audits
+      - run:
+          name: Security Audits
+          command: |
+            cd backend && npm audit --audit-level=high || echo "Backend vulnerabilities found, but continuing"
+            cd ../frontend && npm audit --audit-level=high || echo "Frontend vulnerabilities found, but continuing"
+
+      # Run tests
+      - run:
+          name: Run Tests
+          command: |
+            cd backend && npm run test
+            cd ../frontend && npm run test
+
+      # Run linting
+      - run:
+          name: Run ESLint
+          command: |
+            cd backend && npm run lint
+
+      # Check SSL configuration
+      - run:
+          name: Check SSL Configuration
+          command: |
+            if [ ! -f ./backend/src/keys/ca/server.crt ] || [ ! -f ./backend/src/keys/ca/server.key ] || [ ! -f ./backend/src/keys/ca/rootCA.pem ]; then
+              echo "SSL certificates missing" && exit 1
+            else
+              echo "SSL certificates are present"
+            fi
+
+      # Security checks
+      - run:
+          name: Security Checks
+          command: |
+            cd backend
+            if ! grep -q "frameguard" ./src/routes/transaction.routes.ts; then
+              echo "Clickjacking protection missing"
+            fi
+            if ! grep -q "cookie-session" ./src/routes/transaction.routes.ts; then
+              echo "Session hijacking protection missing"
+            fi
+            if ! grep -q "mongoose" ./src/routes/transaction.routes.ts; then
+              echo "SQL Injection protection missing"
+            fi
+            if ! grep -q "xss-clean" ./src/routes/transaction.routes.ts; then
+              echo "XSS protection missing"
+            fi
+            if ! grep -q "strict-transport-security" ./src/routes/transaction.routes.ts; then
+              echo "HSTS header missing"
+            fi
+            if ! grep -q "express-rate-limit" ./src/routes/transaction.routes.ts; then
+              echo "DDoS protection missing"
+            fi
+
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: dev
