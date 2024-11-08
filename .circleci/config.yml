@@ -53,7 +53,7 @@ jobs:
   sonarcloud:
     # SonarCloud analysis job
     docker:
-      - image: circleci/openjdk:17-jdk  # Use Java 17 for SonarScanner compatibility
+      - image: cimg/openjdk:17.0  # Use the cimg OpenJDK image with Java 17
     working_directory: ~/international-payment-system
     steps:
       - checkout
