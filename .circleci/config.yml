@@ -59,11 +59,14 @@ jobs:
           command: |
             curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
             unzip sonar-scanner-cli.zip -d $HOME
-            export PATH=$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH
+            export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
+      - run:
+          name: Verify SonarScanner Installation
+          command: sonar-scanner --version  # Check if SonarScanner is correctly installed
       - run:
           name: Run SonarScanner
           command: |
-            sonar-scanner \
+            $HOME/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner \
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
               -Dsonar.host.url=https://sonarcloud.io \
