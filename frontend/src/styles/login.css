@@ -1,148 +1,145 @@
-/* Full page background styling */
 .full-page-container {
-    width: 100%;
-    height: 100vh;
+    position: relative;
     display: flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    background-size: cover;
-    background-position: center;
+    height: 100vh;
+    background-color: #000;
+    overflow: hidden;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
+.background-animation {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
 
-/* Form container styling */
 .login-form-container {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 40px;
-    border-radius: 12px;
-    max-width: 400px;
-    width: 100%;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    position: relative;
+    width: 90%;
+    max-width: 450px;
+    background-color: rgba(17, 19, 34, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    z-index: 10;
+    box-sizing: border-box;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Heading styles */
 h3 {
+    color: #2515d1;
     text-align: center;
+    margin-bottom: 2rem;
     font-size: 1.5rem;
-    margin-bottom: 1.5rem; /* Reduced space under heading */
-    color: #333;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
+form {
+    width: 100%;
+    box-sizing: border-box;
+}
 
-/* General form group styling */
 .form-group {
-    margin-bottom: 1.2rem; /* Reduced spacing between form fields */
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Label and input field styling */
-.form-group label {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 0.5rem; /* Reduced space between label and input */
-}
-
-input.form-control {
+    margin-bottom: 1.5rem;
     width: 100%;
-    padding: 10px; /* Reduced padding for input fields */
-    border: 1px solid #dcdcdc;
-    border-radius: 6px;
-    font-size: 1rem;
-    outline: none;
-    background-color: #f7f7f7;
+    box-sizing: border-box;
 }
 
-input.form-control:focus {
-    border-color: #999999;
-    background-color: #ffffff;
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Error input field styling */
-.custom-tooltip {
-    position: absolute;
-    background-color: #777777;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    top: -30px;
-    left: 10px;
-    white-space: nowrap;
-    z-index: 1000;
-}
-
-.custom-tooltip::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 10px;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: #777777 transparent transparent transparent;
-}
-
-/*--------------------------------------------------------------------------------------------------------*\
-
-/* Button styles */
-.btn-primary {
-    background-color: #007bff;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
-    width: 100%;
+.form-label {
     display: block;
-    margin-top: 5px;
-    text-align: center;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #4b5563;
+    border-radius: 8px;
+    background-color: rgba(55, 65, 81, 0.7);
+    color: #ffffff;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2515d1;
+    box-shadow: 0 0 0 2px rgba(37, 21, 209, 0.2);
+}
+
+.is-invalid {
+    border-color: #e74c3c;
+}
+
+.custom-tooltip {
+    color: #e74c3c;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    width: 100%;
+}
+
+.btn {
+    padding: 0.8rem;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: #2515d1;
+    color: #ffffff;
+    border: none;
+    width: 100%;
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    transform: translateY(-3px);
+    background-color: #1f10b0;
 }
 
 .btn-outline-info {
-    padding: 10px;
-    border-radius: 50px;
-    margin-top: 10px;
-    border: 1px solid #007bff;
-    color: #007bff;
     background-color: transparent;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    border: 2px solid #2515d1;
+    color: #2515d1;
+    padding: 0.6rem 1.2rem;
+    display: inline-block;
 }
 
 .btn-outline-info:hover {
-    background-color: #007bff;
-    color: white;
+    background-color: #2515d1;
+    color: #ffffff;
 }
 
-/*--------------------------------------------------------------------------------------------------------*\
+.btn-link {
+    color: #2515d1;
+    text-decoration: none;
+    padding: 0;
+    font-weight: 500;
+}
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .login-form-container {
-        padding: 20px;
-        max-width: 90%;
-    }
+.btn-link:hover {
+    text-decoration: underline;
+}
 
-    .btn-primary {
-        width: 100%;
-    }
+.text-center {
+    text-align: center;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
 }

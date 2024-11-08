@@ -1,124 +1,128 @@
-import express, { Response, Request } from "express"; // Import express for routing, Request and Response types for type safety
-import { authenticateUser, AuthenticatedRequest } from "../middleware/auth"; // Import authentication middleware and custom request type
-import { Transaction } from "../models/transaction"; // Import Transaction interface
-import validator from "validator"; // Import validator for input sanitization and validation
-import rateLimit from "express-rate-limit"; // Import rate limiting middleware
-import helmet from "helmet"; // Import helmet for setting security-related HTTP headers
+import express, { Request, Response } from "express";
+import { authenticateUser, AuthenticatedRequest } from "../middleware/auth";
+import { Transaction } from "../models/transaction";  // Correctly import the Mongoose model
+import validator from "validator";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import { User } from '../models/user';
+import cookieSession from "cookie-session";
 
-//--------------------------------------------------------------------------------------------------------//
+const xss = require("xss-clean");
+const router = express.Router();
 
-const router = express.Router(); // Initialize express router
-
-// Apply security headers to all routes using helmet
+// Apply security headers with Helmet
 router.use(helmet());
 
-// Set up rate limiting to prevent brute-force attacks
+// Cookie-based session to prevent session hijacking
+router.use(cookieSession({
+  name: "session",
+  keys: [process.env.SESSION_SECRET || "default_secret_key"],
+  maxAge: 24 * 60 * 60 * 1000,
+}));
+
+// XSS Protection
+router.use(xss());
+
+// Rate limiting
 const transactionLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15-minute window
-  max: 100, // Maximum 100 requests per IP during the window
-  message: "Too many transactions from this IP, please try again later", // Message for rate limit exceeded
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  message: "Too many transactions from this IP, please try again later.",
 });
 
-//--------------------------------------------------------------------------------------------------------//
+// Set HSTS for MITM protection
+router.use((req, res, next) => {
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next();
+});
 
-// Regular expressions for input validation
-const nameRegex = /^[A-Za-z\s]+$/; // Allow alphabets and spaces only
-const accountNumberRegex = /^\d{6,34}$/; // Account number should be 6 to 34 digits long
-const amountRegex = /^[1-9]\d*(\.\d+)?$/; // Positive numbers, allow decimals
-const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/; // SWIFT code format validation
+// Validation regex patterns
+const nameRegex = /^[A-Za-z\s]+$/;
+const accountNumberRegex = /^\d{6,34}$/;
+const amountRegex = /^[1-9]\d*(\.\d+)?$/;
+const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
 
-//--------------------------------------------------------------------------------------------------------//
-
-// POST - Create a new transaction with validation and security checks
+// POST - Create a transaction
 router.post(
   "/create",
-  [authenticateUser, transactionLimiter], // Apply authentication and rate limiting middlewares
+  [authenticateUser, transactionLimiter],
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.userId; // Extract user ID from the authenticated request
-      const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body; // Destructure transaction details from the request body
+      const userId = req.userId;
+      const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body;
 
-      // Validate the recipient name using regular expression
-      if (!nameRegex.test(recipientName)) {
-        res.status(400).json({ message: "Invalid recipient name" });
+      // Validate inputs
+      if (!nameRegex.test(recipientName) || !nameRegex.test(recipientBank)) {
+        res.status(400).json({ message: "Invalid recipient name or bank" });
         return;
       }
-
-      // Validate the recipient bank name
-      if (!nameRegex.test(recipientBank)) {
-        res.status(400).json({ message: "Invalid recipient bank" });
-        return;
-      }
-
-      // Validate the account number
       if (!accountNumberRegex.test(accountNumber)) {
         res.status(400).json({ message: "Invalid account number" });
         return;
       }
-
-      // Validate the transaction amount
       if (!amountRegex.test(amount)) {
         res.status(400).json({ message: "Invalid amount" });
         return;
       }
-
-      // Validate the SWIFT code format
       if (!swiftCodeRegex.test(swiftCode)) {
-        res.status(400).json({ message: "Invalid SWIFT code format" });
+        res.status(400).json({ message: "Invalid SWIFT code" });
         return;
       }
 
-      // Create a new transaction object and sanitize inputs
-      const newTransaction: Transaction = {
-        user: userId!, // Assign the authenticated user ID
-        recipientName: validator.escape(recipientName), // Sanitize the recipient name
-        recipientBank: validator.escape(recipientBank), // Sanitize the recipient bank
-        accountNumber: validator.escape(accountNumber), // Store the plain account number
-        amount: parseFloat(amount), // Parse and store the amount as a number
-        swiftCode: validator.escape(swiftCode), // Sanitize the SWIFT code
-        transactionDate: new Date().toISOString(), // Store the current date in ISO format
-      };
+      const user = await User.findById(userId);
+      if (!user || user.balance < parseFloat(amount)) {
+        res.status(400).json({ message: "User not found or insufficient funds" });
+        return;
+      }
 
-      // Insert the new transaction into the database collection
-      const collection = req.app.locals.db.collection("transactions");
-      const result = await collection.insertOne(newTransaction);
-      res.status(201).send(result); // Respond with the result of the database operation
+      // Create a new transaction document using Mongoose
+      const newTransaction = new Transaction({
+        user: userId!,
+        recipientName: validator.escape(recipientName),
+        recipientBank: validator.escape(recipientBank),
+        accountNumber: validator.escape(accountNumber),
+        amount: parseFloat(amount),
+        swiftCode: validator.escape(swiftCode),
+        transactionDate: new Date(),
+      });
+
+      // Save the transaction using Mongoose
+      const savedTransaction = await newTransaction.save();
+
+      // Update user's balance
+      user.balance -= parseFloat(amount);
+      await user.save();
+
+      res.status(201).json({ message: "Transaction successful", transaction: savedTransaction, newBalance: user.balance });
     } catch (e) {
-      console.error("Error uploading transaction:", e); // Log any errors that occur during the process
-      res.status(500).send({ message: "Failed to upload transaction" }); // Respond with an error message
+      console.error("Error uploading transaction:", e);
+      res.status(500).send({ message: "Failed to upload transaction" });
     }
   }
 );
 
-//--------------------------------------------------------------------------------------------------------//
-
-// GET - Retrieve all transactions for the authenticated user
+// GET - Retrieve all transactions for authenticated user
 router.get(
   "/",
-  [authenticateUser, transactionLimiter], // Apply authentication and rate limiting middlewares
+  [authenticateUser, transactionLimiter],
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.userId; // Extract user ID from the authenticated request
-      const collection = req.app.locals.db.collection("transactions"); // Access the transactions collection
+      const userId = req.userId;
 
-      const transactions = await collection.find({ user: userId }).toArray(); // Find all transactions for the authenticated user
+      // Retrieve transactions using Mongoose
+      const transactions = await Transaction.find({ user: userId }).exec();
 
-      // If no transactions are found, respond with a 404 status
       if (transactions.length === 0) {
         res.status(404).json({ message: "No transactions found" });
         return;
       }
 
-      res.status(200).json(transactions); // Respond with the list of transactions
+      res.status(200).json(transactions);
     } catch (e) {
-      console.error("Error fetching transactions:", e); // Log any errors that occur during the process
-      res.status(500).json({ message: "Failed to retrieve transactions" }); // Respond with an error message
+      console.error("Error fetching transactions:", e);
+      res.status(500).json({ message: "Failed to retrieve transactions" });
     }
   }
 );
 
-//--------------------------------------------------------------------------------------------------------//
-
-export default router; // Export the router for use in other parts of the application
-
-//------------------------------------------END OF FILE---------------------------------------------------//
+export default router;

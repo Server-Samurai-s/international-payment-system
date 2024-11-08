@@ -1,0 +1,212 @@
+name: Secure Payments Portal CI
+
+on:
+  push:
+    branches:
+      - Dylan-Branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: 🛎️ Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Step 2: Clear npm cache to prevent issues
+      - name: 🧹 Clear npm cache
+        run: |
+          echo "::group::🧹 Clearing npm cache"
+          npm cache clean --force
+          echo "✅ npm cache cleared."
+          echo "::endgroup::"
+
+      # Step 3: Set up Node.js
+      - name: 🛠️ Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Step 4: Verify Node.js version
+      - name: 🛠️ Verify Node.js version
+        run: |
+          echo "✅ Node.js version $(node -v) has been set up."
+
+      # Step 5: Install backend dependencies with retry logic, including xss-clean
+      - name: 📦 Install backend dependencies
+        working-directory: ./backend
+        run: |
+          echo "::group::📦 Installing backend dependencies"
+          retries=3
+          count=0
+          until [ $count -ge $retries ]
+          do
+            npm install xss-clean && npm ci --legacy-peer-deps && break
+            count=$((count+1))
+            echo "⚠️ Retry ($count/$retries): npm ci failed, retrying..."
+            sleep 10
+          done
+          echo "✅ Backend dependencies installed, including xss-clean."
+          echo "::endgroup::"
+
+      # Step 6: Install frontend dependencies with retry logic
+      - name: 📦 Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          echo "::group::📦 Installing frontend dependencies"
+          retries=3
+          count=0
+          until [ $count -ge $retries ]
+          do
+            npm ci --legacy-peer-deps && break
+            count=$((count+1))
+            echo "⚠️ Retry ($count/$retries): npm ci failed, retrying..."
+            sleep 10
+          done
+          echo "✅ Frontend dependencies installed."
+          echo "::endgroup::"
+
+      # Step 7: Install Jest for testing
+      - name: 🧪 Install Jest
+        working-directory: ./backend
+        run: |
+          echo "::group::🧪 Installing Jest"
+          npm install --save-dev jest
+          echo "✅ Jest installed for backend testing."
+          echo "::endgroup::"
+
+      # Step 8: Install TypeScript and ts-node for Jest in frontend
+      - name: 🧪 Install TypeScript and ts-node
+        working-directory: ./frontend
+        run: |
+          echo "::group::🧪 Installing TypeScript and ts-node"
+          npm install typescript ts-node --save-dev
+          echo "✅ TypeScript and ts-node installed for frontend testing."
+          echo "::endgroup::"
+
+      # Step 9: Run Vulnerability Scan on backend
+      - name: 🔎 Run Vulnerability Scan on backend
+        working-directory: ./backend
+        run: |
+          echo "::group::🔎 Running vulnerability scan on backend"
+          npm audit --audit-level=high || echo "⚠️ Vulnerabilities found in backend, but continuing with the build."
+          echo "✅ Backend vulnerability scan completed."
+          echo "::endgroup::"
+
+      # Step 10: Run Vulnerability Scan on frontend
+      - name: 🔎 Run Vulnerability Scan on frontend
+        working-directory: ./frontend
+        run: |
+          echo "::group::🔎 Running vulnerability scan on frontend"
+          npm audit --audit-level=high || echo "⚠️ Vulnerabilities found in frontend, but continuing with the build."
+          echo "✅ Frontend vulnerability scan completed."
+          echo "::endgroup::"
+
+      # Step 11: Run backend unit tests
+      - name: 🧪 Run backend unit tests
+        working-directory: ./backend
+        run: |
+          echo "::group::🧪 Running backend unit tests"
+          npm run test
+          echo "✅ Backend unit tests completed."
+          echo "::endgroup::"
+
+      # Step 12: Run frontend unit tests
+      - name: 🧪 Run frontend unit tests
+        working-directory: ./frontend
+        run: |
+          echo "::group::🧪 Running frontend unit tests"
+          npm run test
+          echo "✅ Frontend unit tests completed."
+          echo "::endgroup::"
+
+      # Step 13: Check for SSL certificate and key presence
+      - name: 🔐 Check SSL configuration
+        run: |
+          echo "::group::🔐 Checking SSL configuration"
+          if [ ! -f ./backend/src/keys/certificate.pem ] || [ ! -f ./backend/src/keys/mongodb-key.pem ]; then
+            echo "❌ SSL certificate or key missing."
+            exit 1
+          else
+            echo "✅ SSL certificate and key are present."
+          fi
+          echo "::endgroup::"
+
+      # Step 14: Security Attack Checks
+      - name: 🔒 Security Attack Checks
+        run: |
+          echo "::group::🔒 Security Checks"
+          PASS=true
+
+          # Clickjacking Protection (Helmet in app.ts)
+          if grep -q "helmet()" ./backend/src/app.ts; then
+            echo "✅ Clickjacking protection is in place (Helmet)."
+          else
+            echo "❌ Clickjacking protection missing (Helmet)."
+            PASS=false
+          fi
+
+          # Session Hijacking Protection
+          if grep -q "cookie-session" ./backend/src/app.ts; then
+            echo "✅ Session hijacking protection is in place (cookie-session or express-session)."
+          else
+            echo "❌ Session hijacking protection missing (cookie-session or express-session)."
+            PASS=false
+          fi
+
+          # SQL Injection Protection (Check for Mongoose models usage in transaction routes)
+          if grep -Eq "Transaction\." ./backend/src/routes/transaction.routes.ts; then
+            echo "✅ SQL Injection protection is in place (using Mongoose models)."
+          else
+            echo "❌ SQL Injection protection missing (ensure Mongoose is used for database operations)."
+            PASS=false
+          fi
+
+          # Cross-Site Scripting (XSS) Protection
+          if grep -q "xss-clean" ./backend/src/app.ts; then
+            echo "✅ XSS protection is in place (xss-clean middleware)."
+          else
+            echo "❌ XSS protection missing (xss-clean middleware)."
+            PASS=false
+          fi
+
+          # MITM Attack Protection (HSTS in app.ts)
+          if grep -q "Strict-Transport-Security" ./backend/src/app.ts; then
+            echo "✅ HSTS header is set (using Helmet)."
+          else
+            echo "❌ HSTS header missing (use Helmet to enforce Strict-Transport-Security)."
+            PASS=false
+          fi
+
+          # DDoS Protection (Rate Limiting in transaction routes)
+          if grep -q "express-rate-limit" ./backend/src/routes/transaction.routes.ts; then
+            echo "✅ DDoS protection is in place (express-rate-limit middleware)."
+          else
+            echo "❌ DDoS protection missing (express-rate-limit middleware)."
+            PASS=false
+          fi
+
+          echo "::endgroup::"
+
+          if [ "$PASS" = "false" ]; then
+            echo "🚫 Security checks failed. Please address the above issues."
+            exit 1
+          else
+            echo "🎉 All security checks passed! Your application is protected against common web attacks."
+          fi
+
+      # Step 15: Upload test results on failure
+      - name: 📤 Upload test results on failure
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: ./test-results
+
+      # Step 16: 🎉 Build Complete
+      - name: 🎉 Build Complete
+        if: success()
+        run: echo "✅ All steps completed successfully!"

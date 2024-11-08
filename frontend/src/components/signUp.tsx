@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react'; // Import React hooks for managing state and side effects
-import { useNavigate } from 'react-router-dom'; // Import navigation hook
-import '../styles/signUp.css'; // Import CSS for styling
-import registerBackground from '../images/registerBackground.jpg'; // Import background image for the sign-up page
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Canvas } from "@react-three/fiber";
+import { Stars } from "@react-three/drei";
+import '../styles/signUp.css';
+import SuccessMessage from './successMessage';
 
-//--------------------------------------------------------------------------------------------------------//
-
-// Interface for form state
 interface FormState {
     firstName: string;
     lastName: string;
@@ -17,10 +16,9 @@ interface FormState {
     idNumber: string;
 }
 
-//--------------------------------------------------------------------------------------------------------//
-
 const SignUp: React.FC = () => {
-    // State for the form fields
+    const [showSuccess, setShowSuccess] = useState(false);
+    
     const [form, setForm] = useState<FormState>({
         firstName: '',
         lastName: '',
@@ -32,63 +30,42 @@ const SignUp: React.FC = () => {
         idNumber: '',
     });
 
-//--------------------------------------------------------------------------------------------------------//
+    const [errors, setErrors] = useState<Partial<FormState>>({});
+    const [submitted, setSubmitted] = useState(false);
+    const [passwordsMatch, setPasswordsMatch] = useState(true);
+    const navigate = useNavigate();
 
-    const [errors, setErrors] = useState<Partial<FormState>>({}); // State for managing validation errors
-    const [submitted, setSubmitted] = useState(false); // Track if the form has been submitted
-    const [passwordsMatch, setPasswordsMatch] = useState(true); // Track if passwords match
-    const navigate = useNavigate(); // Hook for navigation
-
-//------------------------------------------------------------------------------------------------
-
-    // Check if passwords match when they change
     useEffect(() => {
-        if (form.password !== form.confirmPassword) {
-            setPasswordsMatch(false);
-        } else {
-            setPasswordsMatch(true);
-        }
+        setPasswordsMatch(form.password === form.confirmPassword);
     }, [form.password, form.confirmPassword]);
 
-//------------------------------------------------------------------------------------------------
+    const updateForm = (value: Partial<FormState>, field: keyof FormState) => {
+        setForm((prev) => ({
+            ...prev,
+            ...value,
+        }));
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            [field]: '',
+        }));
+    };
 
-    // Update form field values and clear related errors
-    function updateForm(value: Partial<FormState>, field: keyof FormState) {
-        setForm((prev) => {
-            const updatedForm = { ...prev, ...value };
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                [field]: '', // Clear the error for the updated field
-            }));
-            return updatedForm;
-        });
-    }
-
-//--------------------------------------------------------------------------------------------------------//
-
-    // Validate form inputs
-    function validateForm(): boolean {
+    const validateForm = (): boolean => {
         const newErrors: Partial<FormState> = {};
         let valid = true;
 
-//--------------------------------------------------------------------------------------------------------//
+        const nameRegex = /^[A-Za-z\s]+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const usernameRegex = /^[A-Za-z0-9_]+$/;
+        const accountNumberRegex = /^\d{7,11}$/;
+        const idNumberRegex = /^\d{13}$/;
 
-        // Regex for input validation
-        const nameRegex = /^[A-Za-z\s]+$/; // Only letters and spaces
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Basic email format
-        const usernameRegex = /^[A-Za-z0-9_]+$/; // Letters, numbers, underscores
-        const accountNumberRegex = /^\d{7,11}$/; // 7-11 digits
-        const idNumberRegex = /^\d{13}$/; // Exactly 13 digits
+        const minLength = form.password.length >= 8;
+        const hasUppercase = /[A-Z]/.test(form.password);
+        const hasLowercase = /[a-z]/.test(form.password);
+        const hasNumber = /\d/.test(form.password);
+        const hasSpecialChar = /[@$!%*?&]/.test(form.password);
 
-        const minLength = form.password.length >= 8; // Check if the password has a minimum length of 8 characters
-        const hasUppercase = /[A-Z]/.test(form.password); // Check if the password contains at least one uppercase letter
-        const hasLowercase = /[a-z]/.test(form.password); // Check if the password contains at least one lowercase letter
-        const hasNumber = /\d/.test(form.password); // Check if the password contains at least one numeric digit
-        const hasSpecialChar = /[@$!%*?&]/.test(form.password); // Check if the password contains at least one special character
-
-//--------------------------------------------------------------------------------------------------------//
-
-        // Validate first and last names
         if (!nameRegex.test(form.firstName)) {
             newErrors.firstName = 'First Name must contain only letters';
             valid = false;
@@ -97,259 +74,167 @@ const SignUp: React.FC = () => {
             newErrors.lastName = 'Last Name must contain only letters';
             valid = false;
         }
-
-        // Validate email address
         if (!emailRegex.test(form.emailAddress)) {
             newErrors.emailAddress = 'Please enter a valid email address';
             valid = false;
         }
-
-        // Validate username
         if (!usernameRegex.test(form.username)) {
             newErrors.username = 'Username can only contain letters, numbers, and underscores';
             valid = false;
         }
-
-        // Validate password
-        if (!minLength) {
-            newErrors.password = 'Password must be at least 8 characters long';
-            valid = false;
-        } else if (!hasUppercase) {
-            newErrors.password = 'Password must contain at least one uppercase letter';
-            valid = false;
-        } else if (!hasLowercase) {
-            newErrors.password = 'Password must contain at least one lowercase letter';
-            valid = false;
-        } else if (!hasNumber) {
-            newErrors.password = 'Password must contain at least one number';
-            valid = false;
-        } else if (!hasSpecialChar) {
-            newErrors.password = 'Password must contain at least one special character';
+        if (!minLength || !hasUppercase || !hasLowercase || !hasNumber || !hasSpecialChar) {
+            newErrors.password = 'Password must be at least 8 characters and include uppercase, lowercase, a number, and a special character';
             valid = false;
         }
-
-        // Validate password confirmation
         if (!passwordsMatch) {
             newErrors.confirmPassword = 'Passwords do not match';
             valid = false;
         }
-
-        // Validate account number (7-11 digits)
         if (!accountNumberRegex.test(form.accountNumber)) {
             newErrors.accountNumber = 'Account Number must be between 7 and 11 digits';
             valid = false;
         }
-
-        // Validate ID number (exactly 13 digits)
         if (!idNumberRegex.test(form.idNumber)) {
             newErrors.idNumber = 'ID Number must be exactly 13 digits';
             valid = false;
         }
 
-        setErrors(newErrors); // Set validation errors
-        return valid; // Return if the form is valid or not
-    }
+        setErrors(newErrors);
+        return valid;
+    };
 
-//--------------------------------------------------------------------------------------------------------//
-
-    // Handle form submission
-    async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setSubmitted(true); // Mark the form as submitted
+        setSubmitted(true);
 
         if (validateForm()) {
-            const newUser = { ...form }; // Copy form data
-
             try {
-                // Send form data to the backend
                 const response = await fetch('https://localhost:3001/user/signup', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(newUser),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(form),
                 });
+                if (!response.ok) throw new Error(`Error: ${response.statusText}`);
 
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.statusText}`);
-                }
-
-                // Reset form fields after successful sign-up
                 setForm({
-                    firstName: '',
-                    lastName: '',
-                    emailAddress: '',
-                    username: '',
-                    password: '',
-                    confirmPassword: '',
-                    accountNumber: '',
-                    idNumber: '',
+                    firstName: '', lastName: '', emailAddress: '', username: '', password: '', confirmPassword: '', accountNumber: '', idNumber: '',
                 });
-                setSubmitted(false); // Reset submission state
-                navigate('/login'); // Redirect to login page after successful registration
+                setSubmitted(false);
+                setShowSuccess(true);
+                setTimeout(() => navigate('/login'), 2000);
             } catch (error) {
-                window.alert(error); // Show error alert
+                window.alert(error);
             }
         }
-    }
-
-//--------------------------------------------------------------------------------------------------------//
+    };
 
     return (
-        <div
-            className="full-page-container"
-            style={{
-                backgroundImage: `url(${registerBackground})`, // Set background image for the page
-            }}
-        >
+        <div className="sign-up-page">
+            <Canvas className="background-animation">
+                <Stars radius={100} depth={50} count={5000} factor={4} fade />
+            </Canvas>
             <div className="form-container">
-                <form onSubmit={onSubmit} noValidate> {/* Form with validation on submit */}
+                <form onSubmit={onSubmit} noValidate>
                     <h3>Customer Registration Form</h3>
                     <div className="row">
-                        {/* First Name input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="firstName">First Name</label>
+                        <div className="col">
                             <input
                                 type="text"
-                                className={submitted && errors.firstName ? 'is-invalid' : ''} // Add invalid class if there's an error
-                                id="firstName"
+                                className={`form-control ${submitted && errors.firstName ? 'is-invalid' : ''}`}
                                 value={form.firstName}
-                                onChange={(e) => updateForm({ firstName: e.target.value }, 'firstName')} // Update form state on change
-                                required
+                                onChange={(e) => updateForm({ firstName: e.target.value }, 'firstName')}
+                                placeholder="First Name"
                             />
-                            {submitted && errors.firstName && (
-                                <div className="custom-tooltip">{errors.firstName}</div> // Display error if present
-                            )}
+                            {submitted && errors.firstName && <div className="error-message">{errors.firstName}</div>}
                         </div>
-                        {/* Last Name input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="lastName">Last Name</label>
+                        <div className="col">
                             <input
                                 type="text"
-                                className={submitted && errors.lastName ? 'is-invalid' : ''} // Add invalid class if there's an error
-                                id="lastName"
+                                className={`form-control ${submitted && errors.lastName ? 'is-invalid' : ''}`}
                                 value={form.lastName}
-                                onChange={(e) => updateForm({ lastName: e.target.value }, 'lastName')} // Update form state on change
-                                required
+                                onChange={(e) => updateForm({ lastName: e.target.value }, 'lastName')}
+                                placeholder="Last Name"
                             />
-                            {submitted && errors.lastName && (
-                                <div className="custom-tooltip">{errors.lastName}</div> // Display error if present
-                            )}
+                            {submitted && errors.lastName && <div className="error-message">{errors.lastName}</div>}
                         </div>
                     </div>
                     <div className="row">
-                        {/* Email Address input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="emailAddress">Email Address</label>
+                        <div className="col">
                             <input
                                 type="email"
-                                className={submitted && errors.emailAddress ? 'is-invalid' : ''} // Add invalid class if there's an error
-                                id="emailAddress"
+                                className={`form-control ${submitted && errors.emailAddress ? 'is-invalid' : ''}`}
                                 value={form.emailAddress}
-                                onChange={(e) => updateForm({ emailAddress: e.target.value }, 'emailAddress')} // Update form state on change
-                                required
+                                onChange={(e) => updateForm({ emailAddress: e.target.value }, 'emailAddress')}
+                                placeholder="Email Address"
                             />
-                            {submitted && errors.emailAddress && (
-                                <div className="custom-tooltip">{errors.emailAddress}</div> // Display error if present
-                            )}
+                            {submitted && errors.emailAddress && <div className="error-message">{errors.emailAddress}</div>}
                         </div>
-                        {/* Username input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="username">Username</label>
+                        <div className="col">
                             <input
                                 type="text"
-                                className={submitted && errors.username ? 'is-invalid' : ''} // Add invalid class if there's an error
-                                id="username"
+                                className={`form-control ${submitted && errors.username ? 'is-invalid' : ''}`}
                                 value={form.username}
-                                onChange={(e) => updateForm({ username: e.target.value }, 'username')} // Update form state on change
-                                required
+                                onChange={(e) => updateForm({ username: e.target.value }, 'username')}
+                                placeholder="Username"
                             />
-                            {submitted && errors.username && (
-                                <div className="custom-tooltip">{errors.username}</div> // Display error if present
-                            )}
+                            {submitted && errors.username && <div className="error-message">{errors.username}</div>}
                         </div>
                     </div>
                     <div className="row">
-                        {/* Password input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="password">Password</label>
+                        <div className="col">
                             <input
                                 type="password"
-                                className={submitted && errors.password ? 'is-invalid' : ''} // Add invalid class if there's an error
-                                id="password"
+                                className={`form-control ${submitted && errors.password ? 'is-invalid' : ''}`}
                                 value={form.password}
-                                onChange={(e) => updateForm({ password: e.target.value }, 'password')} // Update form state on change
-                                required
+                                onChange={(e) => updateForm({ password: e.target.value }, 'password')}
+                                placeholder="Password"
                             />
-                            {submitted && errors.password && (
-                                <div className="custom-tooltip">{errors.password}</div> // Display error if present
-                            )}
+                            {submitted && errors.password && <div className="error-message">{errors.password}</div>}
                         </div>
-                        {/* Confirm Password input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="confirmPassword">Confirm Password</label>
+                        <div className="col">
                             <input
                                 type="password"
-                                className={submitted && (!passwordsMatch || errors.confirmPassword) ? 'is-invalid' : ''} // Add invalid class if passwords don't match or there's an error
-                                id="confirmPassword"
+                                className={`form-control ${submitted && (!passwordsMatch || errors.confirmPassword) ? 'is-invalid' : ''}`}
                                 value={form.confirmPassword}
-                                onChange={(e) => updateForm({ confirmPassword: e.target.value }, 'confirmPassword')} // Update form state on change
-                                required
+                                onChange={(e) => updateForm({ confirmPassword: e.target.value }, 'confirmPassword')}
+                                placeholder="Confirm Password"
                             />
-                            {submitted && !passwordsMatch && (
-                                <div className="custom-tooltip">Passwords do not match</div> // Display password mismatch error
-                            )}
-                            {submitted && errors.confirmPassword && (
-                                <div className="custom-tooltip">{errors.confirmPassword}</div> // Display error if present
-                            )}
+                            {submitted && !passwordsMatch && <div className="error-message">Passwords do not match</div>}
                         </div>
                     </div>
                     <div className="row">
-                        {/* Account Number input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="accountNumber">Account Number</label>
+                        <div className="col">
                             <input
                                 type="text"
-                                className={submitted && errors.accountNumber ? 'is-invalid' : ''} // Add invalid class if there's an error
-                                id="accountNumber"
+                                className={`form-control ${submitted && errors.accountNumber ? 'is-invalid' : ''}`}
                                 value={form.accountNumber}
-                                onChange={(e) => updateForm({ accountNumber: e.target.value }, 'accountNumber')} // Update form state on change
-                                maxLength={11} // Set max length for the account number
-                                required
+                                onChange={(e) => updateForm({ accountNumber: e.target.value }, 'accountNumber')}
+                                placeholder="Account Number"
+                                maxLength={11}
                             />
-                            {submitted && errors.accountNumber && (
-                                <div className="custom-tooltip">{errors.accountNumber}</div> // Display error if present
-                            )}
+                            {submitted && errors.accountNumber && <div className="error-message">{errors.accountNumber}</div>}
                         </div>
-                        {/* ID Number input field */}
-                        <div className="col-md-6 mb-3 position-relative">
-                            <label htmlFor="idNumber">ID Number</label>
+                        <div className="col">
                             <input
                                 type="text"
-                                className={submitted && errors.idNumber ? 'is-invalid' : ''} // Add invalid class if there's an error
-                                id="idNumber"
+                                className={`form-control ${submitted && errors.idNumber ? 'is-invalid' : ''}`}
                                 value={form.idNumber}
-                                onChange={(e) => updateForm({ idNumber: e.target.value }, 'idNumber')} // Update form state on change
-                                maxLength={13} // Set max length for the ID number
-                                required
+                                onChange={(e) => updateForm({ idNumber: e.target.value }, 'idNumber')}
+                                placeholder="ID Number"
+                                maxLength={13}
                             />
-                            {submitted && errors.idNumber && (
-                                <div className="custom-tooltip">{errors.idNumber}</div> // Display error if present
-                            )}
+                            {submitted && errors.idNumber && <div className="error-message">{errors.idNumber}</div>}
                         </div>
                     </div>
-                    <button type="submit">Submit</button> {/* Submit button */}
+                    <button type="submit" className="submit-button">Submit</button>
                 </form>
-                <div className="text-center mt-4">
-                    <p>An existing customer? <a href="/login">Click to Login</a></p> {/* Link to login page */}
+                <div className="login-link">
+                    <p>An existing customer? <a href="/login">Click to Login</a></p>
                 </div>
             </div>
+            {showSuccess && <SuccessMessage message="Account created successfully! Redirecting to login..." />}
         </div>
     );
 };
 
-//--------------------------------------------------------------------------------------------------------//
-
-export default SignUp; // Export the SignUp component for use in other parts of the app
-
-//------------------------------------------END OF FILE---------------------------------------------------//
+export default SignUp;

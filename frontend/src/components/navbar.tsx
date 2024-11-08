@@ -1,45 +1,61 @@
-import React from "react"; // Import React for building the component
-import "bootstrap/dist/css/bootstrap.css"; // Import Bootstrap CSS for styling
-import { NavLink, useNavigate } from "react-router-dom"; // Import NavLink for navigation links and useNavigate for redirection
-
-//--------------------------------------------------------------------------------------------------------//
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import "../styles/Navbar.css";
+import SuccessMessage from "./successMessage";
 
 const Navbar: React.FC = () => {
-    const navigate = useNavigate(); // Hook for programmatic navigation
+    const navigate = useNavigate();
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
-//--------------------------------------------------------------------------------------------------------//
+    useEffect(() => {
+        // Check login status whenever the component mounts or updates
+        const checkLoginStatus = () => {
+            const token = localStorage.getItem("jwt");
+            setIsLoggedIn(!!token);
+        };
 
-    // Check if the user is logged in by checking the existence of a JWT token in localStorage
-    const isLoggedIn = !!localStorage.getItem("jwt");
+        checkLoginStatus();
+        // Set up an interval to periodically check login status
+        const intervalId = setInterval(checkLoginStatus, 1000);
 
-//--------------------------------------------------------------------------------------------------------//
+        // Clean up the interval when the component unmounts
+        return () => clearInterval(intervalId);
+    }, []);
 
-    // Handle logout functionality
     const handleLogout = () => {
-        localStorage.removeItem("jwt"); // Remove the JWT token from localStorage
-        navigate("/login"); // Redirect the user to the login page after logout
+        localStorage.removeItem("jwt");
+        setIsLoggedIn(false);
+        setShowSuccess(true);
+        setTimeout(() => {
+            setShowSuccess(false);
+            navigate("/");
+        }, 2000);
     };
 
-//--------------------------------------------------------------------------------------------------------//
-
     return (
-        <div>
-            <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <header className="navbar-container">
+            <nav className="navbar">
                 <NavLink className="navbar-brand" to="/">
-                    {/* Add a logo or brand name here if needed */}
+                    <h1>IntPay</h1>
                 </NavLink>
-                <div className="navbar" id="navbarSupportedContent">
-                    <ul className="navbar-nav ml-auto">
-                        {/* Conditionally render the Dashboard link if the user is logged in */}
-                        {isLoggedIn && (
-                            <li className="nav-item">
-                                <NavLink className="nav-link" to="/dashboard">
-                                    Dashboard
-                                </NavLink>
-                            </li>
-                        )}
-                        {/* Conditionally render Login and Register links if the user is not logged in */}
-                        {!isLoggedIn && (
+
+                <div className="navbar-links">
+                    <ul className="nav-links">
+                        {isLoggedIn ? (
+                            <>
+                                <li className="nav-item">
+                                    <NavLink className="nav-link" to="/dashboard">
+                                        Dashboard
+                                    </NavLink>
+                                </li>
+                                <li className="nav-item">
+                                    <button className="nav-link btn-logout" onClick={handleLogout}>
+                                        Logout
+                                    </button>
+                                </li>
+                            </>
+                        ) : (
                             <>
                                 <li className="nav-item">
                                     <NavLink className="nav-link" to="/signUp">
@@ -53,23 +69,12 @@ const Navbar: React.FC = () => {
                                 </li>
                             </>
                         )}
-                        {/* Show Logout button if the user is logged in */}
-                        {isLoggedIn && (
-                            <li className="nav-item">
-                                <button className="nav-link btn" onClick={handleLogout}>
-                                    Logout
-                                </button>
-                            </li>
-                        )}
                     </ul>
                 </div>
             </nav>
-        </div>
+            {showSuccess && <SuccessMessage message="Logged out successfully! Redirecting to login..." />}
+        </header>
     );
 };
 
-//--------------------------------------------------------------------------------------------------------//
-
-export default Navbar; // Export the Navbar component for use in other parts of the app
-
-//------------------------------------------END OF FILE---------------------------------------------------//
+export default Navbar;
