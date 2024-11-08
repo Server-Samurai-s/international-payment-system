@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5  # Node.js orb for Node-specific jobs
+  node: circleci/node@5
 
 jobs:
   test-node:
@@ -51,7 +51,8 @@ jobs:
 
   sonarcloud:
     docker:
-      - image: cimg/openjdk:17.0  # Java 17 with sudo privileges
+      - image: cimg/openjdk:17.0
+        user: root  # Run as root user
     working_directory: ~/international-payment-system
     environment:
       PATH: "$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
@@ -60,7 +61,7 @@ jobs:
       - run:
           name: Install curl
           command: |
-            sudo apt-get update && sudo apt-get install -y curl
+            apt-get update && apt-get install -y curl
       - run:
           name: Install SonarScanner
           command: |
@@ -77,7 +78,7 @@ jobs:
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=$SONAR_TOKEN  # Use environment variable for the token
+              -Dsonar.login=9e812ea93e5398f93db118eefa377f67d176b364
 
   deploy:
     docker:
