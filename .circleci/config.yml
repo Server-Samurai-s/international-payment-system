@@ -62,7 +62,7 @@ jobs:
       - run:
           name: Install curl
           command: |
-            apk update && apk add curl
+            apt-get update && apt-get install -y curl
       - run:
           name: Install SonarScanner
           command: |
@@ -87,7 +87,7 @@ jobs:
     steps:
       - run:
           name: Deploy
-          command: '# e.g., ./deploy.sh'
+          command: './deploy.sh'  
 
 workflows:
   build-and-test:
