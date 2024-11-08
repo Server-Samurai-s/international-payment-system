@@ -1,18 +1,17 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5
+  node: circleci/node@5  # Updated to use the stable CircleCI Node orb
 
 executors:
   node-executor:
     docker:
-      - image: circleci/node:18.16.0
+      - image: node:18  # Official Node 18 image
     working_directory: ~/international-payment-system
 
   sonar-executor:
     docker:
       - image: circleci/openjdk:11
-      - image: docker:stable  # Add Docker to this executor
     working_directory: ~/international-payment-system
 
 jobs:
@@ -69,7 +68,6 @@ jobs:
     working_directory: ~/international-payment-system
     steps:
       - checkout
-      - setup_remote_docker  # Enables Docker within the job
       - run:
           name: Download and Install SonarScanner
           command: |
