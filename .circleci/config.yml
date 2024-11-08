@@ -40,11 +40,12 @@ jobs:
           name: Build project
           command: npm run build
       - run:
-          name: Create the ~/artifacts directory if it doesn't exist
+          name: Create artifacts directory
           command: mkdir -p ~/artifacts
       - run:
           name: Copy artifacts
-          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
+          command: |
+            cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
       - store_artifacts:
           path: ~/artifacts
           destination: node-build
@@ -52,7 +53,7 @@ jobs:
   sonarcloud:
     docker:
       - image: cimg/openjdk:17.0
-        user: root  # Run as root user
+        user: root
     working_directory: ~/international-payment-system
     environment:
       PATH: "$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
@@ -61,7 +62,7 @@ jobs:
       - run:
           name: Install curl
           command: |
-            apt-get update && apt-get install -y curl
+            apk update && apk add curl
       - run:
           name: Install SonarScanner
           command: |
@@ -85,7 +86,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - run:
-          name: deploy
+          name: Deploy
           command: '# e.g., ./deploy.sh'
 
 workflows:
