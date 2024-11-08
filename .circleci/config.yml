@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/node:18.0.0
+      - image: cimg/node:18.18.0
 
     steps:
       - checkout
@@ -13,16 +13,17 @@ jobs:
           name: Clear npm cache
           command: npm cache clean --force
 
-      # Install backend dependencies
+      # Install backend dependencies with specific mongodb-memory-server version
       - run:
           name: Install backend dependencies
           command: |
             cd backend
-            for i in 1 2 3; do
-              npm install --legacy-peer-deps && break
-              echo "Retrying npm install... attempt $i"
-              sleep 10
-            done
+            # Remove package-lock.json to ensure clean install
+            rm -f package-lock.json
+            # Install mongodb-memory-server explicitly first
+            npm install mongodb-memory-server@8.12.2 --save-dev
+            # Then install remaining dependencies
+            npm install --legacy-peer-deps
 
       # Install frontend dependencies
       - run:
