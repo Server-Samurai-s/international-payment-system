@@ -3,9 +3,20 @@ version: 2.1
 orbs:
   node: circleci/node@5
 
+executors:
+  node-executor:
+    docker:
+      - image: circleci/node:18
+    working_directory: ~/international-payment-system
+
+  sonar-executor:
+    docker:
+      - image: circleci/openjdk:11-jdk
+    working_directory: ~/international-payment-system
+
 jobs:
   test-node:
-    executor: node/default
+    executor: node-executor
     working_directory: ~/international-payment-system/frontend
     steps:
       - checkout:
@@ -23,7 +34,7 @@ jobs:
           command: npm test --passWithNoTests
 
   build-node:
-    executor: node/default
+    executor: node-executor
     working_directory: ~/international-payment-system/frontend
     steps:
       - checkout:
@@ -51,9 +62,7 @@ jobs:
           destination: node-build
 
   sonarcloud:
-    # SonarCloud analysis job
-    docker:
-      - image: cimg/openjdk:17.0  # Use the cimg OpenJDK image with Java 17
+    executor: sonar-executor
     working_directory: ~/international-payment-system
     steps:
       - checkout
@@ -64,7 +73,7 @@ jobs:
             unzip sonar-scanner-cli.zip -d $HOME
             export PATH=$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH
       - run:
-          name: Run SonarScanner
+          name: Run SonarCloud analysis
           command: |
             sonar-scanner \
               -Dsonar.projectKey=server-samurai-s \
@@ -94,3 +103,4 @@ workflows:
             branches:
               only:
                 - Dylan-Branch
+
