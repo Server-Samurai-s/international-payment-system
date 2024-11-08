@@ -52,7 +52,7 @@ jobs:
 
   sonarcloud:
     docker:
-      - image: cimg/openjdk:17.0-bullseye
+      - image: cimg/openjdk:17.0
         user: root
     working_directory: ~/international-payment-system
     environment:
