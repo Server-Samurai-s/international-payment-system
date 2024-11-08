@@ -76,12 +76,14 @@ jobs:
             export SONAR_SCANNER_HOME=$HOME/sonar-scanner-4.6.2.2472-linux
             export PATH=$SONAR_SCANNER_HOME/bin:$PATH
             echo "SonarScanner installed at $SONAR_SCANNER_HOME"
-            echo "PATH is now: $PATH"
+            ls -l $SONAR_SCANNER_HOME/bin  # List contents to verify installation
       - run:
           name: Verify SonarScanner Installation
           command: |
-            if ! $SONAR_SCANNER_HOME/bin/sonar-scanner -v; then
-              echo "SonarScanner verification failed"
+            if [ -f "$SONAR_SCANNER_HOME/bin/sonar-scanner" ]; then
+              $SONAR_SCANNER_HOME/bin/sonar-scanner -v
+            else
+              echo "SonarScanner binary not found in $SONAR_SCANNER_HOME/bin"
               exit 1
             fi
       - run:
@@ -91,7 +93,7 @@ jobs:
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
               -Dsonar.host.url=https://sonarcloud.io \
-              -Dsonar.login=c8b315489fd764344e5ec884e07059b16122e895 \
+              -Dsonar.login=${SONAR_TOKEN} \
               -Dsonar.branch.name=Dylan-Branch
 
 workflows:
