@@ -34,7 +34,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
                 
                 <div className="verification-field">
                     <div className="field-info">
-                        <label>Recipient's Name:</label>
+                        <label>Recipient&apos;s Name:</label>
                         <span>{transaction.recipientName}</span>
                     </div>
                     <button 
@@ -47,7 +47,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
 
                 <div className="verification-field">
                     <div className="field-info">
-                        <label>Recipient's Bank:</label>
+                        <label>Recipient&apos;s Bank:</label>
                         <span>{transaction.recipientBank}</span>
                     </div>
                     <button 

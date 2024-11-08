@@ -27,6 +27,7 @@ export const employeeAuth = async (req: EmployeeAuthRequest, res: Response, next
     req.role = employee.role;
     next();
   } catch (error) {
+    console.error('Error authenticating employee:', error);
     res.status(401).json({ message: 'Please authenticate as an employee.' });
   }
 };

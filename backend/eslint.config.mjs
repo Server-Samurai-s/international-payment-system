@@ -4,16 +4,30 @@ import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 
 export default [
-  {files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"]},
-  {files: ["**/*.js"], languageOptions: {sourceType: "script"}},
-  {languageOptions: { globals: globals.browser }},
+  {
+    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+    languageOptions: {
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module"
+      },
+      globals: globals.browser
+    }
+  },
+  {
+    files: ["**/*.js"], 
+    languageOptions: {
+      sourceType: "script"
+    }
+  },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  pluginReact.configs.flat.recommended,
   {
+    files: ["**/*.{jsx,tsx}"],
+    ...pluginReact.configs.recommended,
     settings: {
       react: {
-        version: "detect",  // Automatically detect React version
+        version: "detect",
       },
     },
   },

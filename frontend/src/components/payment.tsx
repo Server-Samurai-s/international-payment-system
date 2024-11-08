@@ -150,7 +150,7 @@ const Payment: React.FC = () => {
                 <form onSubmit={onSubmit}>
                     {/* Recipient's Name */}
                     <div className="payment-form__group">
-                        <label htmlFor="recipientName">Recipient's Name</label>
+                        <label htmlFor="recipientName">Recipient&apos;s Name</label>
                         <input
                             type="text"
                             id="recipientName"
@@ -162,7 +162,7 @@ const Payment: React.FC = () => {
     
                     {/* Recipient's Bank */}
                     <div className="payment-form__group">
-                        <label htmlFor="recipientBank">Recipient's Bank</label>
+                        <label htmlFor="recipientBank">Recipient&apos;s Bank</label>
                         <input
                             type="text"
                             id="recipientBank"
@@ -174,7 +174,7 @@ const Payment: React.FC = () => {
     
                     {/* Account Number */}
                     <div className="payment-form__group">
-                        <label htmlFor="accountNumber">Recipient's Account Number</label>
+                        <label htmlFor="accountNumber">Recipient&apos;s Account Number</label>
                         <input
                             type="text"
                             id="accountNumber"

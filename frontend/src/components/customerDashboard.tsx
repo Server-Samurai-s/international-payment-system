@@ -151,7 +151,7 @@ const CustomerDashboard: React.FC = () => {
                                         <td>{transaction.recipientName}</td>
                                         <td>{transaction.recipientBank}</td>
                                         <td>${transaction.amount.toLocaleString()}</td>
-                                        <td>{transaction.status ? "Successful" : "Failed"}</td>
+                                        <td>{transaction.status ? transaction.status : "Failed"}</td>
                                         <td>
                                             <button 
                                                 onClick={() => handlePayAgain(transaction)}

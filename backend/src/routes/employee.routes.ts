@@ -54,6 +54,7 @@ router.get('/transactions/pending', employeeAuth, async (req: Request, res: Resp
             .sort({ transactionDate: -1 });
         res.json(transactions);
     } catch (error) {
+        console.error('Error fetching pending transactions:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -74,7 +75,8 @@ router.post('/transactions/:id/verify', employeeAuth, async (req: Request & { em
 
         res.json({ message: 'Transaction verified successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Error verifying transaction:', error);
+        res.status(500).json({ message: 'Server error'});
     }
 });
 
@@ -121,6 +123,7 @@ router.post('/create',
                 }
             });
         } catch (error) {
+            console.error('Error creating employee:', error);
             res.status(500).json({ message: 'Server error' });
         }
     }

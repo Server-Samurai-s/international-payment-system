@@ -114,7 +114,7 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
             <button type="submit" className="btn btn-primary">Log in</button>
 
             <div className="text-center mt-4">
-                <p>Don't have an account? <Link to="/signup" className="btn btn-link">Sign Up</Link></p>
+                <p>Don&apos;t have an account? <Link to="/signup" className="btn btn-link">Sign Up</Link></p>
             </div>
         </form>
     );

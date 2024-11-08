@@ -21,6 +21,7 @@ export const requireRole = (allowedRoles: EmployeeRole[]) => {
 
             next();
         } catch (error) {
+            console.error('Error checking role:', error);
             res.status(500).json({ message: 'Server error' });
         }
     };

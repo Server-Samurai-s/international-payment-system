@@ -142,7 +142,7 @@ const EmployeeDashboard: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {pendingTransactions.map((transaction, idx) => (
+                                {pendingTransactions.map((transaction) => (
                                     <tr key={transaction._id}>
                                         <td>{new Date(transaction.transactionDate!).toLocaleDateString()}</td>
                                         <td>{transaction.recipientName}</td>
