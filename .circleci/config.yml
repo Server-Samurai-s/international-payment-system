@@ -11,7 +11,7 @@ executors:
 
   sonar-executor:
     docker:
-      - image: circleci/openjdk:11.0.15  # Specifying OpenJDK version 11.0.15 for SonarCloud
+      - image: circleci/openjdk:11  # Use a generic OpenJDK 11 image
     working_directory: ~/international-payment-system
 
 jobs:
