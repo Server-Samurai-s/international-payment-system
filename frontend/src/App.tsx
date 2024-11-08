@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { EmployeeRole } from './types/employee';
 import Navbar from './components/navbar';
-import Login from './components/Login';
+import Login from './components/login';
 import SignUp from './components/signUp';
 import Dashboard from './components/customerDashboard';
 import EmployeeDashboard from './components/employeeDashboard';

@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import Login from './Login';
+import Login from './login';
 
 describe('Login Component', () => {
     beforeEach(() => {
