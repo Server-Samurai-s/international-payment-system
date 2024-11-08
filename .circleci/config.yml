@@ -56,6 +56,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Verify Java Version
+          command: java -version  # Ensures Java 17 is in use
+      - run:
           name: Download and Extract SonarScanner
           command: |
             curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
@@ -65,9 +68,6 @@ jobs:
           command: |
             export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
             echo "PATH set to $PATH"
-      - run:
-          name: Verify SonarScanner Installation
-          command: $HOME/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner --version  # Verifies installation
       - run:
           name: Run SonarScanner
           command: |
