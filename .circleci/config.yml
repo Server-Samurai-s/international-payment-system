@@ -43,7 +43,8 @@ jobs:
           command: mkdir -p ~/artifacts
       - run:
           name: Copy artifacts
-          command: cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
+          command: |
+            cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
       - store_artifacts:
           path: ~/artifacts
           destination: node-build
@@ -55,14 +56,18 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install SonarScanner
+          name: Download and Extract SonarScanner
           command: |
             curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
-            unzip sonar-scanner-cli.zip -d $HOME
+            unzip -o sonar-scanner-cli.zip -d $HOME
+      - run:
+          name: Add SonarScanner to PATH
+          command: |
             export PATH="$HOME/sonar-scanner-4.6.2.2472-linux/bin:$PATH"
+            echo "PATH set to $PATH"
       - run:
           name: Verify SonarScanner Installation
-          command: sonar-scanner --version  # Check if SonarScanner is correctly installed
+          command: $HOME/sonar-scanner-4.6.2.2472-linux/bin/sonar-scanner --version  # Verifies installation
       - run:
           name: Run SonarScanner
           command: |
