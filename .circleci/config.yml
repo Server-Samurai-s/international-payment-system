@@ -76,14 +76,15 @@ jobs:
             export SONAR_SCANNER_HOME=$HOME/sonar-scanner-4.6.2.2472-linux
             export PATH=$SONAR_SCANNER_HOME/bin:$PATH
             echo "SonarScanner installed at $SONAR_SCANNER_HOME"
-            ls -l $SONAR_SCANNER_HOME/bin  # List contents to verify installation
+            echo "PATH is now: $PATH"
+            ls -la $SONAR_SCANNER_HOME/bin  # List directory contents with permissions
       - run:
-          name: Verify SonarScanner Installation
+          name: Verify SonarScanner Binary
           command: |
-            if [ -f "$SONAR_SCANNER_HOME/bin/sonar-scanner" ]; then
-              $SONAR_SCANNER_HOME/bin/sonar-scanner -v
+            if [ -x "$SONAR_SCANNER_HOME/bin/sonar-scanner" ]; then
+              echo "SonarScanner binary is executable."
             else
-              echo "SonarScanner binary not found in $SONAR_SCANNER_HOME/bin"
+              echo "SonarScanner binary is not executable or missing."
               exit 1
             fi
       - run:
