@@ -38,7 +38,7 @@ jobs:
               -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=${SONAR_TOKEN} \
-              -Dsonar.branch.name=dev
+              -Dsonar.branch.name=main
 
 workflows:
   build-and-test:
