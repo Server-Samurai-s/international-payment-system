@@ -13,14 +13,14 @@ import { User } from "./models/user";
 import transactionRoutes from "./routes/transaction.routes";
 import userRoutes from "./routes/user.routes";
 import employeeRoutes from "./routes/employee.routes";
-
+import xssClean from 'xss-clean';
 //--------------------------------------------------------------------------------------------------------//
 
 // Load environment variables from .env file
 dotenv.config(); // Initialize dotenv to use environment variables
 
 //--------------------------------------------------------------------------------------------------------//
-const xss = require("xss-clean");
+
 
 // Set the port from environment variables or default to 3001
 const PORT = process.env.PORT || 3001;
@@ -82,7 +82,7 @@ app.use(cors({
 }));
 
 app.use(helmet());
-app.use(xss());
+app.use(xssClean());
 
 // Add session management
 app.use(cookieSession({
@@ -100,20 +100,16 @@ if (isProduction) {
 }
 
 // Add JWT helper functions
-function generateToken(userId: string): string {
-  return jwt.sign({ userId }, jwtSecret!, { expiresIn: "1h" });
-}
-
 function verifyToken(token: string) {
   try {
     return jwt.verify(token, jwtSecret!);
-  } catch (error) {
+  } catch {
     throw new Error("Invalid or expired token.");
   }
 }
 
 // Add protected route example
-app.get("/protected", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+app.get("/protected", async (req: Request, res: Response): Promise<void> => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -123,7 +119,7 @@ app.get("/protected", async (req: Request, res: Response, next: NextFunction): P
 
     const decoded = verifyToken(token);
     res.status(200).json({ message: "Access granted", data: decoded });
-  } catch (error) {
+  } catch {
     res.status(401).json({ message: "Invalid or expired token" });
   }
 });
@@ -140,7 +136,7 @@ app.get("/test-db", async (req: Request, res: Response) => {
 });
 
 // Add global error handler
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   console.error("Global error handler:", err);
   res.status(500).json({ message: "An unexpected error occurred." });
 });

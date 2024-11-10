@@ -12,10 +12,13 @@ export default [
         sourceType: "module"
       },
       globals: globals.browser
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
     }
   },
   {
-    files: ["**/*.js"], 
+    files: ["**/*.js"],
     languageOptions: {
       sourceType: "script"
     }
