@@ -22,13 +22,20 @@ jobs:
             rm -f package-lock.json
             rm -rf node_modules
             
-            # Update package.json to use supported ESLint version
-            sed -i 's/"eslint": "^8.57.1"/"eslint": "^8.56.0"/' package.json
+            # Create a fresh package.json backup
+            cp package.json package.json.backup
             
-            # Install dependencies in stages
-            npm install --no-package-lock --legacy-peer-deps eslint@8.56.0
-            npm install --no-package-lock --legacy-peer-deps mongodb-memory-server@8.12.2
+            # Install mongodb-memory-server first with specific version
+            npm install --no-package-lock --save-exact mongodb-memory-server@8.12.2
+            
+            # Install ESLint with specific version
+            npm install --no-package-lock --save-exact eslint@8.56.0
+            
+            # Install remaining dependencies
             npm install --no-package-lock --legacy-peer-deps
+            
+            # Restore original package.json
+            mv package.json.backup package.json
             
             # Verify installation
             echo "Node version: $(node -v)"
