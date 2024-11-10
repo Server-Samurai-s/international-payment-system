@@ -35,10 +35,10 @@ jobs:
             sonar-scanner \
               -Dsonar.projectKey=Server-Samurai-s_international-payment-system \
               -Dsonar.organization=server-samurai-s \
-              -Dsonar.login=${SONAR_TOKEN} \
-              -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.sources=. \
-              -Dsonar.branch.name=main \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.token=${SONAR_TOKEN} \
+              -Dsonar.branch.name=dev \
               -Dsonar.scm.provider=git
 
 workflows:
