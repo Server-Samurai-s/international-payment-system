@@ -1,13 +1,67 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5
+  node: circleci/node@5  # Updated to use the stable CircleCI Node orb
 
 executors:
+  node-executor:
+    docker:
+      - image: node:18  # Official Node 18 image
+    working_directory: ~/international-payment-system
+
   sonar-executor:
     docker:
-      - image: cimg/openjdk:17.0
+      - image: circleci/openjdk:11
     working_directory: ~/international-payment-system
+
+jobs:
+  test-node:
+    executor: node-executor
+    working_directory: ~/international-payment-system/frontend
+    steps:
+      - checkout:
+          path: ~/international-payment-system
+      - run:
+          name: Install dependencies
+          command: |
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+      - run:
+          name: Run tests
+          command: npm test --passWithNoTests
+      - store_test_results:
+          path: ~/international-payment-system/frontend/test-results
+
+  build-node:
+    executor: node-executor
+    working_directory: ~/international-payment-system/frontend
+    steps:
+      - checkout:
+          path: ~/international-payment-system
+      - run:
+          name: Install dependencies
+          command: |
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+      - run:
+          name: Build project
+          command: npm run build
+      - run:
+          name: Create artifacts directory
+          command: mkdir -p ~/artifacts
+      - run:
+          name: Copy artifacts
+          command: |
+            cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
+      - store_artifacts:
+          path: ~/artifacts
+          destination: node-build
 
 jobs:
   sonarcloud:
@@ -44,7 +98,21 @@ jobs:
 workflows:
   build-and-test:
     jobs:
+      - test-node:
+          filters:
+            branches:
+              only:
+                - dev
+      - build-node:
+          requires:
+            - test-node
+          filters:
+            branches:
+              only:
+                - dev
       - sonarcloud:
+          requires:
+            - build-node
           filters:
             branches:
               only:

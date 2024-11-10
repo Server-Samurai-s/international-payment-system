@@ -10,14 +10,14 @@ const transactionSchema = new Schema({
     accountNumber: { type: String, required: true },
     amount: { type: Number, required: true },
     swiftCode: { type: String, required: true },
-    transactionDate: { type: String, required: true },
+    transactionDate: { type: Date, default: Date.now, required: true }, // Ensure Date type for timestamp
     status: { 
         type: String, 
-        enum: ['pending', 'verified', 'submitted'],
+        enum: ['pending', 'verified', 'submitted', 'completed', 'failed'], // Added 'completed' and 'failed' for flexibility
         default: 'pending'
     },
-    verifiedBy: { type: String },
-    verificationDate: { type: String }
+    verifiedBy: { type: String, default: null },
+    verificationDate: { type: Date, default: null } 
 });
 
 export const TransactionModel = mongoose.model<ITransactionDocument>('Transaction', transactionSchema);

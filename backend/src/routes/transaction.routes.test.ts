@@ -88,7 +88,6 @@ describe('Transaction Routes', () => {
             expect(savedTransaction).toBeTruthy();
         });
 
-        // Add new test for invalid SWIFT code
         it('should return 400 for invalid SWIFT code', async () => {
             const transactionData = {
                 recipientName: 'John Doe',
@@ -103,7 +102,7 @@ describe('Transaction Routes', () => {
                 .send(transactionData)
                 .expect(400);
 
-            expect(response.body).toEqual({ message: 'Invalid SWIFT code' });
+            expect(response.body).toEqual({ message: 'Invalid SWIFT code format' });
         });
     });
 
@@ -132,7 +131,6 @@ describe('Transaction Routes', () => {
                 }
             ];
 
-            // Insert using TransactionModel
             await TransactionModel.insertMany(transactions);
 
             const response = await request(app)
