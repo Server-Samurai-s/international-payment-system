@@ -7,14 +7,14 @@ import { Transaction } from '../types/transaction';
 import { EmployeeRole } from '../types/employee';
 import VerificationModal, { VerificationStatus } from './verificationModal';
 
-interface EmployeeDashboard {
+interface EmployeeDashboardProps {
     firstName: string;
     lastName: string;
     role: EmployeeRole;
 }
 
 const EmployeeDashboard: React.FC = () => {
-    const [dashboard, setDashboard] = useState<EmployeeDashboard>({
+    const [dashboard, setDashboard] = useState<EmployeeDashboardProps>({
         firstName: "",
         lastName: "",
         role: EmployeeRole.AGENT
