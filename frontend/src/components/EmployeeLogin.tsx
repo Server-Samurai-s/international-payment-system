@@ -41,6 +41,10 @@ const EmployeeLogin: React.FC<EmployeeLoginProps> = ({ onLoginSuccess }) => {
         e.preventDefault();
         setSubmitted(true);
 
+        if (!validateForm()) {
+            return;
+        }
+
         try {
             const response = await fetch('https://localhost:3001/employee/login', {
                 method: 'POST',
