@@ -30,7 +30,7 @@ This project is an **International Payment System** built using **React** for th
   
 - **Security**:
   - SSL for secure connections
-  - Input validation with RegEx
+  - Input validation with RegEx patterns
   - Password hashing and salting using bcrypt
 
 ---
