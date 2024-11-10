@@ -33,7 +33,7 @@ jobs:
           name: Run SonarCloud Analysis
           command: |
             sonar-scanner \
-              -Dsonar.projectKey=international-payment-system \
+              -Dsonar.projectKey=Server-Samurai-s_international-payment-system \
               -Dsonar.organization=server-samurai-s \
               -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
