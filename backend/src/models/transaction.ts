@@ -1,16 +1,31 @@
-// Define the Transaction interface which includes user, recipient, and transaction details
-export interface Transaction {
-    user: string;
-    recipientName: string;
-    recipientBank: string;
-    accountNumber: string;
-    amount: number;
-    swiftCode: string;
-    transactionDate: string;
-    status: 'pending' | 'verified' | 'submitted';
-    verifiedBy?: string;
-    verificationDate?: string;
+import mongoose, { Document, Schema } from 'mongoose';
+
+// Interface for the Transaction document
+export interface Transaction extends Document {
+  user: mongoose.Types.ObjectId;
+  recipientName: string;
+  recipientBank: string;
+  accountNumber: string;
+  amount: number;
+  swiftCode: string;
+  transactionDate: Date;
+  status: 'pending' | 'completed' | 'failed';
 }
+
+// Schema definition
+const transactionSchema = new Schema<Transaction>({
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  recipientName: { type: String, required: true },
+  recipientBank: { type: String, required: true },
+  accountNumber: { type: String, required: true },
+  amount: { type: Number, required: true },
+  swiftCode: { type: String, required: true },
+  transactionDate: { type: Date, default: Date.now },
+  status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' }
+});
+
+// Create and export the model
+export const TransactionModel = mongoose.model<Transaction>('Transaction', transactionSchema);
 
 //--------------------------------------------------------------------------------------------------------//
 
