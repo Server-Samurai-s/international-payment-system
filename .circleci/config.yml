@@ -63,7 +63,6 @@ jobs:
           path: ~/artifacts
           destination: node-build
 
-jobs:
   sonarcloud:
     executor: sonar-executor
     working_directory: ~/international-payment-system
