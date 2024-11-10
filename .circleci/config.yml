@@ -96,9 +96,11 @@ jobs:
             sonar-scanner \
               -Dsonar.projectKey=server-samurai-s \
               -Dsonar.organization=server-samurais \
+              -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=${SONAR_TOKEN} \
-              -Dsonar.branch.name=dev
+              -Dsonar.branch.name=dev \
+              -Dsonar.branch.target=dev
 
 workflows:
   build-and-test:
