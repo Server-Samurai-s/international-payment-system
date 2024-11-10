@@ -40,7 +40,9 @@ jobs:
               -Dsonar.login=${SONAR_TOKEN} \
               -Dsonar.branch.name=dev \
               -Dsonar.analysis.mode=publish \
-              -Dsonar.alm.enabled=false
+              -Dsonar.alm.enabled=false \
+              -Dsonar.scm.provider=git \
+              -Dsonar.qualitygate.wait=true
 
 workflows:
   build-and-test:
