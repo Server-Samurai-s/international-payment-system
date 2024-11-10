@@ -4,27 +4,24 @@ import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import "../styles/LandingPage.css"; // Custom styles
+import "../styles/LandingPage.css";
 
-// Import the Planet and Spaceship components
+// Import components
 import Planet from "../components/purplePlanet";
 import Spaceship from "../components/spaceship";
 import Robot from "../components/robot";
 
-// Earth Component without Bump Map
 const Earth: React.FC = () => {
   const earthRef = useRef<THREE.Mesh>(null!);
   const cloudRef = useRef<THREE.Mesh>(null!);
 
-   // Load Earth textures
-   const [dayMap, specularMap, nightMap, cloudMap] = useTexture([
-    "/textures/earth_daymap.jpg",    // Color map
-    "/textures/earth_specular.jpg",  // Specular map
-    "/textures/earth_nightmap.jpg",  // Night lights
-    "/textures/earth_clouds.jpg"     // Clouds
+  const [dayMap, specularMap, nightMap, cloudMap] = useTexture([
+    "/textures/earth_daymap.jpg",
+    "/textures/earth_specular.jpg",
+    "/textures/earth_nightmap.jpg",
+    "/textures/earth_clouds.jpg",
   ]);
 
-  // Rotate the Earth and clouds
   useFrame(() => {
     if (earthRef.current) earthRef.current.rotation.y += 0.001;
     if (cloudRef.current) cloudRef.current.rotation.y += 0.0015;
@@ -32,7 +29,6 @@ const Earth: React.FC = () => {
 
   return (
     <>
-      {/* Earth */}
       <mesh ref={earthRef}>
         <sphereGeometry args={[2, 64, 64]} />
         <meshPhongMaterial
@@ -45,7 +41,6 @@ const Earth: React.FC = () => {
         />
       </mesh>
 
-      {/* Clouds */}
       <mesh ref={cloudRef}>
         <sphereGeometry args={[2.02, 64, 64]} />
         <meshPhongMaterial
@@ -56,14 +51,13 @@ const Earth: React.FC = () => {
         />
       </mesh>
 
-      {/* Atmosphere */}
       <mesh>
-        <sphereGeometry args={[2.06, 64, 64]} /> {/* Slightly smaller than before */}
+        <sphereGeometry args={[2.06, 64, 64]} />
         <meshBasicMaterial
           color="#3A9EF5"
           transparent={true}
-          opacity={0.1} // Lower opacity for subtle effect
-          blending={THREE.AdditiveBlending} // Additive blending for a soft glow
+          opacity={0.1}
+          blending={THREE.AdditiveBlending}
           side={THREE.BackSide}
         />
       </mesh>
@@ -71,6 +65,41 @@ const Earth: React.FC = () => {
   );
 };
 
+// InfoSection Component
+const InfoSection: React.FC = () => (
+  <section className="info-section">
+    <div className="info-container">
+      <div className="info-item">
+        <h3>Global Reach</h3>
+        <p>Reach international clients with ease and transact globally without hassle.</p>
+      </div>
+      <div className="info-item">
+        <h3>Secure Transactions</h3>
+        <p>We ensure top-notch security for all transactions with advanced encryption.</p>
+      </div>
+      <div className="info-item">
+        <h3>24/7 Support</h3>
+        <p>Our support team is available anytime to help with your questions.</p>
+      </div>
+    </div>
+  </section>
+);
+
+// Footer Component
+const Footer: React.FC = () => (
+  <footer className="footer">
+    <div className="footer-container">
+      <p>&copy; 2024 IntPay. All rights reserved.</p>
+      <div className="footer-links">
+        <a href="/about">About Us</a>
+        <a href="/contact">Contact</a>
+        <a href="/privacy">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+);
+
+// HeroSection Component
 const HeroSection: React.FC = () => (
   <section className="hero-section">
     <div className="background-animation">
@@ -81,7 +110,7 @@ const HeroSection: React.FC = () => (
         <Earth />
         <Planet position={[10, 0, -5]} scale={0.6} />
         <Spaceship position={[15, 5, -10]} scale={0.3} />
-        <Robot position={[5, -2, -8]} scale={1} /> {/* Add the robot in the scene */}
+        <Robot position={[5, -2, -8]} scale={1} />
         <OrbitControls enableZoom={false} />
       </Canvas>
     </div>
@@ -95,10 +124,11 @@ const HeroSection: React.FC = () => (
       <p>Seamless, secure transactions across borders.</p>
       <a href="/signup"><button className="cta-button">Get Started</button></a>
     </motion.div>
+    {/* Include InfoSection and Footer here */}
+    <InfoSection />
+    <Footer />
   </section>
 );
-
-
 
 // Main Landing Page Component
 const LandingPage: React.FC = () => (

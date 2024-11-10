@@ -112,6 +112,10 @@ const EmployeeLogin: React.FC<EmployeeLoginProps> = ({ onLoginSuccess }) => {
             </div>
 
             <button type="submit" className="btn btn-primary">Log in</button>
+
+            <div className="text-center mt-4">
+                <p>Terms and Conditions Apply</p>
+            </div>
         </form>
     );
 };
