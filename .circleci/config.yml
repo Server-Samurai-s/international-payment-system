@@ -13,7 +13,7 @@ jobs:
           name: Clear npm cache
           command: npm cache clean --force
 
-      # Install backend dependencies with specific mongodb-memory-server version
+      # Install backend dependencies
       - run:
           name: Install backend dependencies
           command: |
@@ -22,20 +22,16 @@ jobs:
             rm -f package-lock.json
             rm -rf node_modules
             
-            # Create a fresh package.json backup
-            cp package.json package.json.backup
+            # Set environment variables for mongodb-memory-server
+            export MONGOMS_VERSION=6.0.2
+            export MONGOMS_DOWNLOAD_URL=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-6.0.2.tgz
+            export MONGOMS_SYSTEM_BINARY=/usr/bin/mongod
             
-            # Install mongodb-memory-server first with specific version
-            npm install --no-package-lock --save-exact mongodb-memory-server@8.12.2
-            
-            # Install ESLint with specific version
+            # Install dependencies in specific order
+            npm install --no-package-lock mongodb@6.3.0
+            npm install --no-package-lock mongodb-memory-server@9.1.3
             npm install --no-package-lock --save-exact eslint@8.56.0
-            
-            # Install remaining dependencies
             npm install --no-package-lock --legacy-peer-deps
-            
-            # Restore original package.json
-            mv package.json.backup package.json
             
             # Verify installation
             echo "Node version: $(node -v)"
