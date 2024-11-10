@@ -33,16 +33,13 @@ jobs:
           name: Run SonarCloud Analysis
           command: |
             sonar-scanner \
-              -Dsonar.projectKey=Server-Samurai-s_international-payment-system \
+              -Dsonar.projectKey=international-payment-system \
               -Dsonar.organization=server-samurai-s \
               -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=${SONAR_TOKEN} \
               -Dsonar.branch.name=dev \
-              -Dsonar.analysis.mode=publish \
-              -Dsonar.alm.enabled=false \
-              -Dsonar.scm.provider=git \
-              -Dsonar.qualitygate.wait=true
+              -Dsonar.scm.provider=git
 
 workflows:
   build-and-test:
