@@ -125,7 +125,8 @@ jobs:
       # Step 13: Run ESLint on backend
       - name: Run ESLint on backend
         working-directory: ./backend
-        run: npm run lint" after front end unit test
+        run: |
+          npm run lint && echo "ESLint: Success"
 
       # Step 14: Check for SSL certificate and key presence
       - name: 🔐 Check SSL configuration
