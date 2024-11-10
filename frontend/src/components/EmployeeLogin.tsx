@@ -37,29 +37,30 @@ const EmployeeLogin: React.FC<EmployeeLoginProps> = ({ onLoginSuccess }) => {
         return valid;
     };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitted(true);
 
-        if (!validateForm()) return;
-
         try {
-            const response = await fetch('/employee/login', {
+            const response = await fetch('https://localhost:3001/employee/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(form)
             });
+
+            const data = await response.json();
 
             if (!response.ok) {
                 handleLoginError(response.status);
                 return;
             }
 
-            const data: EmployeeAuthResponse = await response.json();
             handleLoginSuccess(data);
         } catch (error) {
             console.error('Login error:', error);
-            setErrors({ password: 'An error occurred during login' });
+            setErrors({ username: 'An error occurred during login' });
         }
     };
 

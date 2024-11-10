@@ -80,16 +80,21 @@ const CustomerDashboard: React.FC = () => {
                 const response = await fetch("https://localhost:3001/transactions", {
                     headers: {
                         "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
                     },
+                    credentials: 'include'
                 });
+                
                 if (response.ok) {
                     const data = await response.json();
-                    setTransactions(data);
+                    setTransactions(data || []);
                 } else {
-                    console.error("Failed to fetch transactions");
+                    console.error(`Failed to fetch transactions: ${response.status}`);
+                    setTransactions([]);
                 }
             } catch (error) {
                 console.error("Error fetching transactions:", error);
+                setTransactions([]);
             }
         }
     };

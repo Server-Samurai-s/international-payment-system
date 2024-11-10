@@ -39,11 +39,13 @@ const sessionSecret = process.env.SESSION_SECRET;
 let sslOptions: https.ServerOptions | undefined;
 try {
   sslOptions = {
-    key: fs.readFileSync('./src/keys/mongodb-key.pem'),
-    cert: fs.readFileSync('./src/keys/certificate.pem'),
+    key: fs.readFileSync('./src/keys/ca/server.key'),
+    cert: fs.readFileSync('./src/keys/ca/server.crt'),
+    ca: fs.readFileSync('./src/keys/ca/rootCA.pem')
   };
 } catch (err) {
   console.warn("SSL certificates not found; defaulting to HTTP in development. Error:", err);
+  sslOptions = undefined;
 }
 
 //--------------------------------------------------------------------------------------------------------//
@@ -69,7 +71,16 @@ mongoose
 //--------------------------------------------------------------------------------------------------------//
 
 // Middleware setup
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cors({
+  origin: 'https://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(helmet());
 app.use(xss());
 

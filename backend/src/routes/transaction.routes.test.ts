@@ -3,7 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import transactionRoutes from './transaction.routes';
 import { User } from '../models/user';
-import { TransactionModel } from '../models/transaction';
+import { TransactionModel } from '../models/transaction.model';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 const app = express();

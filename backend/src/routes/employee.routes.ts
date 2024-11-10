@@ -12,8 +12,23 @@ const router = express.Router();
 // Employee login
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
     try {
+        console.log('Login request body:', req.body); // Debug log
+
+        if (!req.body || typeof req.body !== 'object') {
+            res.status(400).json({ message: 'Invalid request body format' });
+            return;
+        }
+
         const { username, password } = req.body;
         
+        if (!username || !password) {
+            res.status(400).json({ 
+                message: 'Username and password are required',
+                debug: { receivedUsername: !!username, receivedPassword: !!password }
+            });
+            return;
+        }
+
         const employee = await EmployeeModel.findOne({ username });
         if (!employee) {
             res.status(401).json({ message: 'Invalid login credentials' });
@@ -43,7 +58,10 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
         });
     } catch (error) {
         console.error('Login error:', error);
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ 
+            message: 'Server error',
+            error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+        });
     }
 });
 

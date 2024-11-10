@@ -44,7 +44,7 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
         if (!validateForm()) return;
 
         try {
-            const response = await fetch('/user/login', {
+            const response = await fetch('https://localhost:3001/user/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form)
