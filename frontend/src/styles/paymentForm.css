@@ -112,6 +112,21 @@
     justify-content: space-between;
 }
 
+.payment-form__checkbox-group {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: #ffffff;
+}
+.payment-form__checkbox-group label {
+    display: flex;
+    align-items: center;
+}
+.payment-form__checkbox-group input[type="checkbox"] {
+    margin-right: 0.5rem;
+}
+
+
 @media (max-width: 480px) {
     .payment-form__container {
         padding: 1.5rem;

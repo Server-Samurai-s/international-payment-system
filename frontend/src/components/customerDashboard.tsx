@@ -98,33 +98,38 @@ const CustomerDashboard: React.FC = () => {
         navigate("/payment", { state: transaction });
     };
 
+    const handleRefresh = () => {
+        fetchBalance();
+        fetchTransactions();
+    };
+
     return (
         <div className="customer-dashboard__full-page-container">
             <Canvas className="background-animation">
                 <Stars radius={100} depth={50} count={5000} factor={4} fade />
             </Canvas>
             <div className="customer-dashboard__container">
-                <h3 className="customer-dashboard__title">
-                    <span style={{fontSize: "3rem"}}>welcome</span>
-                    <br />
-                    <span style={{ color: "#dedede" }}>{dashboard.firstName}</span>
-                </h3>
+                <header className="customer-dashboard__header">
+                    <h2 className="customer-dashboard__welcome-title">Welcome, <span>{dashboard.firstName}</span></h2>
+                </header>
 
-                <div className="customer-dashboard__section">
+                <section className="customer-dashboard__banking-section">
                     <h5>Banking Details</h5>
-                    <div className="customer-dashboard__banking-details">
-                        <p><strong>Current Account</strong></p>
-                        <p>Account No: {dashboard.accountNumber}</p>
-                        <p>Available Balance: ${dashboard.balance.toFixed(2)}</p>
+                    <div className="customer-dashboard__banking-info">
+                        <p><strong>Account Number:</strong> {dashboard.accountNumber}</p>
+                        <p><strong>Available Balance:</strong> ${dashboard.balance.toFixed(2)}</p>
                     </div>
-                    <div className="text-center">
+                    <div className="customer-dashboard__actions">
                         <button onClick={handlePaymentsBtn} className="customer-dashboard__btn-main">
                             Make International Payment
                         </button>
+                        <button onClick={handleRefresh} className="customer-dashboard__btn-refresh">
+                            Refresh
+                        </button>
                     </div>
-                </div>
+                </section>
                 
-                <div className="customer-dashboard__section">
+                <section className="customer-dashboard__transactions-section">
                     <h5 className="customer-dashboard__section-title">Payment Receipts</h5>
                     <div className="transaction-table-container">
                         <table className="transaction-table">
@@ -164,7 +169,7 @@ const CustomerDashboard: React.FC = () => {
                                 ))}
                                 {transactions.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} className="empty-state">
+                                        <td colSpan={6} className="empty-state">
                                             No payment receipts found
                                         </td>
                                     </tr>
@@ -172,7 +177,7 @@ const CustomerDashboard: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </section>
             </div>
         </div>
     );

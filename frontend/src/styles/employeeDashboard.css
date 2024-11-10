@@ -141,3 +141,30 @@
 .create-employee-btn:hover {
     background-color: #1f10b0;
 }
+
+.account-numbers-list {
+    color: white; /* Make the text white */
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove default padding */
+}
+
+.account-numbers-list li {
+    margin: 5px 0; /* Add some margin between list items */
+}
+
+.employee-dashboard__btn-refresh {
+    background-color: #1f7a8c;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-top: 2rem;
+    transition: background-color 0.3s ease;
+}
+
+.employee-dashboard__btn-refresh:hover {
+    background-color: #16697a;
+    cursor: pointer;
+}
+

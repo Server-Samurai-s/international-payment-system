@@ -26,6 +26,7 @@ const Payment: React.FC = () => {
         swiftCode: "",
     });
 
+    const [intPayMember, setIntPayMember] = useState(true); // Default to IntPay Members as true for a single selection
     const [errors, setErrors] = useState<Partial<PaymentFormState>>({});
 
     const nameRegex = /^[a-zA-Z\s]+$/;
@@ -94,6 +95,7 @@ const Payment: React.FC = () => {
         const transactionData = {
             ...form,
             userId: localStorage.getItem("userId"),
+            isIntPayMember: intPayMember // Only send one boolean field based on selection
         };
 
         try {
@@ -148,6 +150,28 @@ const Payment: React.FC = () => {
             <div className="payment-form__container">
                 <h3 className="payment-form__title">International Payment</h3>
                 <form onSubmit={onSubmit}>
+                    {/* Checkbox Options */}
+                    <div className="payment-form__checkbox-group">
+                        <label>
+                            <input
+                                type="radio"
+                                name="paymentOption"
+                                checked={intPayMember}
+                                onChange={() => setIntPayMember(true)}
+                            />
+                            IntPay Members
+                        </label>
+                        <label>
+                            <input
+                                type="radio"
+                                name="paymentOption"
+                                checked={!intPayMember}
+                                onChange={() => setIntPayMember(false)}
+                            />
+                            Other App
+                        </label>
+                    </div>
+
                     {/* Recipient's Name */}
                     <div className="payment-form__group">
                         <label htmlFor="recipientName">Recipient's Name</label>

@@ -6,6 +6,7 @@ import jsonwebtoken from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { EmployeeRole } from '../models/employee';
 import { requireRole } from '../middleware/roleAuth';
+import { User as UserModel } from '../models/user'; // Import the User model as UserModel
 
 const router = express.Router();
 
@@ -52,28 +53,54 @@ router.get('/transactions/pending', employeeAuth, async (req: Request, res: Resp
     try {
         const transactions = await TransactionModel.find({ status: 'pending' })
             .sort({ transactionDate: -1 });
+        
+        // Log the transactions to see what gets returned
+        console.log('Pending transactions:', transactions);
+        
         res.json(transactions);
     } catch (error) {
+        console.error('Error fetching pending transactions:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Verify transaction
+// Verify transaction and update recipient's balance
 router.post('/transactions/:id/verify', employeeAuth, async (req: Request & { employeeId?: string }, res: Response): Promise<void> => {
     try {
+        console.log('Verifying transaction with ID:', req.params.id);
+
         const transaction = await TransactionModel.findById(req.params.id);
         if (!transaction) {
+            console.log('Transaction not found for ID:', req.params.id);
             res.status(404).json({ message: 'Transaction not found' });
             return;
         }
+        console.log('Transaction found:', transaction);
 
+        // Find the recipient by their account number
+        const recipient = await UserModel.findOne({ accountNumber: transaction.accountNumber });
+        console.log('Recipient:', recipient);
+        if (!recipient) {
+            console.log('Recipient not found for account number:', transaction.accountNumber);
+            res.status(404).json({ message: 'Recipient not found' });
+            return;
+        }
+
+        // Update the recipient's balance
+        recipient.balance += transaction.amount;
+        console.log('New balance for recipient:', recipient.balance);
+        await recipient.save();
+
+        // Update the transaction status
         transaction.status = 'verified';
         transaction.verifiedBy = req.employeeId;
         transaction.verificationDate = new Date().toISOString();
         await transaction.save();
 
-        res.json({ message: 'Transaction verified successfully' });
+        console.log('Transaction verified and recipient balance updated successfully');
+        res.json({ message: 'Transaction verified and recipient balance updated successfully' });
     } catch (error) {
+        console.error('Error verifying transaction:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });

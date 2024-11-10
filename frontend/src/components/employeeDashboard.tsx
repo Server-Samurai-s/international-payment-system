@@ -54,6 +54,7 @@ const EmployeeDashboard: React.FC = () => {
             
             if (response.ok) {
                 const data = await response.json();
+                console.log('Pending transactions:', data);
                 setPendingTransactions(data);
             }
         } catch (error) {
@@ -97,6 +98,10 @@ const EmployeeDashboard: React.FC = () => {
         } catch (error) {
             console.error('Error verifying transaction:', error);
         }
+    };
+
+    const handleRefresh = () => {
+        fetchPendingTransactions();
     };
 
     return (
@@ -163,7 +168,7 @@ const EmployeeDashboard: React.FC = () => {
                                 ))}
                                 {pendingTransactions.length === 0 && (
                                     <tr>
-                                        <td colSpan={6} className="empty-state">
+                                        <td colSpan={7} className="empty-state">
                                             No pending transactions
                                         </td>
                                     </tr>
@@ -171,7 +176,10 @@ const EmployeeDashboard: React.FC = () => {
                             </tbody>
                         </table>
                     </div>
-                </div>
+                    <button onClick={handleRefresh} className="employee-dashboard__btn-refresh">
+                        Refresh
+                    </button>
+                </div>                
             </div>
 
             {selectedTransaction && (
@@ -188,4 +196,4 @@ const EmployeeDashboard: React.FC = () => {
     );
 };
 
-export default EmployeeDashboard; 
+export default EmployeeDashboard;

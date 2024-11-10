@@ -52,12 +52,12 @@
 }
 
 /* Info Section Styles */
-.info-section {
-  padding: 50px 20px;
-  background-color: #f4f4f8;
+.info-section { 
+  background-color: transparent;
   text-align: center;
   width: 100%;
   z-index: 2; /* Ensure it appears above the Canvas */
+  margin-top: 200px; /* Add a large margin to move it down */
 }
 
 .info-container {
@@ -93,8 +93,8 @@
 
 /* Footer Styles */
 .footer {
-  background-color: #111;
-  color: #fff;
+  background-color: transparent;
+  color:#fff;
   padding: 20px 0;
   text-align: center;
   width: 100%;

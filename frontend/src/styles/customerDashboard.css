@@ -153,3 +153,85 @@
 .btn-primary:hover {
     background-color: #1f10b0;
 }
+
+.customer-dashboard__header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.customer-dashboard__welcome-title {
+    color: #2515d1;
+    font-size: 2rem;
+}
+
+.customer-dashboard__welcome-title span {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.customer-dashboard__banking-section {
+    background-color: rgba(37, 45, 55, 0.9);
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.customer-dashboard__banking-info p {
+    margin: 0.5rem 0;
+    color: #ffffff;
+}
+
+.customer-dashboard__banking-info strong {
+    color: #a1c4fd;
+}
+
+.customer-dashboard__actions {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.customer-dashboard__btn-main {
+    background-color: #1f7a8c;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.customer-dashboard__btn-main:hover {
+    background-color: #16697a;
+}
+
+.customer-dashboard__transactions-section {
+    padding: 1rem;
+}
+
+.transaction-table-container {
+    overflow-x: auto;
+}
+
+.customer-dashboard__section-title {
+    color: #a1c4fd;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+}
+
+
+.customer-dashboard__btn-refresh {
+    background-color: #1f7a8c;
+    color: #ffffff;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-top: 2rem;
+    margin-left: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.customer-dashboard__btn-refresh:hover {
+    background-color: #16697a;
+    cursor: pointer;
+}

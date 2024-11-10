@@ -5,6 +5,7 @@ import validator from "validator"; // Import validator for input sanitization an
 import rateLimit from "express-rate-limit"; // Import rate limiting middleware
 import helmet from "helmet"; // Import helmet for setting security-related HTTP headers
 import { User } from '../models/user';
+import { Console } from "console";
 
 //--------------------------------------------------------------------------------------------------------//
 
@@ -30,45 +31,38 @@ const swiftCodeRegex = /^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$/; // SWIFT c
 
 //--------------------------------------------------------------------------------------------------------//
 
-// POST - Create a new transaction with validation and security checks
 router.post(
   "/create",
-  [authenticateUser, transactionLimiter], // Apply authentication and rate limiting middlewares
+  [authenticateUser, transactionLimiter],
   async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
-      const userId = req.userId; // Extract user ID from the authenticated request
-      const { recipientName, recipientBank, accountNumber, amount, swiftCode } = req.body; // Destructure transaction details from the request body
+      const userId = req.userId;
+      const { recipientName, recipientBank, accountNumber, amount, swiftCode, isIntPayMember } = req.body;
 
-      // Validate the recipient name using regular expression
       if (!nameRegex.test(recipientName)) {
         res.status(400).json({ message: "Invalid recipient name" });
         return;
       }
 
-      // Validate the recipient bank name
       if (!nameRegex.test(recipientBank)) {
         res.status(400).json({ message: "Invalid recipient bank" });
         return;
       }
 
-      // Validate the account number
       if (!accountNumberRegex.test(accountNumber)) {
         res.status(400).json({ message: "Invalid account number" });
         return;
       }
 
-      // Validate the transaction amount
       if (!amountRegex.test(amount)) {
         res.status(400).json({ message: "Invalid amount" });
         return;
       }
 
-      // Validate the SWIFT code format
       if (!swiftCodeRegex.test(swiftCode)) {
         res.status(400).json({ message: "Invalid SWIFT code format" });
         return;
       }
-
 
       const user = await User.findById(userId);
       if (!user) {
@@ -81,33 +75,49 @@ router.post(
         return;
       }
 
+      // Check if the recipient is an IntPay member, if selected
+      let recipient;
+      if (isIntPayMember) {
+        recipient = await User.findOne({ accountNumber: accountNumber });
+        if (!recipient) {
+          res.status(404).json({ message: "Recipient not found in IntPay database" });
+          return;
+        }
+      }
+
+      const parsedAmount = parseFloat(amount);
+
+      // Update the sender's balance
+      user.balance -= parsedAmount;
+      await user.save();     
+
       // Create a new transaction object and sanitize inputs
       const newTransaction: Transaction = {
-        user: userId!, // Assign the authenticated user ID
-        recipientName: validator.escape(recipientName), // Sanitize the recipient name
-        recipientBank: validator.escape(recipientBank), // Sanitize the recipient bank
-        accountNumber: validator.escape(accountNumber), // Store the plain account number
-        amount: parseFloat(amount), // Parse and store the amount as a number
-        swiftCode: validator.escape(swiftCode), // Sanitize the SWIFT code
-        transactionDate: new Date().toISOString(), // Store the current date in ISO format
-        status: 'pending' // Set initial status as pending
+        user: userId!,
+        recipientName: validator.escape(recipientName),
+        recipientBank: validator.escape(recipientBank),
+        accountNumber: validator.escape(accountNumber),
+        amount: parsedAmount,
+        swiftCode: validator.escape(swiftCode),
+        transactionDate: new Date().toISOString(),
+        status: 'pending'
       };
 
-      // Insert the new transaction into the database collection
       const collection = req.app.locals.db.collection("transactions");
       const result = await collection.insertOne(newTransaction);
 
-      // Update user's balance
-      user.balance -= parseFloat(amount);
-      await user.save();
-
-      res.status(201).json({ message: "Transaction successful", transaction: result, newBalance: user.balance });
+      res.status(201).json({ 
+        message: "Transaction successful", 
+        transaction: result, 
+        newBalance: user.balance 
+      });
     } catch (e) {
-      console.error("Error uploading transaction:", e); // Log any errors that occur during the process
-      res.status(500).send({ message: "Failed to upload transaction" }); // Respond with an error message
+      console.error("Error uploading transaction:", e);
+      res.status(500).send({ message: "Failed to upload transaction" });
     }
   }
 );
+
 
 //--------------------------------------------------------------------------------------------------------//
 
