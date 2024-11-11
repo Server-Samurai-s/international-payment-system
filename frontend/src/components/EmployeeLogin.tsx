@@ -96,7 +96,7 @@ const EmployeeLogin: React.FC<EmployeeLoginProps> = ({ onLoginSuccess }) => {
                     className={`form-control ${submitted && errors.username ? 'is-invalid' : ''}`}
                     value={form.username}
                     onChange={(e) => setForm(prev => ({ ...prev, username: e.target.value }))}
-                    placeholder="Enter username"
+                    placeholder="Enter username or account number"
                 />
                 {submitted && errors.username && (
                     <div className="custom-tooltip">{errors.username}</div>
