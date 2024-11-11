@@ -314,7 +314,23 @@ If you have any questions or suggestions, feel free to open an issue or contact 
 - GitHub: [davidrmellors](https://github.com/davidrmellors)
 
 ---
+## Employee Portal
 
+The Employee Portal is a safe interface made for bank employees who have already registered to handle and confirm foreign transactions that clients have started. The purpose of this site is to facilitate the authorization and sending of transactions via SWIFT, the main international payment mechanism, while also guaranteeing the protection of sensitive data.
+
+### Key Features
+1. User Authentication and Pre-Configuration: Employees don't need to register since their accounts are already set up to improve security and reduce the possibility of unwanted access. Salting and hashing are two enforced password security techniques that safeguard saved credentials.
+2. Data Protection and Security Measures: SSL encryption is applied to ensure data integrity and confidentiality during transmission. Input whitelisting using regular expressions prevents injection attacks, ensuring only authorized inputs are accepted.
+- Protection against common web attacks, including:
+- SQL Injection
+- Cross-Site Scripting (XSS)
+- Man-in-the-Middle (MITM) attacks
+- DDoS attacks
+- Clickjacking
+3. Secure DevSecOps Pipeline: A CircleCI pipeline integrates SonarQube to scan for vulnerabilities, hotspots, and code smells. Frequent pipeline checks guarantee that the application remains highly resilient to attacks by enforcing code quality and security requirements.
+4. Transaction Management: Employees verify transaction details (e.g., account information and SWIFT code) before forwarding payments to SWIFT. 
+5. Error Handling and Logging: Detailed logging provides a secure audit trail for all activities within the employee portal.
+ 
 ## Local Development Setup
 
 ### SSL Configuration
