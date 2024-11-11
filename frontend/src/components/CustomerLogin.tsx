@@ -15,7 +15,6 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
     const [form, setForm] = useState<CustomerFormState>({ identifier: '', password: '' });
     const [errors, setErrors] = useState<Partial<CustomerFormState>>({});
     const [submitted, setSubmitted] = useState(false);
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const validateForm = (): boolean => {
@@ -42,34 +41,27 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setSubmitted(true);
-        setLoading(true);
 
-        if (!validateForm()) {
-            setLoading(false);
-            return;
-        }
+        if (!validateForm()) return;
 
         try {
             const response = await fetch('https://localhost:3001/user/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
+                body: JSON.stringify(form)
             });
 
             if (!response.ok) {
                 handleLoginError(response.status);
-                setLoading(false);
                 return;
             }
 
             const data: CustomerAuthResponse = await response.json();
             handleLoginSuccess(data);
         } catch (error) {
-            console.error('Login error:', error);
+            console.error('Login error:', error instanceof Error ? error.message : error);
             setErrors({ password: 'An unexpected error occurred. Please try again later.' });
-        } finally {
-            setLoading(false);
-        }
+        }        
     };
 
     const handleLoginError = (status: number) => {
@@ -83,11 +75,12 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
     };
 
     const handleLoginSuccess = (data: CustomerAuthResponse) => {
-        sessionStorage.setItem('jwt', data.token);
-        sessionStorage.setItem('firstName', data.firstName);
-        sessionStorage.setItem('userId', data.userId);
-        sessionStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('jwt', data.token);
+        localStorage.setItem('firstName', data.firstName);
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('isLoggedIn', 'true');
         onLoginSuccess();
+        
         navigate('/dashboard', { replace: true });
     };
 
@@ -100,14 +93,11 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
                     id="identifier"
                     className={`form-control ${submitted && errors.identifier ? 'is-invalid' : ''}`}
                     value={form.identifier}
-                    onChange={(e) => setForm((prev) => ({ ...prev, identifier: e.target.value }))}
+                    onChange={(e) => setForm(prev => ({ ...prev, identifier: e.target.value }))}
                     placeholder="Enter account number"
-                    aria-describedby="identifierError"
                 />
                 {submitted && errors.identifier && (
-                    <div id="identifierError" className="custom-tooltip" aria-live="polite">
-                        {errors.identifier}
-                    </div>
+                    <div className="custom-tooltip">{errors.identifier}</div>
                 )}
             </div>
 
@@ -118,25 +108,18 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
                     id="password"
                     className={`form-control ${submitted && errors.password ? 'is-invalid' : ''}`}
                     value={form.password}
-                    onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+                    onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
                     placeholder="Enter password"
-                    aria-describedby="passwordError"
                 />
                 {submitted && errors.password && (
-                    <div id="passwordError" className="custom-tooltip" aria-live="polite">
-                        {errors.password}
-                    </div>
+                    <div className="custom-tooltip">{errors.password}</div>
                 )}
             </div>
 
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Logging in...' : 'Log in'}
-            </button>
+            <button type="submit" className="btn btn-primary">Log in</button>
 
             <div className="text-center mt-4">
-                <p>
-                    Don&apos;t have an account? <Link to="/signup" className="btn btn-link">Sign Up</Link>
-                </p>
+                <p>Don&apos;t have an account? <Link to="/signup" className="btn btn-link">Sign Up</Link></p>
             </div>
         </form>
     );
