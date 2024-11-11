@@ -91,7 +91,7 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
                     className={`form-control ${submitted && errors.identifier ? 'is-invalid' : ''}`}
                     value={form.identifier}
                     onChange={(e) => setForm(prev => ({ ...prev, identifier: e.target.value }))}
-                    placeholder="Enter account number"
+                    placeholder="Enter username or account number"
                 />
                 {submitted && errors.identifier && (
                     <div className="custom-tooltip">{errors.identifier}</div>
