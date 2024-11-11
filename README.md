@@ -264,6 +264,9 @@ npm start
 The app will start at `http://localhost:3000` (or the port specified in your frontend `.env` file).
 
 ---
+# Admin Login Details 
+Username: superadmin
+Password: SuperAdmin123!
 
 ## Key Functionalities
 
