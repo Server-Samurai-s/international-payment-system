@@ -265,8 +265,8 @@ The app will start at `http://localhost:3000` (or the port specified in your fro
 
 ---
 # Admin Login Details 
-Username: superadmin
-Password: SuperAdmin123!
+- Username: superadmin
+- Password: SuperAdmin123!
 
 ## Key Functionalities
 
