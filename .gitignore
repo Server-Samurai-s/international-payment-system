@@ -24,3 +24,9 @@ package-lock.json
 !backend/src/keys/ca/*.pem
 !backend/src/keys/ca/*.key
 !backend/src/keys/ca/*.crt
+
+# Environment files
+.env
+.env.development
+.env.test
+.env.production
