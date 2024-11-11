@@ -21,7 +21,7 @@
     "three": "^0.169.0",
     "web-vitals": "^2.1.4"
   },
-  "proxy": "https://localhost:3001",
+  "proxy": "https://127.0.0.1:3001",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
