@@ -76,10 +76,27 @@ git clone https://github.com/your-username/international-payment-system.git
 cd international-payment-system
 ```
 
-2. **Set up SSL certificates**
+2. **Set up SSL certificates for Windows**
+- Run Powershell as administrator
 ```bash
-mkdir -p backend/src/keys/ca
-# Copy your SSL certificates to backend/src/keys/ca/
+cd backend/src/keys/ca
+
+# For Windows - Run Powershell as administrator
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+.\generate-certs.ps1
+certutil -addstore -f "ROOT" rootCA.pem
+```
+
+3. **Set up SSL certificates for MacOS**
+```bash
+# Make the script executable
+chmod +x backend/src/keys/ca/generate-certs.sh
+
+# Run the script
+cd backend/src/keys/ca
+./generate-certs.sh
+
+sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" rootCA.pem
 ```
 
 3. **Frontend Setup**
