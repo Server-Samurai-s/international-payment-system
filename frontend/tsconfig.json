@@ -15,7 +15,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": [] 
+    
   },
   "include": ["src", "frontend/src", "frontend/declarations.d.ts"]
 }

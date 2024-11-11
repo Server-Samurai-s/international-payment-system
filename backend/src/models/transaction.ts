@@ -8,19 +8,24 @@ export interface ITransaction extends Document {
     accountNumber: string;
     amount: number;
     swiftCode: string;
-    transactionDate?: Date;
+    transactionDate: string;
+    status: 'pending' | 'verified' | 'submitted';
+    verifiedBy?: string;
+    verificationDate?: string;
 }
 
-// Define the Mongoose schema for the transaction model
-const TransactionSchema: Schema = new Schema({
-    user: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    recipientName: { type: String, required: true },
-    recipientBank: { type: String, required: true },
-    accountNumber: { type: String, required: true },
-    amount: { type: Number, required: true },
-    swiftCode: { type: String, required: true },
-    transactionDate: { type: Date, default: Date.now },
-});
+//--------------------------------------------------------------------------------------------------------//
 
-// Export the Mongoose model, `Transaction`
-export const Transaction = mongoose.model<ITransaction>("Transaction", TransactionSchema);
+// Function to retrieve the plain account number (no hashing needed)
+export async function getAccountNumber(accountNumber: string): Promise<string> {
+    return accountNumber; // Simply return the plain account number
+}
+
+//--------------------------------------------------------------------------------------------------------//
+
+// Function to compare a plain account number with another for validation (no hashing comparison needed)
+export async function compareAccountNumbers(accountNumber1: string, accountNumber2: string): Promise<boolean> {
+    return accountNumber1 === accountNumber2; // Directly compare two plain account numbers
+}
+
+//------------------------------------------END OF FILE---------------------------------------------------//

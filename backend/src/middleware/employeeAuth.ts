@@ -1,14 +1,14 @@
-import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import Employee, { EmployeeRole } from '../models/employee';
 
-// Extend the Request interface to include userId
-export interface AuthenticatedRequest extends Request {
-    userId?: string;
+interface EmployeeAuthRequest extends Request {
+    employeeId?: string;
+    role?: EmployeeRole;
 }
 
-// Middleware to authenticate JWT
-export const authenticateUser = async (
-    req: AuthenticatedRequest, 
+export const employeeAuth = async (
+    req: EmployeeAuthRequest, 
     res: Response, 
     next: NextFunction
 ): Promise<void> => {
@@ -36,11 +36,19 @@ export const authenticateUser = async (
         }
 
         try {
-            const decoded = jwt.verify(token, jwtSecret) as { userId: string };
-            req.userId = decoded.userId;
+            const decoded = jwt.verify(token, jwtSecret) as { employeeId: string };
+            const employee = await Employee.findOne({ employeeId: decoded.employeeId });
+
+            if (!employee) {
+                res.status(401).json({ message: 'Employee not found' });
+                return;
+            }
+
+            req.employeeId = employee.employeeId;
+            req.role = employee.role;
             
             if (process.env.NODE_ENV !== 'production') {
-                console.log("Authenticated userId:", req.userId);
+                console.log("Authenticated employeeId:", req.employeeId, "Role:", req.role);
             }
             
             next();
@@ -55,4 +63,4 @@ export const authenticateUser = async (
         console.error('Authentication error:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
-};//------------------------------------------END OF FILE---------------------------------------------------//
+};

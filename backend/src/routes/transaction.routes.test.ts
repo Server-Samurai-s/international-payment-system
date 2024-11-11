@@ -2,33 +2,39 @@ import request from 'supertest';
 import express from 'express';
 import mongoose from 'mongoose';
 import transactionRoutes from './transaction.routes';
-import { User } from '../models/user';  // Adjust the path for the model
-import { Transaction, ITransaction } from '../models/transaction'; // Adjust the path as needed
+import { User } from '../models/user';
+import { TransactionModel } from '../models/transaction.model';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 const app = express();
 app.use(express.json());
 app.use('/transactions', transactionRoutes);
 
-// Define a consistent testUserId
+// Mock rate limiter and security middleware
+jest.mock('express-rate-limit', () => jest.fn(() => 
+  (_req: express.Request, _res: express.Response, next: express.NextFunction) => next()
+));
+jest.mock('helmet', () => jest.fn(() => 
+  (_req: express.Request, _res: express.Response, next: express.NextFunction) => next()
+));
+
 const testUserId = new mongoose.Types.ObjectId();
 
-// Mock User model to avoid real database calls
+// Update mocks to match new implementation
 jest.mock('../models/user', () => ({
     User: {
         findById: jest.fn(),
     },
 }));
 
-// Mock authentication middleware
 jest.mock('../middleware/auth', () => ({
     authenticateUser: jest.fn((req, res, next) => {
-        req.userId = testUserId; // Use consistent testUserId
+        req.userId = testUserId;
         next();
     }),
 }));
 
-let mongoServer: MongoMemoryServer | undefined;
+let mongoServer: MongoMemoryServer;
 
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -38,12 +44,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await mongoose.disconnect();
-    if (mongoServer) {
-        await mongoServer.stop();
-    }
+    await mongoServer.stop();
 });
 
-// Clear the database before each test
 beforeEach(async () => {
     await mongoose.connection.dropDatabase();
     jest.clearAllMocks();
@@ -75,68 +78,79 @@ describe('Transaction Routes', () => {
                 .send(transactionData)
                 .expect(201);
 
-            expect(response.body).toHaveProperty('message', 'Transaction successful');
-            expect(response.body).toHaveProperty('transaction');
-            expect(response.body).toHaveProperty('newBalance', initialBalance - transactionAmount);
-        }, 20000); // Extend timeout if needed
+            expect(response.body).toMatchObject({
+                message: 'Transaction successful',
+                transaction: expect.any(Object),
+                newBalance: initialBalance - transactionAmount
+            });
+
+            // Verify transaction was saved
+            const savedTransaction = await TransactionModel.findOne({ user: testUserId });
+            expect(savedTransaction).toBeTruthy();
+        });
+
+        it('should return 400 for invalid SWIFT code', async () => {
+            const transactionData = {
+                recipientName: 'John Doe',
+                recipientBank: 'Bank of Test',
+                accountNumber: '123456789012',
+                amount: '100.50',
+                swiftCode: 'INVALID',
+            };
+
+            const response = await request(app)
+                .post('/transactions/create')
+                .send(transactionData)
+                .expect(400);
+
+            expect(response.body).toEqual({ message: 'Invalid SWIFT code format' });
+        });
     });
 
     describe('GET /transactions', () => {
         it('should retrieve all transactions for the authenticated user', async () => {
-            // Mock transactions data with all required fields
-            const transactions: ITransaction[] = [
-                new Transaction({
+            const transactions = [
+                {
                     user: testUserId,
                     amount: 100.50,
                     recipientName: 'Recipient One',
                     recipientBank: 'Bank One',
                     accountNumber: '1234567890',
-                    swiftCode: 'BANKONE',
+                    swiftCode: 'BANKUS33XXX',
                     transactionDate: new Date(),
-                }),
-                new Transaction({
+                    status: 'completed'
+                },
+                {
                     user: testUserId,
                     amount: 200.75,
                     recipientName: 'Recipient Two',
                     recipientBank: 'Bank Two',
                     accountNumber: '0987654321',
-                    swiftCode: 'BANKTWO',
+                    swiftCode: 'BANKUS33XXX',
                     transactionDate: new Date(),
-                }),
+                    status: 'completed'
+                }
             ];
 
-            // Insert mock transactions using the model
-            await Transaction.insertMany(transactions);
+            await TransactionModel.insertMany(transactions);
 
-            // Make GET request to retrieve transactions
             const response = await request(app)
                 .get('/transactions')
                 .expect(200);
 
-            // Verify that the response contains the transactions
-            expect(response.body.length).toBe(2);
+            expect(response.body).toHaveLength(2);
+            expect(response.body[0]).toMatchObject({
+                user: testUserId.toString(),
+                amount: transactions[0].amount,
+                recipientName: transactions[0].recipientName,
+                status: 'completed'
+            });
+        });
 
-            // Map transactions to expected format for comparison
-            const expectedTransactions = transactions.map((tx: ITransaction) => ({
-                user: tx.user.toString(),
-                amount: tx.amount,
-                recipientName: tx.recipientName,
-                recipientBank: tx.recipientBank,
-                accountNumber: tx.accountNumber,
-                swiftCode: tx.swiftCode,
-                transactionDate: tx.transactionDate!.toISOString(),
-            }));
-
-            // Adjust the response body for comparison
-            const responseTransactions = response.body.map((tx: any) => ({
-                user: tx.user,
-                amount: tx.amount,
-                recipientName: tx.recipientName,
-                recipientBank: tx.recipientBank,
-                accountNumber: tx.accountNumber,
-                swiftCode: tx.swiftCode,
-                transactionDate: tx.transactionDate,
-            }));
+        it('should return 404 if no transactions found', async () => {
+            const response = await request(app)
+                .get('/transactions')
+                .expect(404);
 
             expect(responseTransactions).toEqual(
                 expect.arrayContaining(expectedTransactions)

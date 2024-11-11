@@ -14,9 +14,11 @@ interface Transaction {
     _id: string;
     recipientName: string;
     recipientBank: string;
-    recipientAccountNo: string;
+    accountNumber: string;
     amount: number;
     transactionDate?: string;
+    swiftCode: string;
+    status: string;
 }
 
 const CustomerDashboard: React.FC = () => {
@@ -78,16 +80,21 @@ const CustomerDashboard: React.FC = () => {
                 const response = await fetch("https://localhost:3001/transactions", {
                     headers: {
                         "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
                     },
+                    credentials: 'include'
                 });
+                
                 if (response.ok) {
                     const data = await response.json();
-                    setTransactions(data);
+                    setTransactions(data || []);
                 } else {
-                    console.error("Failed to fetch transactions");
+                    console.error(`Failed to fetch transactions: ${response.status}`);
+                    setTransactions([]);
                 }
             } catch (error) {
                 console.error("Error fetching transactions:", error);
+                setTransactions([]);
             }
         }
     };
@@ -115,49 +122,61 @@ const CustomerDashboard: React.FC = () => {
                         <p>Account No: {dashboard.accountNumber}</p>
                         <p>Available Balance: ${dashboard.balance.toFixed(2)}</p>
                     </div>
+                    <div className="text-center">
+                        <button onClick={handlePaymentsBtn} className="customer-dashboard__btn-main">
+                            Make International Payment
+                        </button>
+                    </div>
                 </div>
-
+                
                 <div className="customer-dashboard__section">
-                    <h5>Payment Receipts</h5>
-                    <div className="customer-dashboard__transaction-list">
-                        {transactions.length > 0 ? (
-                            transactions.map((transaction) => (
-                                <div key={transaction._id} className="customer-dashboard__transaction-item">
-                                    <div>
-                                        <p className="customer-dashboard__transaction-date">
+                    <h5 className="customer-dashboard__section-title">Payment Receipts</h5>
+                    <div className="transaction-table-container">
+                        <table className="transaction-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Recipient</th>
+                                    <th>Bank</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions
+                                    .sort((a, b) => new Date(b.transactionDate || '').getTime() - new Date(a.transactionDate || '').getTime())
+                                    .map((transaction) => (
+                                    <tr key={transaction._id}>
+                                        <td>
                                             {transaction.transactionDate && !isNaN(Date.parse(transaction.transactionDate))
                                                 ? new Date(transaction.transactionDate).toLocaleDateString()
                                                 : "Unknown Date"}
-                                        </p>
-                                        <p>{transaction.recipientName || 'Payment'}</p>
-                                    </div>
-                                    <div className="customer-dashboard__transaction-amount">
-                                        <p>${transaction.amount}</p>
-                                        <button 
-                                            className="btn btn-primary btn-sm" 
-                                            onClick={() => handlePayAgain(transaction)}
-                                        >
-                                            Pay again
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <p>No payment receipts found</p>
-                        )}
+                                        </td>
+                                        <td>{transaction.recipientName}</td>
+                                        <td>{transaction.recipientBank}</td>
+                                        <td>${transaction.amount.toLocaleString()}</td>
+                                        <td>{transaction.status ? transaction.status : "Failed"}</td>
+                                        <td>
+                                            <button 
+                                                onClick={() => handlePayAgain(transaction)}
+                                                className="verify-button"
+                                            >
+                                                Pay Again
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                {transactions.length === 0 && (
+                                    <tr>
+                                        <td colSpan={5} className="empty-state">
+                                            No payment receipts found
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-
-                {/* <div className="customer-dashboard__menu">
-                    <h6>Quick Menu</h6>
-                    <button className="customer-dashboard__menu-btn">Transactions</button>
-                    <button className="customer-dashboard__menu-btn">Payments</button>
-                </div> */}
-
-                <div className="text-center">
-                    <button onClick={handlePaymentsBtn} className="customer-dashboard__btn-main">
-                        Make International Payment
-                    </button>
                 </div>
             </div>
         </div>

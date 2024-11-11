@@ -1,0 +1,143 @@
+.employee-dashboard__full-page-container {
+    position: relative;
+    min-height: 100vh;
+    background-color: #000;
+    overflow-x: hidden;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.employee-dashboard__container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: rgba(17, 19, 34, 0.95);
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+    z-index: 10;
+}
+
+.employee-dashboard__title {
+    color: #2515d1;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+}
+
+.employee-dashboard__section {
+    background-color: rgba(55, 65, 81, 0.3);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.transaction-card {
+    background-color: rgba(55, 65, 81, 0.4);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.transaction-card:hover {
+    transform: translateX(5px);
+}
+
+.transaction-details p {
+    margin: 0.5rem 0;
+}
+
+.transaction-date {
+    color: #2515d1;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Remove any existing table-specific styles if they exist */
+.transaction-table-container {
+    overflow-x: auto;
+    border-radius: 8px;
+    background-color: rgba(17, 19, 34, 0.95);
+}
+
+.transaction-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.transaction-table th,
+.transaction-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.transaction-table th {
+    background-color: rgba(37, 21, 209, 0.1);
+    color: #2515d1;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transaction-table tr:hover {
+    background-color: rgba(55, 65, 81, 0.3);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    background-color: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.verify-button {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background-color: #2515d1;
+    color: white;
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.verify-button:hover {
+    background-color: #1f10b0;
+}
+
+.empty-state {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem !important;
+}
+
+.create-employee-btn {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background-color: #2515d1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-weight: 500;
+}
+
+.create-employee-btn:hover {
+    background-color: #1f10b0;
+}
