@@ -6,6 +6,7 @@ interface CustomerFormState {
     identifier: string;
     password: string;
     authError?: string;
+    general?: string;
 }
 
 interface CustomerLoginProps {
@@ -68,12 +69,12 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
 
     const handleLoginError = (status: number) => {
         if (status === 404) {
-            setErrors({ identifier: 'Account number not found' });
+            setErrors({ general: 'Account number not found' });
         } else if (status === 401) {
-            setErrors({ password: 'Incorrect password' });
+            setErrors({ general: 'Incorrect credentials provided' });
         } else {
-            setErrors({ password: 'An unexpected error occurred. Please try again later.' });
-        }
+            setErrors({ general: 'An unexpected error occurred. Please try again later.' });
+        }        
     };
 
     const handleLoginSuccess = (data: CustomerAuthResponse) => {
