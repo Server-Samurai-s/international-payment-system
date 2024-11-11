@@ -5,6 +5,8 @@ import { CustomerAuthResponse } from '../types/auth';
 interface CustomerFormState {
     identifier: string;
     password: string;
+    authError?: string;
+    general?: string;
 }
 
 interface CustomerLoginProps {
@@ -22,14 +24,15 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
         let valid = true;
 
         if (!form.identifier.trim()) {
-            newErrors.identifier = 'Account number is required';
+            newErrors.identifier = process.env.REACT_APP_ACCOUNT_REQUIRED_MESSAGE || 'Account number is required';
             valid = false;
         }
 
         if (!form.password) {
-            newErrors.password = 'Password is required';
-        } else if (form.password.length < 8) {
-            newErrors.password = 'Password must be at least 8 characters';
+            newErrors.password = process.env.REACT_APP_PASSWORD_REQUIRED_MESSAGE || 'Password is required';
+            valid = false;
+        } else if (form.password.length < Number(process.env.REACT_APP_MIN_PASSWORD_LENGTH) || 8) {
+            newErrors.password = `Password must be at least ${process.env.REACT_APP_MIN_PASSWORD_LENGTH || 8} characters`;
             valid = false;
         }
 
@@ -58,17 +61,20 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
             const data: CustomerAuthResponse = await response.json();
             handleLoginSuccess(data);
         } catch (error) {
-            console.error('Login error:', error);
-            setErrors({ password: 'An error occurred during login' });
-        }
+            const err = error as Error;
+            console.error('Login error:', err.message);
+            setErrors({ authError: 'An unexpected error occurred. Please try again later.' });
+        }        
     };
 
     const handleLoginError = (status: number) => {
         if (status === 404) {
-            setErrors({ identifier: 'Account number not found' });
+            setErrors({ general: 'Account number not found' });
         } else if (status === 401) {
-            setErrors({ password: 'Incorrect password' });
-        }
+            setErrors({ general: 'Incorrect credentials provided' });
+        } else {
+            setErrors({ general: 'An unexpected error occurred. Please try again later.' });
+        }        
     };
 
     const handleLoginSuccess = (data: CustomerAuthResponse) => {
@@ -78,16 +84,16 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
         localStorage.setItem('isLoggedIn', 'true');
         onLoginSuccess();
         
-        setTimeout(() => {
-            navigate('/dashboard', { replace: true });
-        }, 2000);
+        navigate('/dashboard', { replace: true });
     };
 
     return (
         <form onSubmit={handleSubmit} noValidate>
             <div className="form-group">
+                <label htmlFor="identifier">Account Number</label>
                 <input
                     type="text"
+                    id="identifier"
                     className={`form-control ${submitted && errors.identifier ? 'is-invalid' : ''}`}
                     value={form.identifier}
                     onChange={(e) => setForm(prev => ({ ...prev, identifier: e.target.value }))}
@@ -99,8 +105,10 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
             </div>
 
             <div className="form-group">
+                <label htmlFor="password">Password</label>
                 <input
                     type="password"
+                    id="password"
                     className={`form-control ${submitted && errors.password ? 'is-invalid' : ''}`}
                     value={form.password}
                     onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
@@ -120,4 +128,4 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
     );
 };
 
-export default CustomerLogin; 
+export default CustomerLogin;

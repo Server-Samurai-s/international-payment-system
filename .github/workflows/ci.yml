@@ -3,7 +3,7 @@ name: Secure Payments Portal CI
 on:
   push:
     branches:
-      - main
+      - fix-security-vulnerabilities
 jobs:
   build:
     runs-on: ubuntu-latest

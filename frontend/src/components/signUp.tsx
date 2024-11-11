@@ -55,7 +55,7 @@ const SignUp: React.FC = () => {
         let valid = true;
 
         const nameRegex = /^[A-Za-z\s]+$/;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,6}$/;
         const usernameRegex = /^[A-Za-z0-9_]+$/;
         const accountNumberRegex = /^\d{7,11}$/;
         const idNumberRegex = /^\d{13}$/;
