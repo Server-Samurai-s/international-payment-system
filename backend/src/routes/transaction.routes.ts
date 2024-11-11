@@ -5,6 +5,9 @@ import validator from "validator";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { User } from '../models/user';
+import { encryptAccountNumber } from '../utils/encryption';
+import mongoose from 'mongoose';
+import { findUserByAccountNumber } from "../models/transaction";
 
 const router = express.Router();
 
@@ -60,41 +63,69 @@ router.post(
                 return;
             }
 
-            const user = await User.findById(userId);
-            if (!user) {
-                res.status(404).json({ message: "User not found" });
+            const sender = await User.findById(userId);
+            if (!sender) {
+                res.status(404).json({ message: "Sender not found" });
                 return;
             }
 
-            if (user.balance < parseFloat(amount)) {
+            if (sender.balance < parseFloat(amount)) {
                 res.status(400).json({ message: "Insufficient funds" });
                 return;
             }
 
-            const newTransaction = new TransactionModel({
-                user: userId!,
-                recipientName: validator.escape(recipientName),
-                recipientBank: validator.escape(recipientBank),
-                accountNumber: validator.escape(accountNumber),
-                amount: parseFloat(amount),
-                swiftCode: validator.escape(swiftCode),
-                transactionDate: new Date().toISOString(),
-                status: 'pending'
-            });
+            const recipient = await findUserByAccountNumber(accountNumber);
+            if (!recipient) {
+                res.status(404).json({ message: "Recipient account not found" });
+                return;
+            }
 
-            const savedTransaction = await newTransaction.save();
+            const senderId = sender._id as unknown as mongoose.Types.ObjectId;
+            const recipientId = recipient._id as unknown as mongoose.Types.ObjectId;
 
-            user.balance -= parseFloat(amount);
-            await user.save();
+            if (senderId.toString() === recipientId.toString()) {
+                res.status(400).json({ message: "Cannot transfer to your own account" });
+                return;
+            }
 
-            res.status(201).json({ 
-                message: "Transaction successful", 
-                transaction: savedTransaction, 
-                newBalance: user.balance 
-            });
-        } catch (e) {
-            console.error("Error uploading transaction:", e);
-            res.status(500).json({ message: "Failed to upload transaction" });
+            const session = await mongoose.startSession();
+            session.startTransaction();
+
+            try {
+                sender.balance -= parseFloat(amount);
+                await sender.save({ session });
+
+                recipient.balance += parseFloat(amount);
+                await recipient.save({ session });
+
+                const newTransaction = new TransactionModel({
+                    user: userId,
+                    recipientName: validator.escape(recipientName),
+                    recipientBank: validator.escape(recipientBank),
+                    accountNumber: encryptAccountNumber(accountNumber),
+                    amount: parseFloat(amount),
+                    swiftCode: validator.escape(swiftCode),
+                    transactionDate: new Date().toISOString(),
+                    status: 'pending'
+                });
+
+                await newTransaction.save({ session });
+                await session.commitTransaction();
+
+                res.status(201).json({
+                    message: "Transaction successful",
+                    transaction: newTransaction,
+                    newBalance: sender.balance
+                });
+            } catch (error) {
+                await session.abortTransaction();
+                throw error;
+            } finally {
+                session.endSession();
+            }
+        } catch (error) {
+            console.error("Error processing transaction:", error);
+            res.status(500).json({ message: "Failed to process transaction" });
         }
     }
 );

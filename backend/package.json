@@ -6,7 +6,10 @@
     "test": "jest --config jest.config.ts",
     "start": "npx ts-node src/app.ts",
     "lint": "eslint .",
-    "create-admin": "ts-node src/scripts/createSuperAdmin.ts"
+    "create-admin": "ts-node src/scripts/createSuperAdmin.ts",
+    "migrate-users": "ts-node src/scripts/migrateUsers.ts",
+    "remove-account-numbers": "ts-node src/scripts/removeAccountNumber.ts",
+    "generate-key": "ts-node src/scripts/generateEncryptionKey.ts"
   },
   "keywords": [],
   "author": "",

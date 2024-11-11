@@ -16,7 +16,7 @@ interface Transaction {
     recipientBank: string;
     accountNumber: string;
     amount: number;
-    transactionDate?: string;
+    transactionDate: string;
     swiftCode: string;
     status: string;
 }
@@ -28,6 +28,8 @@ const CustomerDashboard: React.FC = () => {
         accountNumber: "" 
     });
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const handlePaymentsBtn = () => {
@@ -75,32 +77,53 @@ const CustomerDashboard: React.FC = () => {
 
     const fetchTransactions = async () => {
         const token = localStorage.getItem("jwt");
-        if (token) {
-            try {
-                const response = await fetch("https://localhost:3001/transactions", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    },
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    setTransactions(data || []);
-                } else {
-                    console.error(`Failed to fetch transactions: ${response.status}`);
-                    setTransactions([]);
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://localhost:3001/transactions", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
                 }
-            } catch (error) {
-                console.error("Error fetching transactions:", error);
-                setTransactions([]);
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setTransactions(data);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to fetch transactions');
             }
+        } catch (error) {
+            console.error("Error fetching transactions:", error);
+            setError('Network error while fetching transactions');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handlePayAgain = (transaction: Transaction) => {
         navigate("/payment", { state: transaction });
+    };
+
+    const formatTransactionStatus = (status: string) => {
+        switch (status) {
+            case 'pending':
+                return <span className="status-pending">Pending Verification</span>;
+            case 'verified':
+                return <span className="status-verified">Verified</span>;
+            case 'submitted':
+                return <span className="status-submitted">Processing</span>;
+            case 'completed':
+                return <span className="status-completed">Completed</span>;
+            case 'failed':
+                return <span className="status-failed">Failed</span>;
+            default:
+                return <span className="status-unknown">Unknown</span>;
+        }
     };
 
     return (
@@ -131,51 +154,43 @@ const CustomerDashboard: React.FC = () => {
                 
                 <div className="customer-dashboard__section">
                     <h5 className="customer-dashboard__section-title">Payment Receipts</h5>
-                    <div className="transaction-table-container">
-                        <table className="transaction-table">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Recipient</th>
-                                    <th>Bank</th>
-                                    <th>Amount</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {transactions
-                                    .sort((a, b) => new Date(b.transactionDate || '').getTime() - new Date(a.transactionDate || '').getTime())
-                                    .map((transaction) => (
-                                    <tr key={transaction._id}>
-                                        <td>
-                                            {transaction.transactionDate && !isNaN(Date.parse(transaction.transactionDate))
-                                                ? new Date(transaction.transactionDate).toLocaleDateString()
-                                                : "Unknown Date"}
-                                        </td>
-                                        <td>{transaction.recipientName}</td>
-                                        <td>{transaction.recipientBank}</td>
-                                        <td>${transaction.amount.toLocaleString()}</td>
-                                        <td>{transaction.status ? transaction.status : "Failed"}</td>
-                                        <td>
-                                            <button 
-                                                onClick={() => handlePayAgain(transaction)}
-                                                className="verify-button"
-                                            >
-                                                Pay Again
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {transactions.length === 0 && (
-                                    <tr>
-                                        <td colSpan={5} className="empty-state">
-                                            No payment receipts found
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
+                    <div className="customer-dashboard__transactions">
+                        <h2>Recent Transactions</h2>
+                        
+                        {isLoading && <div className="loading-spinner">Loading...</div>}
+                        
+                        {error && (
+                            <div className="error-message">
+                                {error}
+                            </div>
+                        )}
+
+                        {!isLoading && !error && transactions.length === 0 && (
+                            <div className="no-transactions">
+                                No transactions found
+                            </div>
+                        )}
+
+                        {transactions.map((transaction) => (
+                            <div key={transaction._id} className="transaction-card">
+                                <div className="transaction-header">
+                                    <span className="recipient">{transaction.recipientName}</span>
+                                    <span className="amount">${transaction.amount.toFixed(2)}</span>
+                                </div>
+                                <div className="transaction-details">
+                                    <span className="bank">{transaction.recipientBank}</span>
+                                    <span className="date">
+                                        {transaction.transactionDate ? 
+                                            new Date(transaction.transactionDate).toLocaleDateString() : 
+                                            'Date not available'
+                                        }
+                                    </span>
+                                </div>
+                                <div className="transaction-status">
+                                    {formatTransactionStatus(transaction.status)}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>

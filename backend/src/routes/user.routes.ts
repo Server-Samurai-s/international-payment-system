@@ -2,8 +2,9 @@ import express, { Request, Response } from 'express'; // Import express and type
 import jwt from 'jsonwebtoken'; // Import jsonwebtoken for creating and verifying JWT tokens
 import ExpressBrute from 'express-brute'; // Import ExpressBrute for brute-force protection
 import dotenv from 'dotenv'; // Import dotenv to load environment variables
-import { User } from '../models/user'; // Import the User model for interacting with the database
+import { User, getMaskedAccountNumber } from '../models/user'; // Import the User model for interacting with the database
 import { AuthenticatedRequest, authenticateUser } from '../middleware/auth';
+import { decryptAccountNumber, encryptAccountNumber } from '../utils/encryption';
 
 //--------------------------------------------------------------------------------------------------------//
 
@@ -45,6 +46,8 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    const encryptedAccountNumber = encryptAccountNumber(accountNumber);
+
     // Create a new user with the provided data
     const newUser = new User({
       firstName,
@@ -52,7 +55,7 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       emailAddress,
       username,
       password,
-      accountNumber,
+      hashedAccountNumber: encryptedAccountNumber,
       idNumber,
       balance: 10000, // Set initial balance
     });
@@ -81,7 +84,7 @@ router.post('/login', bruteforce.prevent, async (req: Request, res: Response): P
   try {
     // Find user by username or account number for authentication
     const user = await User.findOne({
-      $or: [{ username: identifier }, { accountNumber: identifier }], // Check if the identifier is username or account number
+      $or: [{ username: identifier }, { hashedAccountNumber: identifier }], // Check if the identifier is username or account number
     });
 
     // If user is not found, return authentication failure
@@ -122,17 +125,22 @@ router.post('/login', bruteforce.prevent, async (req: Request, res: Response): P
 //--------------------------------------------------------------------------------------------------------//
 
 router.get('/balance', authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  try {
-    const user = await User.findById(req.userId);
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
+    try {
+        const user = await User.findById(req.userId);
+        
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+
+        res.status(200).json({ 
+            balance: user.balance,
+            accountNumber: decryptAccountNumber(user.accountNumber)
+        });
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        res.status(500).json({ message: 'Failed to fetch user data' });
     }
-    res.status(200).json({ balance: user.balance, accountNumber: user.accountNumber });
-  } catch (error) {
-    console.error('Error fetching user data:', error);
-    res.status(500).json({ message: 'Failed to fetch user data' });
-  }
 });
 
 //--------------------------------------------------------------------------------------------------------//

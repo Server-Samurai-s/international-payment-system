@@ -1,5 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose'; // Import mongoose, schema, and document types for MongoDB schema definition
 import bcrypt from 'bcryptjs'; // Import bcryptjs for password hashing and comparison
+import crypto from 'crypto';
+import { encryptAccountNumber } from '../utils/encryption';
 
 //--------------------------------------------------------------------------------------------------------//
 
@@ -49,8 +51,8 @@ const userSchema: Schema<IUser> = new Schema({
   },
   accountNumber: {
     type: String,
-    required: true, // Account number is required
-    match: /^\d{7,11}$/, // Regular expression to ensure account number is 7 to 11 digits long
+    required: true,
+    unique: true
   },
   idNumber: {
     type: String,
@@ -81,8 +83,38 @@ userSchema.methods.comparePassword = async function (candidatePassword: string):
 
 //--------------------------------------------------------------------------------------------------------//
 
+// Add before saving a new user
+userSchema.pre('save', async function(next) {
+    if (this.isModified('password')) {
+        await this.hashPassword();
+    }
+    next();
+});
+
+//--------------------------------------------------------------------------------------------------------//
+
+
+// Add getMaskedAccountNumber function
+export function getMaskedAccountNumber(hashedAccountNumber: string): string {
+    if (!hashedAccountNumber) return '****';
+    // Extract the actual account number from the hash
+    const accountNumber = hashedAccountNumber.split(':')[1].slice(-8); // Get last 8 digits of hash
+    return `****${accountNumber.slice(-4)}`; // Show last 4 digits
+}
+
+//--------------------------------------------------------------------------------------------------------//
+
 // Export the User model, using the userSchema for MongoDB operations
 export const User = mongoose.model<IUser>('User', userSchema);
+
+//--------------------------------------------------------------------------------------------------------//
+
+// Add secureAccountNumber function
+export async function secureAccountNumber(accountNumber: string): Promise<string> {
+    return encryptAccountNumber(accountNumber);
+}
+
+//--------------------------------------------------------------------------------------------------------//
 
 //------------------------------------------END OF FILE---------------------------------------------------//
 

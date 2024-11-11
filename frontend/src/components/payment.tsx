@@ -11,10 +11,12 @@ interface PaymentFormState {
     accountNumber: string;
     amount: string;
     swiftCode: string;
+    submit?: string;
 }
 
 const Payment: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -77,55 +79,53 @@ const Payment: React.FC = () => {
         return valid;
     };
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        
         if (!validateForm()) {
             return;
         }
 
-        const token = localStorage.getItem("jwt");
-        if (!token) {
-            alert("Please log in first.");
-            navigate("/login");
-            return;
-        }
-
-        const transactionData = {
-            ...form,
-            userId: localStorage.getItem("userId"),
-        };
-
+        setIsProcessing(true);
+        
         try {
-            const response = await fetch("https://localhost:3001/transactions/create", {
-                method: "POST",
+            const token = localStorage.getItem('jwt');
+            const response = await fetch('https://localhost:3001/transactions/create', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(transactionData),
+                body: JSON.stringify({
+                    recipientName: form.recipientName.trim(),
+                    recipientBank: form.recipientBank.trim(),
+                    accountNumber: form.accountNumber,
+                    amount: parseFloat(form.amount),
+                    swiftCode: form.swiftCode.trim()
+                })
             });
-
-            if (!response.ok) {
-                throw new Error(`Error: ${response.statusText}`);
-            }
 
             const data = await response.json();
-            console.log("Transaction created:", data);
 
-            setForm({
-                recipientName: "",
-                recipientBank: "",
-                accountNumber: "",
-                amount: "",
-                swiftCode: "",
-            });
-
-            setShowSuccess(true);
-            setTimeout(() => navigate('/dashboard'), 2000);
+            if (response.ok) {
+                setShowSuccess(true);
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 2000);
+            } else {
+                setErrors(prev => ({
+                    ...prev,
+                    submit: data.message || 'Transaction failed. Please try again.'
+                }));
+            }
         } catch (error) {
-            console.error("Error creating transaction:", error);
-            alert("Failed to process payment. Please try again.");
+            console.error('Error processing transaction:', error);
+            setErrors(prev => ({
+                ...prev,
+                submit: 'Network error. Please try again.'
+            }));
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -147,7 +147,7 @@ const Payment: React.FC = () => {
             </Canvas>
             <div className="payment-form__container">
                 <h3 className="payment-form__title">International Payment</h3>
-                <form onSubmit={onSubmit}>
+                <form onSubmit={handleSubmit} className="payment-form">
                     {/* Recipient's Name */}
                     <div className="payment-form__group">
                         <label htmlFor="recipientName">Recipient&apos;s Name</label>
@@ -210,14 +210,29 @@ const Payment: React.FC = () => {
     
                     {/* Buttons */}
                     <div className="d-flex justify-content-between">
-                        <button type="submit" className="payment-form__btn-primary">Pay Now</button>
+                        <button 
+                            type="submit" 
+                            className="payment-form__btn-primary"
+                            disabled={isProcessing}
+                        >
+                            {isProcessing ? 'Processing...' : 'Submit Payment'}
+                        </button>
                         <button type="button" className="payment-form__btn-cancel" onClick={handleCancelBtn}>
                             Cancel
                         </button>
                     </div>
                 </form>
             </div>
-            {showSuccess && <SuccessMessage message="Payment successful! Redirecting to dashboard..." />}
+            {showSuccess && (
+                <div className="payment-form__success">
+                    Transaction successful! Redirecting to dashboard...
+                </div>
+            )}
+            {errors.submit && (
+                <div className="payment-form__error">
+                    {errors.submit}
+                </div>
+            )}
         </div>
     );
 };

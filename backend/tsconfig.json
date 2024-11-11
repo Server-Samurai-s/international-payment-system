@@ -108,12 +108,16 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true,                            /* Skip type checking all .d.ts files. */
     "allowJs": true,
-    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "typeRoots": [
+        "./src/types",
+        "./node_modules/@types"
+    ],
   },
   "include": ["src/**/*.ts", "xss-clean.d.ts"],
   "exclude": ["node_modules"]
