@@ -20,3 +20,12 @@ yarn-error.log* 
 
 package-lock.json
 
+# SSL/TLS Certificates and Keys
+*.pem
+*.key
+*.crt
+*.csr
+*.srl
+
+# But allow the directory itself to exist
+!backend/src/keys/ca/.gitkeep
