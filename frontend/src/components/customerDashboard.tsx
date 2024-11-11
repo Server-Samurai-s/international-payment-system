@@ -12,13 +12,18 @@ interface DashboardState {
 
 interface Transaction {
     _id: string;
+    user: string;
+    recipientId: string;
     recipientName: string;
     recipientBank: string;
     accountNumber: string;
     amount: number;
-    transactionDate: string;
     swiftCode: string;
-    status: string;
+    transactionDate: string;
+    status: 'pending' | 'verified' | 'submitted' | 'completed' | 'failed';
+    verifiedBy?: string;
+    verificationDate?: string;
+    senderName: string;
 }
 
 const CustomerDashboard: React.FC = () => {
@@ -32,21 +37,33 @@ const CustomerDashboard: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
 
-    const handlePaymentsBtn = () => {
-        navigate("/payment");
-    };
-
-    useEffect(() => {
-        const savedFirstName = localStorage.getItem("firstName");
-        if (savedFirstName) {
-            setDashboard((prev) => ({
-                ...prev,
-                firstName: savedFirstName,
-            }));
-            fetchTransactions();
-            fetchBalance();
-        } else {
+    const fetchTransactions = React.useCallback(async () => {
+        const token = localStorage.getItem("jwt");
+        if (!token) {
             navigate("/login");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://localhost:3001/transactions", {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setTransactions(data);
+            } else {
+                const errorData = await response.json();
+                setError(errorData.message || 'Failed to fetch transactions');
+            }
+        } catch (error) {
+            console.error("Error fetching transactions:", error);
+            setError('Network error while fetching transactions');
+        } finally {
+            setIsLoading(false);
         }
     }, [navigate]);
 
@@ -75,38 +92,22 @@ const CustomerDashboard: React.FC = () => {
         }
     };
 
-    const fetchTransactions = async () => {
-        const token = localStorage.getItem("jwt");
-        if (!token) {
+    useEffect(() => {
+        const savedFirstName = localStorage.getItem("firstName");
+        if (savedFirstName) {
+            setDashboard((prev) => ({
+                ...prev,
+                firstName: savedFirstName,
+            }));
+            fetchTransactions();
+            fetchBalance();
+        } else {
             navigate("/login");
-            return;
         }
+    }, [navigate, fetchTransactions]);
 
-        try {
-            const response = await fetch("https://localhost:3001/transactions", {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setTransactions(data);
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || 'Failed to fetch transactions');
-            }
-        } catch (error) {
-            console.error("Error fetching transactions:", error);
-            setError('Network error while fetching transactions');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handlePayAgain = (transaction: Transaction) => {
-        navigate("/payment", { state: transaction });
+    const handlePaymentsBtn = () => {
+        navigate("/payment");
     };
 
     const formatTransactionStatus = (status: string) => {
@@ -174,20 +175,40 @@ const CustomerDashboard: React.FC = () => {
                         {transactions.map((transaction) => (
                             <div key={transaction._id} className="transaction-card">
                                 <div className="transaction-header">
-                                    <span className="recipient">{transaction.recipientName}</span>
-                                    <span className="amount">${transaction.amount.toFixed(2)}</span>
+                                    <span className="transaction-date">
+                                        {new Date(transaction.transactionDate).toLocaleDateString()}
+                                    </span>
+                                    {formatTransactionStatus(transaction.status)}
                                 </div>
                                 <div className="transaction-details">
-                                    <span className="bank">{transaction.recipientBank}</span>
-                                    <span className="date">
-                                        {transaction.transactionDate ? 
-                                            new Date(transaction.transactionDate).toLocaleDateString() : 
-                                            'Date not available'
-                                        }
-                                    </span>
-                                </div>
-                                <div className="transaction-status">
-                                    {formatTransactionStatus(transaction.status)}
+                                    <div className="transaction-type">
+                                        {transaction.user === localStorage.getItem("userId") ? (
+                                            <span className="transaction-direction outgoing">Sent to:</span>
+                                        ) : (
+                                            <span className="transaction-direction incoming">Received from:</span>
+                                        )}
+                                    </div>
+                                    <div className="detail-row">
+                                        <span className="label">
+                                            {transaction.user === localStorage.getItem("userId") ? "Recipient:" : "From:"}
+                                        </span>
+                                        <span className="value">
+                                            {transaction.user === localStorage.getItem("userId") 
+                                                ? transaction.recipientName 
+                                                : transaction.senderName
+                                            }
+                                        </span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <span className="label">Bank:</span>
+                                        <span className="value">{transaction.recipientBank}</span>
+                                    </div>
+                                    <div className="detail-row">
+                                        <span className="label">Amount:</span>
+                                        <span className={`value ${transaction.user === localStorage.getItem("userId") ? 'outgoing' : 'incoming'}`}>
+                                            ${transaction.amount.toLocaleString()}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         ))}

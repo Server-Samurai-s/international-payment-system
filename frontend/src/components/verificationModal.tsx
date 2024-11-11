@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Transaction } from '../types/transaction';
 import '../styles/verificationModal.css';
 
@@ -27,6 +27,27 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
     onReject,
     onClose
 }) => {
+    const [decryptedAccountNumber, setDecryptedAccountNumber] = useState<string>('');
+
+    useEffect(() => {
+        const fetchDecryptedAccount = async () => {
+            try {
+                const response = await fetch(`https://localhost:3001/employee/decrypt-account/${transaction.accountNumber}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setDecryptedAccountNumber(data.accountNumber);
+                }
+            } catch (error) {
+                console.error('Error decrypting account number:', error);
+            }
+        };
+        fetchDecryptedAccount();
+    }, [transaction.accountNumber]);
+
     return (
         <div className="verification-modal-overlay">
             <div className="verification-modal">
@@ -61,7 +82,7 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
                 <div className="verification-field">
                     <div className="field-info">
                         <label>Account Number:</label>
-                        <span>{transaction.recipientAccountNo}</span>
+                        <span>{decryptedAccountNumber || 'Decrypting...'}</span>
                     </div>
                     <button 
                         className={`verify-btn ${verificationStatus.recipientAccountNo ? 'verified' : ''}`}

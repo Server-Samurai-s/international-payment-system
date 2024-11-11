@@ -46,7 +46,7 @@ const EmployeeDashboard: React.FC = () => {
 
     const fetchPendingTransactions = async () => {
         try {
-            const response = await fetch('/employee/transactions/pending', {
+            const response = await fetch('https://localhost:3001/employee/transactions/pending', {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
@@ -55,6 +55,9 @@ const EmployeeDashboard: React.FC = () => {
             if (response.ok) {
                 const data = await response.json();
                 setPendingTransactions(data);
+            } else {
+                const errorData = await response.json();
+                console.error('Error fetching transactions:', errorData.message);
             }
         } catch (error) {
             console.error('Error fetching transactions:', error);
@@ -84,7 +87,7 @@ const EmployeeDashboard: React.FC = () => {
 
     const handleVerifyTransaction = async (transactionId: string) => {
         try {
-            const response = await fetch(`/employee/transactions/${transactionId}/verify`, {
+            const response = await fetch(`https://localhost:3001/employee/transactions/${transactionId}/verify`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -93,6 +96,9 @@ const EmployeeDashboard: React.FC = () => {
 
             if (response.ok) {
                 fetchPendingTransactions(); // Refresh the list
+            } else {
+                const errorData = await response.json();
+                console.error('Error verifying transaction:', errorData.message);
             }
         } catch (error) {
             console.error('Error verifying transaction:', error);

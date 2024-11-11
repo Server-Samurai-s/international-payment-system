@@ -7,14 +7,14 @@ import { encryptAccountNumber } from '../utils/encryption';
 
 // Define IUser interface extending mongoose Document with user attributes and methods
 export interface IUser extends Document {
-  firstName: string;
-  lastName: string;
-  emailAddress: string;
-  username: string;
+  _id: mongoose.Types.ObjectId;
+  email: string;
   password: string;
   accountNumber: string;
-  idNumber: string;
   balance: number;
+  username: string;
+  firstName: string;
+  lastName: string;
   hashPassword(): Promise<void>; // Method to hash the user's password
   comparePassword(candidatePassword: string): Promise<boolean>; // Method to compare the candidate password with the hashed password
 }
@@ -23,17 +23,7 @@ export interface IUser extends Document {
 
 // Define the userSchema for the User collection in MongoDB
 const userSchema: Schema<IUser> = new Schema({
-  firstName: {
-    type: String,
-    required: true, // First name is required
-    trim: true, // Automatically remove whitespace around the value
-  },
-  lastName: {
-    type: String,
-    required: true, // Last name is required
-    trim: true, // Automatically remove whitespace around the value
-  },
-  emailAddress: {
+  email: {
     type: String,
     required: true, // Email address is required
     unique: true, // Ensure email is unique
@@ -41,9 +31,16 @@ const userSchema: Schema<IUser> = new Schema({
   },
   username: {
     type: String,
-    required: true, // Username is required
-    unique: true, // Ensure username is unique
-    match: /^[A-Za-z0-9_]+$/, // Regular expression for validating alphanumeric usernames
+    required: true,
+    unique: true
+  },
+  firstName: {
+    type: String,
+    required: true
+  },
+  lastName: {
+    type: String,
+    required: true
   },
   password: {
     type: String,
@@ -53,11 +50,6 @@ const userSchema: Schema<IUser> = new Schema({
     type: String,
     required: true,
     unique: true
-  },
-  idNumber: {
-    type: String,
-    required: true, // ID number is required
-    match: /^\d{13}$/, // Regular expression to ensure ID number is exactly 13 digits
   },
   balance: {
     type: Number,

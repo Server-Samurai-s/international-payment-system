@@ -1,15 +1,17 @@
 // Define the Transaction interface which includes user, recipient, and transaction details
 export interface Transaction {
     user: string;
+    recipientId: string;
     recipientName: string;
     recipientBank: string;
     accountNumber: string;
     amount: number;
     swiftCode: string;
     transactionDate: string;
-    status: 'pending' | 'verified' | 'submitted';
+    status: 'pending' | 'verified' | 'submitted' | 'completed' | 'failed';
     verifiedBy?: string;
     verificationDate?: string;
+    senderName: string;
 }
 
 //--------------------------------------------------------------------------------------------------------//

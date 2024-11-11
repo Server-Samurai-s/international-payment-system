@@ -6,6 +6,10 @@ import jsonwebtoken from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { EmployeeRole } from '../models/employee';
 import { requireRole } from '../middleware/roleAuth';
+import mongoose from 'mongoose';
+import { User } from '../models/user';
+import { decryptAccountNumber } from '../utils/encryption';
+import { findUserByAccountNumber } from '../models/transaction';
 
 const router = express.Router();
 
@@ -79,22 +83,67 @@ router.get('/transactions/pending', employeeAuth, async (req: Request, res: Resp
 
 // Verify transaction
 router.post('/transactions/:id/verify', employeeAuth, async (req: Request & { employeeId?: string }, res: Response): Promise<void> => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-        const transaction = await TransactionModel.findById(req.params.id);
+        const transaction = await TransactionModel.findById(req.params.id).session(session);
         if (!transaction) {
+            await session.abortTransaction();
             res.status(404).json({ message: 'Transaction not found' });
             return;
         }
 
+        if (transaction.status !== 'pending') {
+            await session.abortTransaction();
+            res.status(400).json({ message: 'Transaction already processed' });
+            return;
+        }
+
+        // Get sender and recipient documents
+        const sender = await User.findById(transaction.user).session(session);
+        const recipient = await User.findById(transaction.recipientId).session(session);
+
+        if (!sender || !recipient) {
+            await session.abortTransaction();
+            res.status(404).json({ message: 'Sender or recipient not found' });
+            return;
+        }
+
+        // Check if sender still has sufficient funds
+        if (sender.balance < transaction.amount) {
+            transaction.status = 'failed';
+            await transaction.save({ session });
+            await session.commitTransaction();
+            res.status(400).json({ message: 'Insufficient funds' });
+            return;
+        }
+
+        // Update balances using updateOne to avoid validation
+        await User.updateOne(
+            { _id: sender._id },
+            { $inc: { balance: -transaction.amount } }
+        ).session(session);
+
+        await User.updateOne(
+            { _id: recipient._id },
+            { $inc: { balance: transaction.amount } }
+        ).session(session);
+
+        // Update transaction status
         transaction.status = 'verified';
         transaction.verifiedBy = req.employeeId;
         transaction.verificationDate = new Date().toISOString();
-        await transaction.save();
+        await transaction.save({ session });
 
-        res.json({ message: 'Transaction verified successfully' });
+        await session.commitTransaction();
+        res.json({ message: 'Transaction verified and processed successfully' });
     } catch (error) {
+        await session.abortTransaction();
         console.error('Error verifying transaction:', error);
-        res.status(500).json({ message: 'Server error'});
+        res.status(500).json({ message: 'Server error' });
+    } finally {
+        session.endSession();
     }
 });
 
@@ -146,5 +195,16 @@ router.post('/create',
         }
     }
 );
+
+// Add this new route
+router.get('/decrypt-account/:encryptedAccount', employeeAuth, async (req: Request, res: Response) => {
+    try {
+        const decryptedAccount = decryptAccountNumber(req.params.encryptedAccount);
+        res.json({ accountNumber: decryptedAccount });
+    } catch (error) {
+        console.error('Error decrypting account number:', error);
+        res.status(500).json({ message: 'Error decrypting account number' });
+    }
+});
 
 export default router;
