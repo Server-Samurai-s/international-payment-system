@@ -59,7 +59,7 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
             const data: CustomerAuthResponse = await response.json();
             handleLoginSuccess(data);
         } catch (error) {
-            console.error('Login error:', error instanceof Error ? error.message : error);
+            console.error('Login error: An unexpected error occurred.');
             setErrors({ password: 'An unexpected error occurred. Please try again later.' });
         }        
     };
