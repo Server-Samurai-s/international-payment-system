@@ -28,6 +28,7 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
 
         if (!form.password) {
             newErrors.password = 'Password is required';
+            valid = false;
         } else if (form.password.length < 8) {
             newErrors.password = 'Password must be at least 8 characters';
             valid = false;
@@ -59,7 +60,7 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
             handleLoginSuccess(data);
         } catch (error) {
             console.error('Login error:', error);
-            setErrors({ password: 'An error occurred during login' });
+            setErrors({ password: 'An unexpected error occurred. Please try again later.' });
         }
     };
 
@@ -68,6 +69,8 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
             setErrors({ identifier: 'Account number not found' });
         } else if (status === 401) {
             setErrors({ password: 'Incorrect password' });
+        } else {
+            setErrors({ password: 'An unexpected error occurred. Please try again later.' });
         }
     };
 
@@ -78,16 +81,16 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
         localStorage.setItem('isLoggedIn', 'true');
         onLoginSuccess();
         
-        setTimeout(() => {
-            navigate('/dashboard', { replace: true });
-        }, 2000);
+        navigate('/dashboard', { replace: true });
     };
 
     return (
         <form onSubmit={handleSubmit} noValidate>
             <div className="form-group">
+                <label htmlFor="identifier">Account Number</label>
                 <input
                     type="text"
+                    id="identifier"
                     className={`form-control ${submitted && errors.identifier ? 'is-invalid' : ''}`}
                     value={form.identifier}
                     onChange={(e) => setForm(prev => ({ ...prev, identifier: e.target.value }))}
@@ -99,8 +102,10 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
             </div>
 
             <div className="form-group">
+                <label htmlFor="password">Password</label>
                 <input
                     type="password"
+                    id="password"
                     className={`form-control ${submitted && errors.password ? 'is-invalid' : ''}`}
                     value={form.password}
                     onChange={(e) => setForm(prev => ({ ...prev, password: e.target.value }))}
@@ -120,4 +125,4 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
     );
 };
 
-export default CustomerLogin; 
+export default CustomerLogin;
