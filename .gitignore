@@ -17,3 +17,10 @@ Thumbs.db  # Windows
 
 # npm package locks
 package-lock.json
+
+# Exclude general keys but include our development certificates
+*.pem
+*.key
+!backend/src/keys/ca/*.pem
+!backend/src/keys/ca/*.key
+!backend/src/keys/ca/*.crt

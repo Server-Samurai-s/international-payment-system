@@ -2,10 +2,9 @@
 import React, { useRef } from "react";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sphere, Stars, useTexture } from "@react-three/drei";
+import { OrbitControls, Stars, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import "../styles/LandingPage.css"; // Custom styles
-import { useNavigate } from "react-router-dom";
 
 
 

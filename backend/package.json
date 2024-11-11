@@ -5,7 +5,11 @@
   "scripts": {
     "test": "jest --config jest.config.ts",
     "start": "npx ts-node src/app.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "create-admin": "ts-node src/scripts/createSuperAdmin.ts",
+    "migrate-users": "ts-node src/scripts/migrateUsers.ts",
+    "remove-account-numbers": "ts-node src/scripts/removeAccountNumber.ts",
+    "generate-key": "ts-node src/scripts/generateEncryptionKey.ts"
   },
   "keywords": [],
   "author": "",
@@ -30,7 +34,8 @@
     "mongodb-memory-server": "^10.0.1",
     "mongoose": "^8.7.0",
     "supertest": "^7.0.0",
-    "validator": "^13.12.0"
+    "validator": "^13.12.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.12.0",
@@ -45,13 +50,10 @@
     "@types/express-brute": "^1.0.6",
     "@types/jest": "^29.5.13",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/mongodb": "^4.0.7",
-    "@types/mongodb-memory-server": "^2.3.0",
-    "@types/mongoose": "^5.11.97",
     "@types/node": "^22.7.4",
     "@types/supertest": "^6.0.2",
     "@types/validator": "^13.12.2",
-    "eslint": "^8.57.1",
+    "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.37.1",
     "globals": "^15.10.0",
     "jest": "^29.7.0",

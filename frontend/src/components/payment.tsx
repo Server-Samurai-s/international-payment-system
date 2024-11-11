@@ -11,10 +11,12 @@ interface PaymentFormState {
     accountNumber: string;
     amount: string;
     swiftCode: string;
+    submit?: string;
 }
 
-const PaymentForm: React.FC = () => {
+const Payment: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isProcessing, setIsProcessing] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -77,55 +79,71 @@ const PaymentForm: React.FC = () => {
         return valid;
     };
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        
         if (!validateForm()) {
             return;
         }
 
-        const token = localStorage.getItem("jwt");
-        if (!token) {
-            alert("Please log in first.");
-            navigate("/login");
-            return;
-        }
-
-        const transactionData = {
-            ...form,
-            userId: localStorage.getItem("userId"),
-        };
-
+        setIsProcessing(true);
+        
         try {
-            const response = await fetch("https://localhost:3001/transactions/create", {
-                method: "POST",
+            // First, validate the account number
+            const token = localStorage.getItem('jwt');
+            const validateResponse = await fetch(`https://localhost:3001/transactions/validate-account/${form.accountNumber}`, {
+                method: 'GET',
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify(transactionData),
+                    'Authorization': `Bearer ${token}`
+                }
             });
 
-            if (!response.ok) {
-                throw new Error(`Error: ${response.statusText}`);
+            if (!validateResponse.ok) {
+                setErrors(prev => ({
+                    ...prev,
+                    accountNumber: "Account number does not exist"
+                }));
+                setIsProcessing(false);
+                return;
             }
 
-            const data = await response.json();
-            console.log("Transaction created:", data);
-
-            setForm({
-                recipientName: "",
-                recipientBank: "",
-                accountNumber: "",
-                amount: "",
-                swiftCode: "",
+            // If account exists, proceed with transaction
+            const response = await fetch('https://localhost:3001/transactions/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    recipientName: form.recipientName.trim(),
+                    recipientBank: form.recipientBank.trim(),
+                    accountNumber: form.accountNumber,
+                    amount: parseFloat(form.amount),
+                    swiftCode: form.swiftCode.trim()
+                })
             });
 
-            setShowSuccess(true);
-            setTimeout(() => navigate('/dashboard'), 2000);
+            const data = await response.json();
+
+            if (response.ok) {
+                setShowSuccess(true);
+                setTimeout(() => {
+                    navigate("/dashboard");
+                }, 2000);
+            } else {
+                setErrors(prev => ({
+                    ...prev,
+                    submit: data.message || "Failed to process transaction"
+                }));
+            }
         } catch (error) {
-            console.error("Error creating transaction:", error);
-            alert("Failed to process payment. Please try again.");
+            console.error("Error processing transaction:", error);
+            setErrors(prev => ({
+                ...prev,
+                submit: "Error processing transaction"
+            }));
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -147,10 +165,10 @@ const PaymentForm: React.FC = () => {
             </Canvas>
             <div className="payment-form__container">
                 <h3 className="payment-form__title">International Payment</h3>
-                <form onSubmit={onSubmit}>
+                <form onSubmit={handleSubmit} className="payment-form">
                     {/* Recipient's Name */}
                     <div className="payment-form__group">
-                        <label htmlFor="recipientName">Recipient's Name</label>
+                        <label htmlFor="recipientName">Recipient&apos;s Name</label>
                         <input
                             type="text"
                             id="recipientName"
@@ -162,7 +180,7 @@ const PaymentForm: React.FC = () => {
     
                     {/* Recipient's Bank */}
                     <div className="payment-form__group">
-                        <label htmlFor="recipientBank">Recipient's Bank</label>
+                        <label htmlFor="recipientBank">Recipient&apos;s Bank</label>
                         <input
                             type="text"
                             id="recipientBank"
@@ -174,7 +192,7 @@ const PaymentForm: React.FC = () => {
     
                     {/* Account Number */}
                     <div className="payment-form__group">
-                        <label htmlFor="accountNumber">Account Number</label>
+                        <label htmlFor="accountNumber">Recipient&apos;s Account Number</label>
                         <input
                             type="text"
                             id="accountNumber"
@@ -210,16 +228,33 @@ const PaymentForm: React.FC = () => {
     
                     {/* Buttons */}
                     <div className="d-flex justify-content-between">
-                        <button type="submit" className="payment-form__btn-primary">Pay Now</button>
+                        <button 
+                            type="submit" 
+                            className="payment-form__btn-primary"
+                            disabled={isProcessing}
+                        >
+                            {isProcessing ? 'Processing...' : 'Submit Payment'}
+                        </button>
                         <button type="button" className="payment-form__btn-cancel" onClick={handleCancelBtn}>
                             Cancel
                         </button>
                     </div>
                 </form>
             </div>
-            {showSuccess && <SuccessMessage message="Payment successful! Redirecting to dashboard..." />}
+            {showSuccess && (
+                <SuccessMessage 
+                    message="Transaction successful! Redirecting to dashboard..."
+                    duration={2000}
+                    onClose={() => setShowSuccess(false)}
+                />
+            )}
+            {errors.submit && (
+                <div className="payment-form__error">
+                    {errors.submit}
+                </div>
+            )}
         </div>
     );
 };
 
-export default PaymentForm;
+export default Payment;

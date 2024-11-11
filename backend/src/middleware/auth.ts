@@ -1,52 +1,60 @@
-import jwt from 'jsonwebtoken'; 
+import jwt from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
 
 //--------------------------------------------------------------------------------------------------------//
 
 // Extend the Request interface to include userId
 export interface AuthenticatedRequest extends Request {
-  userId?: string; // Optional userId field for requests that have an authenticated user
+    userId?: string;
 }
 
 // Middleware to authenticate JWT
-export const authenticateUser = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    // Retrieve the Authorization header from the request
-    const authHeader = req.headers.authorization;
-
-    // Check if the Authorization header is missing
-    if (!authHeader) {
-        // Respond with 401 Unauthorized if no Authorization header is present
-        res.status(401).json({ message: 'Authorization header required' });
-        return; // End function execution to prevent further code from running
-    }
-
-    // Extract the token part from the Authorization header (assumed to be in "Bearer <token>" format)
-    const token = authHeader.split(' ')[1];
-
-    // Check if the token is missing after splitting the header
-    if (!token) {
-        // Respond with 401 Unauthorized if no token is found
-        res.status(401).json({ message: 'Authorization token required' });
-        return; // End function execution
-    }
-
+export const authenticateUser = async (
+    req: AuthenticatedRequest, 
+    res: Response, 
+    next: NextFunction
+): Promise<void> => {
     try {
-        // Verify the JWT using the secret stored in the environment variable
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { userId: string };
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            res.status(401).json({ message: 'Authorization header required' });
+            return;
+        }
+
+        const token = authHeader.split(' ')[1];
         
-        // Assign the decoded userId to the request object for later use
-        req.userId = decoded.userId;
+        if (!token) {
+            res.status(401).json({ message: 'Authorization token required' });
+            return;
+        }
 
-        // Log the authenticated userId for debugging purposes
-        console.log("Authenticated userId:", req.userId);
+        const jwtSecret = process.env.JWT_SECRET;
+        
+        if (!jwtSecret) {
+            console.error("JWT_SECRET is missing in environment variables.");
+            res.status(500).json({ message: "Server configuration error" });
+            return;
+        }
 
-        // Move to the next middleware or request handler
-        next();
+        try {
+            const decoded = jwt.verify(token, jwtSecret) as { userId: string };
+            req.userId = decoded.userId;
+            
+            if (process.env.NODE_ENV !== 'production') {
+                console.log("Authenticated userId:", req.userId);
+            }
+            
+            next();
+        } catch (jwtError) {
+            console.error('Token verification failed:', jwtError);
+            res.status(403).json({ 
+                message: 'Invalid or expired token',
+                error: process.env.NODE_ENV === 'development' ? (jwtError as Error).message : undefined
+            });
+        }
     } catch (error) {
-        // Log the error if token verification fails
-        console.error('Token verification failed:', error);
-        
-        // Respond with 403 Forbidden if the token is invalid or expired
-        res.status(403).json({ message: 'Invalid or expired token' });
+        console.error('Authentication error:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };//------------------------------------------END OF FILE---------------------------------------------------//

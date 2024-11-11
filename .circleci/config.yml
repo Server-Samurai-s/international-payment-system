@@ -1,0 +1,118 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5  # Updated to use the stable CircleCI Node orb
+
+executors:
+  node-executor:
+    docker:
+      - image: node:18  # Official Node 18 image
+    working_directory: ~/international-payment-system
+
+  sonar-executor:
+    docker:
+      - image: circleci/openjdk:11
+    working_directory: ~/international-payment-system
+
+jobs:
+  test-node:
+    executor: node-executor
+    working_directory: ~/international-payment-system/frontend
+    steps:
+      - checkout:
+          path: ~/international-payment-system
+      - run:
+          name: Install dependencies
+          command: |
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+      - run:
+          name: Run tests
+          command: npm test --passWithNoTests
+      - store_test_results:
+          path: ~/international-payment-system/frontend/test-results
+
+  build-node:
+    executor: node-executor
+    working_directory: ~/international-payment-system/frontend
+    steps:
+      - checkout:
+          path: ~/international-payment-system
+      - run:
+          name: Install dependencies
+          command: |
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+      - run:
+          name: Build project
+          command: npm run build
+      - run:
+          name: Create artifacts directory
+          command: mkdir -p ~/artifacts
+      - run:
+          name: Copy artifacts
+          command: |
+            cp -R build dist public .output .next .docusaurus ~/artifacts 2>/dev/null || true
+      - store_artifacts:
+          path: ~/artifacts
+          destination: node-build
+
+  sonarcloud:
+    executor: sonar-executor
+    working_directory: ~/international-payment-system
+    steps:
+      - checkout
+      - run:
+          name: Download and Install SonarScanner
+          command: |
+            SONAR_VERSION="5.0.1.3006"
+            curl -sSLo sonar-scanner-cli.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_VERSION}-linux.zip
+            unzip sonar-scanner-cli.zip -d $HOME
+            echo "export SONAR_SCANNER_HOME=$HOME/sonar-scanner-${SONAR_VERSION}-linux" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Set up SonarScanner and permissions
+          command: |
+            chmod +x ${SONAR_SCANNER_HOME}/bin/sonar-scanner
+            echo "export PATH=${SONAR_SCANNER_HOME}/bin:$PATH" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
+          name: Run SonarCloud Analysis
+          command: |
+            sonar-scanner \
+              -Dsonar.projectKey=Server-Samurai-s_international-payment-system \
+              -Dsonar.organization=server-samurai-s \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.token=${SONAR_TOKEN} \
+              -Dsonar.branch.name=dev \
+              -Dsonar.scm.provider=git
+
+workflows:
+  build-and-test:
+    jobs:
+      - test-node:
+          filters:
+            branches:
+              only:
+                - dev
+      - build-node:
+          requires:
+            - test-node
+          filters:
+            branches:
+              only:
+                - dev
+      - sonarcloud:
+          requires:
+            - build-node
+          filters:
+            branches:
+              only:
+                - dev

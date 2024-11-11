@@ -1,34 +1,60 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
-import Navbar from "./components/navbar";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { EmployeeRole } from './types/employee';
+import Navbar from './components/navbar';
+import Login from './components/login';
 import SignUp from './components/signUp';
-import Login from "./components/login";
-import CustomerDashboard from './components/customerDashboard';
-import PaymentForm from './components/paymentForm';
+import Dashboard from './components/customerDashboard';
+import EmployeeDashboard from './components/employeeDashboard';
+import CreateEmployee from './components/createEmployee';
 import ProtectedRoute from './components/protectedRoute';
+import Payment from './components/payment';
 import LandingPage from './components/landingPage';
 
-const App = () => {
-  return (
-    <Router>
-    <div>
-      <Navbar />
-      <Routes>
-        <Route path="/dashboard" element={<ProtectedRoute><CustomerDashboard /></ProtectedRoute>} />
-        {/* <Route path="/edit/:id" element={<PostEdit />} /> */}
-        <Route path="/signup" element={<SignUp/>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/payment" element={<ProtectedRoute><PaymentForm /></ProtectedRoute>} />
-      </Routes>
-    </div>
-    </Router>
-  );
-}
+const App: React.FC = () => {
+    return (
+        <Router>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route 
+                    path="/dashboard" 
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/employee-dashboard" 
+                    element={
+                        <ProtectedRoute>
+                            <EmployeeDashboard />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/create-employee" 
+                    element={
+                        <ProtectedRoute allowedRoles={[EmployeeRole.SUPER_ADMIN]}>
+                            <CreateEmployee />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/payment" 
+                    element={
+                        <ProtectedRoute>
+                            <Payment />
+                        </ProtectedRoute>
+                    } 
+                />
+            </Routes>
+        </Router>
+    );
+};
 
 export default App;
 
