@@ -9,8 +9,18 @@ import { requireRole } from '../middleware/roleAuth';
 import mongoose from 'mongoose';
 import { User } from '../models/user';
 import { decryptAccountNumber } from '../utils/encryption';
+import crypto from 'crypto';
 
 const router = express.Router();
+
+// Generate employee ID using cryptographically secure random numbers
+const generateEmployeeId = (): string => {
+    // Generate 6 random bytes (48 bits)
+    const randomBytes = crypto.randomBytes(6);
+    // Convert to a number between 100000 and 999999
+    const randomNum = (randomBytes.readUIntBE(0, 6) % 900000) + 100000;
+    return `EMP${randomNum}`;
+};
 
 // Employee login
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
@@ -161,7 +171,7 @@ router.post('/create',
             }
 
             // Generate employee ID
-            const employeeId = `EMP${Math.floor(100000 + Math.random() * 900000)}`;
+            const employeeId = generateEmployeeId();
 
             // Hash password
             const salt = await bcrypt.genSalt(10);

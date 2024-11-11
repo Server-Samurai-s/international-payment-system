@@ -26,7 +26,8 @@ const userSchema: Schema<IUser> = new Schema({
     type: String,
     required: true, // Email address is required
     unique: true, // Ensure email is unique
-    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // Regular expression for email validation
+    match: /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,6}$/,  // Safe email validation
+    maxLength: 320  // Maximum total length for an email
   },
   username: {
     type: String,

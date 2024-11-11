@@ -24,15 +24,15 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
         let valid = true;
 
         if (!form.identifier.trim()) {
-            newErrors.identifier = 'Account number is required';
+            newErrors.identifier = process.env.REACT_APP_ACCOUNT_REQUIRED_MESSAGE || 'Account number is required';
             valid = false;
         }
 
         if (!form.password) {
-            newErrors.password = 'Password is required';
+            newErrors.password = process.env.REACT_APP_PASSWORD_REQUIRED_MESSAGE || 'Password is required';
             valid = false;
-        } else if (form.password.length < 8) {
-            newErrors.password = 'Password must be at least 8 characters';
+        } else if (form.password.length < Number(process.env.REACT_APP_MIN_PASSWORD_LENGTH) || 8) {
+            newErrors.password = `Password must be at least ${process.env.REACT_APP_MIN_PASSWORD_LENGTH || 8} characters`;
             valid = false;
         }
 
