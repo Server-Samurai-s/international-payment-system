@@ -52,17 +52,16 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
     const newUser = new User({
       firstName,
       lastName,
-      emailAddress,
+      email: emailAddress,
       username,
       password,
-      hashedAccountNumber: encryptedAccountNumber,
+      accountNumber: encryptedAccountNumber,
       idNumber,
       balance: 10000, // Set initial balance
     });
 
-    // Hash the user's password before saving it to the database
-    await newUser.hashPassword();
-    await newUser.save(); // Save the new user to the database
+    // The password will be automatically hashed by the pre-save middleware
+    await newUser.save(); // Save the new user to the database  
 
     // Generate a JWT token for the newly registered user
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET || '', { expiresIn: '1h' });
@@ -80,11 +79,16 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
 // Login Route for user authentication
 router.post('/login', bruteforce.prevent, async (req: Request, res: Response): Promise<void> => {
   const { identifier, password } = req.body; // Destructure login credentials from request body
+  console.log(identifier, password);
 
   try {
     // Find user by username or account number for authentication
     const user = await User.findOne({
-      $or: [{ username: identifier }, { hashedAccountNumber: identifier }], // Check if the identifier is username or account number
+      $or: [
+        { username: identifier },
+        { email: identifier },
+        { accountNumber: identifier.startsWith('enc:') ? identifier : encryptAccountNumber(identifier) }
+      ]
     });
 
     // If user is not found, return authentication failure
