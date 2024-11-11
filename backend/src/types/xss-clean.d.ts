@@ -6,7 +6,7 @@ declare module 'xss-clean' {
     }
 
     interface Clean {
-        (obj: any): any;
+        (obj: unknown): Record<string, unknown>;
     }
 
     interface XssClean {

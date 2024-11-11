@@ -1,6 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose'; // Import mongoose, schema, and document types for MongoDB schema definition
 import bcrypt from 'bcryptjs'; // Import bcryptjs for password hashing and comparison
-import crypto from 'crypto';
 import { encryptAccountNumber } from '../utils/encryption';
 
 //--------------------------------------------------------------------------------------------------------//

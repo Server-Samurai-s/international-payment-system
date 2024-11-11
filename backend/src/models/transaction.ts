@@ -17,7 +17,6 @@ export interface Transaction {
 //--------------------------------------------------------------------------------------------------------//
 
 // Update the existing functions with secure hashing
-import crypto from 'crypto';
 import { IUser } from './user';
 import { User } from './user';
 import { decryptAccountNumber } from '../utils/encryption';

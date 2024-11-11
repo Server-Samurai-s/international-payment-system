@@ -13,7 +13,7 @@ import { User } from "./models/user";
 import transactionRoutes from "./routes/transaction.routes";
 import userRoutes from "./routes/user.routes";
 import employeeRoutes from "./routes/employee.routes";
-// @ts-ignore
+// @ts-expect-error xss-clean package lacks TypeScript type definitions
 import xssClean from 'xss-clean';
 //--------------------------------------------------------------------------------------------------------//
 

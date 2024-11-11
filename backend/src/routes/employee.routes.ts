@@ -9,7 +9,6 @@ import { requireRole } from '../middleware/roleAuth';
 import mongoose from 'mongoose';
 import { User } from '../models/user';
 import { decryptAccountNumber } from '../utils/encryption';
-import { findUserByAccountNumber } from '../models/transaction';
 
 const router = express.Router();
 

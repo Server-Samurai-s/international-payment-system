@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'; // Import express and type
 import jwt from 'jsonwebtoken'; // Import jsonwebtoken for creating and verifying JWT tokens
 import ExpressBrute from 'express-brute'; // Import ExpressBrute for brute-force protection
 import dotenv from 'dotenv'; // Import dotenv to load environment variables
-import { User, getMaskedAccountNumber } from '../models/user'; // Import the User model for interacting with the database
+import { User } from '../models/user'; // Import the User model for interacting with the database
 import { AuthenticatedRequest, authenticateUser } from '../middleware/auth';
 import { decryptAccountNumber, encryptAccountNumber } from '../utils/encryption';
 

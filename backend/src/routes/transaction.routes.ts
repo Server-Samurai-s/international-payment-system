@@ -18,6 +18,9 @@ const transactionLimiter = rateLimit({
     max: 100
 });
 
+// Apply rate limiting to all routes
+router.use(transactionLimiter);
+
 // Get all transactions for authenticated user
 router.get("/", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {

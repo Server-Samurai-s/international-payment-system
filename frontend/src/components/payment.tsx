@@ -242,9 +242,11 @@ const Payment: React.FC = () => {
                 </form>
             </div>
             {showSuccess && (
-                <div className="payment-form__success">
-                    Transaction successful! Redirecting to dashboard...
-                </div>
+                <SuccessMessage 
+                    message="Transaction successful! Redirecting to dashboard..."
+                    duration={2000}
+                    onClose={() => setShowSuccess(false)}
+                />
             )}
             {errors.submit && (
                 <div className="payment-form__error">
