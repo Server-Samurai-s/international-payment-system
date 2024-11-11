@@ -5,6 +5,7 @@ import { CustomerAuthResponse } from '../types/auth';
 interface CustomerFormState {
     identifier: string;
     password: string;
+    authError?: string;
 }
 
 interface CustomerLoginProps {
@@ -61,7 +62,7 @@ const CustomerLogin: React.FC<CustomerLoginProps> = ({ onLoginSuccess }) => {
         } catch (error) {
             const err = error as Error;
             console.error('Login error:', err.message);
-            setErrors({ password: 'An unexpected error occurred. Please try again later.' });
+            setErrors({ authError: 'An unexpected error occurred. Please try again later.' });
         }        
     };
 
