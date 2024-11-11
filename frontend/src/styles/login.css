@@ -168,3 +168,16 @@ form {
 .login-type-toggle button:hover:not(.active) {
     background: rgba(255, 255, 255, 0.2);
 }
+
+.success-message {
+    position: fixed;
+    top: 80px; /* Adjust based on your navbar height */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background-color: rgba(37, 21, 209, 0.9);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

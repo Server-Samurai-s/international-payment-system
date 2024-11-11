@@ -1,5 +1,123 @@
 # International Payment System with React, Node.js, and MongoDB
 
+[Previous introduction and features remain the same]
+
+## Technologies Used
+
+- **Frontend**:
+  - React (with TypeScript)
+  - React Router DOM
+  - Bootstrap (for styling)
+  - Three.js (for 3D animations)
+  - Framer Motion (for UI animations)
+  - React Three Fiber
+  - React Three Drei
+  
+- **Backend**:
+  [Previous backend technologies remain the same]
+  
+- **Security**:
+  [Previous security features remain the same]
+  - XSS Protection (xss-clean)
+  - HSTS Headers
+  - Cookie Session Management
+  
+- **Testing & CI/CD**:
+  - Jest
+  - React Testing Library
+  - CircleCI Integration
+  - SonarCloud Analysis
+  - GitHub Actions
+
+## Development Setup
+
+### Prerequisites
+
+[Previous prerequisites remain the same]
+
+### Environment Setup
+
+1. **Frontend Environment Variables**:
+   Create a `.env` file in the frontend directory with:
+   ```
+   HTTPS=YOUR_VALUE
+   ```
+
+2. **Backend Environment Variables**:
+   Create a `.env` file in the backend directory with:
+   ```
+   PORT=3001
+  NODE_ENV="YOUR_VALUE"
+  ATLAS_URI="YOUR_VALUE"
+  JWT_SECRET="YOUR_VALUE"
+  SESSION_SECRET="YOUR_VALUE"
+  CORS_ORIGIN="YOUR_VALUE"
+  ENCRYPTION_KEY="YOUR_VALUE"
+   ```
+
+### Running Tests
+
+1. **Frontend Tests**:
+```bash
+cd frontend
+npm test
+```
+
+2. **Backend Tests**:
+```bash
+cd backend
+npm test
+```
+
+### CI/CD Pipeline
+
+The project includes automated CI/CD pipelines using both CircleCI and GitHub Actions:
+
+1. **CircleCI Pipeline**:
+- Runs tests for both frontend and backend
+- Builds the application
+- Performs SonarCloud analysis
+- Deploys to staging/production environments
+
+2. **GitHub Actions**:
+- Performs security checks
+- Validates SSL configuration
+- Checks for common web vulnerabilities
+- Runs comprehensive test suites
+
+### Visual Features
+
+The application now includes:
+- 3D Earth visualization on the landing page
+- Animated star field background
+- Smooth UI transitions using Framer Motion
+- Responsive design for all screen sizes
+
+[Rest of the README remains the same]
+
+### Troubleshooting
+
+Common Issues:
+1. **Three.js Related Errors**:
+   - Ensure WebGL is enabled in your browser
+   - Update your graphics drivers
+   - Clear browser cache
+
+2. **SSL Certificate Issues**:
+   [Previous SSL troubleshooting steps remain the same]
+
+3. **Test Environment Issues**:
+   - Ensure Jest configuration is properly set up
+   - Check that all test dependencies are installed
+   - Verify that test environment variables are set correctly
+```
+
+This update reflects the new features and technologies added to the project, particularly the 3D visualization components, enhanced testing setup, and CI/CD pipeline configurations. The structure references:
+
+
+````1:237:README.md
+# International Payment System with React, Node.js, and MongoDB
+
 This project is an **International Payment System** built using **React** for the frontend, **Node.js** for the backend, and **MongoDB** for the database. It allows customers to register, log in, and perform international transactions.
 
 ## Features
