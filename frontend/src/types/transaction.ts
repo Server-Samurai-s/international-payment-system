@@ -11,4 +11,5 @@ export interface Transaction {
     status: 'pending' | 'verified' | 'submitted' | 'completed' | 'failed';
     verifiedBy?: string;
     verificationDate?: string;
+    senderName: string;
 }

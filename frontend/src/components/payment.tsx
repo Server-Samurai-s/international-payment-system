@@ -89,7 +89,25 @@ const Payment: React.FC = () => {
         setIsProcessing(true);
         
         try {
+            // First, validate the account number
             const token = localStorage.getItem('jwt');
+            const validateResponse = await fetch(`https://localhost:3001/transactions/validate-account/${form.accountNumber}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!validateResponse.ok) {
+                setErrors(prev => ({
+                    ...prev,
+                    accountNumber: "Account number does not exist"
+                }));
+                setIsProcessing(false);
+                return;
+            }
+
+            // If account exists, proceed with transaction
             const response = await fetch('https://localhost:3001/transactions/create', {
                 method: 'POST',
                 headers: {
@@ -110,19 +128,19 @@ const Payment: React.FC = () => {
             if (response.ok) {
                 setShowSuccess(true);
                 setTimeout(() => {
-                    navigate('/dashboard');
+                    navigate("/dashboard");
                 }, 2000);
             } else {
                 setErrors(prev => ({
                     ...prev,
-                    submit: data.message || 'Transaction failed. Please try again.'
+                    submit: data.message || "Failed to process transaction"
                 }));
             }
         } catch (error) {
-            console.error('Error processing transaction:', error);
+            console.error("Error processing transaction:", error);
             setErrors(prev => ({
                 ...prev,
-                submit: 'Network error. Please try again.'
+                submit: "Error processing transaction"
             }));
         } finally {
             setIsProcessing(false);

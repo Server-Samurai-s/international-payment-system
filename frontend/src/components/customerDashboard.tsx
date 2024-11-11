@@ -155,63 +155,62 @@ const CustomerDashboard: React.FC = () => {
                 
                 <div className="customer-dashboard__section">
                     <h5 className="customer-dashboard__section-title">Payment Receipts</h5>
-                    <div className="customer-dashboard__transactions">
-                        <h2>Recent Transactions</h2>
-                        
+                    <div className="transaction-table-container">
+                        <table className="transaction-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Name</th>
+                                    <th>Bank</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map((transaction) => (
+                                    <tr key={transaction._id}>
+                                        <td>{new Date(transaction.transactionDate).toLocaleDateString()}</td>
+                                        <td>
+                                            {transaction.user === localStorage.getItem("userId") ? (
+                                                <span className="transaction-direction outgoing">Sent</span>
+                                            ) : (
+                                                <span className="transaction-direction incoming">Received</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            {transaction.user === localStorage.getItem("userId") 
+                                                ? transaction.recipientName 
+                                                : transaction.senderName
+                                            }
+                                        </td>
+                                        <td>
+                                            {transaction.user === localStorage.getItem("userId") 
+                                                ? transaction.recipientBank 
+                                                : "IntPay"
+                                            }
+                                        </td>
+                                        <td className={transaction.user === localStorage.getItem("userId") ? 'outgoing' : 'incoming'}>
+                                            ${transaction.amount.toLocaleString()}
+                                        </td>
+                                        <td>{formatTransactionStatus(transaction.status)}</td>
+                                    </tr>
+                                ))}
+                                {!isLoading && !error && transactions.length === 0 && (
+                                    <tr>
+                                        <td colSpan={6} className="empty-state">
+                                            No transactions found
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                         {isLoading && <div className="loading-spinner">Loading...</div>}
-                        
                         {error && (
                             <div className="error-message">
                                 {error}
                             </div>
                         )}
-
-                        {!isLoading && !error && transactions.length === 0 && (
-                            <div className="no-transactions">
-                                No transactions found
-                            </div>
-                        )}
-
-                        {transactions.map((transaction) => (
-                            <div key={transaction._id} className="transaction-card">
-                                <div className="transaction-header">
-                                    <span className="transaction-date">
-                                        {new Date(transaction.transactionDate).toLocaleDateString()}
-                                    </span>
-                                    {formatTransactionStatus(transaction.status)}
-                                </div>
-                                <div className="transaction-details">
-                                    <div className="transaction-type">
-                                        {transaction.user === localStorage.getItem("userId") ? (
-                                            <span className="transaction-direction outgoing">Sent to:</span>
-                                        ) : (
-                                            <span className="transaction-direction incoming">Received from:</span>
-                                        )}
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="label">
-                                            {transaction.user === localStorage.getItem("userId") ? "Recipient:" : "From:"}
-                                        </span>
-                                        <span className="value">
-                                            {transaction.user === localStorage.getItem("userId") 
-                                                ? transaction.recipientName 
-                                                : transaction.senderName
-                                            }
-                                        </span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="label">Bank:</span>
-                                        <span className="value">{transaction.recipientBank}</span>
-                                    </div>
-                                    <div className="detail-row">
-                                        <span className="label">Amount:</span>
-                                        <span className={`value ${transaction.user === localStorage.getItem("userId") ? 'outgoing' : 'incoming'}`}>
-                                            ${transaction.amount.toLocaleString()}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </div>

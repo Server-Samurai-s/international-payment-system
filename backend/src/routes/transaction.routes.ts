@@ -37,7 +37,7 @@ router.get("/", authenticateUser, async (req: AuthenticatedRequest, res: Respons
 });
 
 // Create new transaction
-router.post("/", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+router.post("/create", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -49,6 +49,14 @@ router.post("/", authenticateUser, async (req: AuthenticatedRequest, res: Respon
         if (!recipientName || !recipientBank || !accountNumber || !amount || !swiftCode) {
             await session.abortTransaction();
             res.status(400).json({ message: "All fields are required" });
+            return;
+        }
+
+        // Validate SWIFT code format (11 characters: 4 bank code, 2 country code, 2 location code, 3 branch code)
+        const swiftCodeRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
+        if (!swiftCodeRegex.test(swiftCode)) {
+            await session.abortTransaction();
+            res.status(400).json({ message: "Invalid SWIFT code format" });
             return;
         }
 
@@ -98,6 +106,23 @@ router.post("/", authenticateUser, async (req: AuthenticatedRequest, res: Respon
         res.status(500).json({ message: "Failed to process transaction" });
     } finally {
         session.endSession();
+    }
+});
+
+router.get("/validate-account/:accountNumber", authenticateUser, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const { accountNumber } = req.params;
+        const user = await findUserByAccountNumber(accountNumber);
+
+        if (!user) {
+            res.status(404).json({ message: "Account number not found" });
+            return;
+        }
+
+        res.status(200).json({ message: "Account number is valid" });
+    } catch (error) {
+        console.error("Error validating account number:", error);
+        res.status(500).json({ message: "Server error" });
     }
 });
 
