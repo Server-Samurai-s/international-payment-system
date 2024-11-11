@@ -5,6 +5,10 @@ A secure international payment processing system built with React, Node.js, and 
 ## Video Demo
 [Watch Demo](https://youtu.be/j028SdHNzDo)
 
+## Super Admin Employee Login Details
+- **Username:** superadmin
+- **Password:** SuperAdmin123!
+
 ## Features
 
 - **Secure Authentication**
